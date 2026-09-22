@@ -175,8 +175,9 @@ One `attachX(elements, options)` function per pattern returning
 
 Shared, public utilities:
 
-- Tabbable element discovery that pierces open shadow roots (used by the
-  listbox and by future patterns; not by the dialog).
+- Tabbable element discovery that pierces open shadow roots. Not needed by
+  the v1 patterns themselves; kept public because the future menu and popover
+  patterns need it and consumers building custom patterns do too.
 - Focus restore helper.
 - `uniqueId()` client counter.
 - A single shared live region for announcements, created lazily on first use.
