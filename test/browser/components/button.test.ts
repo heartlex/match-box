@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import { emulateMedia, sendKeys, sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/button.ts';
 import type { MbButton } from '../../../src/components/index.ts';
-import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
+import { expectNoAxeViolations } from '../../support/axe.ts';
+import { loadTokens, mount, part, resolveColor, resolveLength, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
 async function formWith(markup: string): Promise<{ form: HTMLFormElement; button: MbButton; submits: number[] }> {
@@ -218,5 +219,110 @@ describe('mb-button', () => {
     const pressed = getComputedStyle(base).transform;
     await sendMouse({ type: 'up' });
     expect(pressed).to.equal('matrix(0.5, 0, 0, 0.5, 0, 0)');
+  });
+
+  describe('with href', () => {
+    const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+    afterEach(() => {
+      history.replaceState(null, '', location.pathname + location.search);
+    });
+
+    it('renders a link with target, rel, and download passed through', async () => {
+      const { element } = await mount<MbButton>(
+        '<mb-button href="/docs" target="_blank" rel="noopener" download="notes.txt">Docs</mb-button>',
+      );
+      const base = part<HTMLAnchorElement>(element, 'base');
+      expect(base.localName).to.equal('a');
+      expect([base.getAttribute('href'), base.target, base.rel, base.getAttribute('download')]).to.deep.equal([
+        '/docs',
+        '_blank',
+        'noopener',
+        'notes.txt',
+      ]);
+      expect(getComputedStyle(base).textDecorationLine).to.equal('none');
+    });
+
+    it('omits target, rel, and download when they are not set', async () => {
+      const { element } = await mount<MbButton>('<mb-button href="/docs">Docs</mb-button>');
+      const base = part<HTMLAnchorElement>(element, 'base');
+      expect(['target', 'rel', 'download'].filter((name) => base.hasAttribute(name))).to.deep.equal([]);
+    });
+
+    it('navigates on click and on Enter, not on Space', async () => {
+      const { element } = await mount<MbButton>('<mb-button href="#linked">Go</mb-button>');
+      await driver.click(part(element, 'base'));
+      await tick();
+      expect(location.hash, 'click').to.equal('#linked');
+      history.replaceState(null, '', location.pathname + location.search);
+      element.focus();
+      await sendKeys({ press: 'Enter' });
+      await tick();
+      expect(location.hash, 'Enter').to.equal('#linked');
+      history.replaceState(null, '', location.pathname + location.search);
+      element.focus();
+      await sendKeys({ press: 'Space' });
+      await tick();
+      expect(location.hash, 'Space').to.equal('');
+    });
+
+    it('never submits its form, even with type="submit"', async () => {
+      const { button, submits } = await formWith('<mb-button type="submit" href="#linked">Go</mb-button>');
+      await driver.click(part(button, 'base'));
+      await tick();
+      expect(submits).to.have.length(0);
+    });
+
+    it('Enter in a text field does not submit through a link button', async () => {
+      const { element: form } = await mount<HTMLFormElement>(
+        '<form><input name="a"><input name="b"><mb-button type="submit" href="#linked">Go</mb-button></form>',
+      );
+      const submits: number[] = [];
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submits.push(1);
+      });
+      (form.querySelector('input') as HTMLInputElement).focus();
+      await sendKeys({ press: 'Enter' });
+      await tick();
+      expect(submits).to.have.length(0);
+    });
+
+    it('disabled: no href, aria-disabled, not focusable, does not navigate', async () => {
+      const { element } = await mount<MbButton>('<mb-button href="#linked" disabled>Off</mb-button>');
+      const base = part<HTMLAnchorElement>(element, 'base');
+      expect(base.hasAttribute('href')).to.equal(false);
+      expect([base.getAttribute('role'), base.getAttribute('aria-disabled'), base.tabIndex]).to.deep.equal([
+        'link',
+        'true',
+        -1,
+      ]);
+      element.focus();
+      expect(element.shadowRoot?.activeElement ?? null).to.equal(null);
+      await driver.click(base);
+      await tick();
+      expect(location.hash).to.equal('');
+      expect(getComputedStyle(base).color).to.equal(resolveColor('--mb-color-fg-disabled'));
+    });
+
+    it('focusing the host focuses the link', async () => {
+      const { element } = await mount<MbButton>('<mb-button href="#linked">Go</mb-button>');
+      element.focus();
+      expect(element.shadowRoot?.activeElement).to.equal(part(element, 'base'));
+    });
+
+    it('keeps the variant and color tokens', async () => {
+      const { element } = await mount<MbButton>('<mb-button href="#linked" variant="outline" color="primary">Go</mb-button>');
+      const style = getComputedStyle(part(element, 'base'));
+      expect(style.borderTopColor).to.equal(resolveColor('--mb-color-primary-border'));
+      expect(style.color).to.equal(resolveColor('--mb-color-primary-text'));
+    });
+
+    it('passes axe, enabled and disabled', async () => {
+      const { container } = await mount(
+        '<main><mb-button href="#linked" color="primary">Docs</mb-button><mb-button href="#linked" disabled>Off</mb-button></main>',
+      );
+      await expectNoAxeViolations(container);
+    });
   });
 });

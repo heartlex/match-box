@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { DelegatesFocus } from '../../lit/delegates-focus.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
 import { sizeName, type Size } from '../shared/size.ts';
@@ -40,11 +40,15 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * join the form data, and it is the submitter a `<form method="dialog">`
  * takes its return value from.
  *
+ * With `href` it renders a link instead: Enter follows it, Space does not,
+ * and it never submits or resets a form. A disabled link has no `href`, is
+ * `aria-disabled`, and cannot be focused.
+ *
  * @tag mb-button
  * @slot - The label.
  * @slot prefix - Content before the label, such as an icon.
  * @slot suffix - Content after the label.
- * @csspart base - The native button.
+ * @csspart base - The native button, or the link when `href` is set.
  * @csspart label - The label wrapper.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
@@ -74,6 +78,10 @@ export class MbButton extends DelegatesFocus(LitElement) {
     type: {},
     name: {},
     value: {},
+    href: {},
+    target: {},
+    rel: {},
+    download: {},
     disabled: { type: Boolean, reflect: true },
   };
 
@@ -89,6 +97,14 @@ export class MbButton extends DelegatesFocus(LitElement) {
   declare name: string;
   /** The value submitted with `name`; a `<form method="dialog">` returns it. */
   declare value: string;
+  /** Renders a link to this URL instead of a button. */
+  declare href: string | undefined;
+  /** The link's browsing context, such as `_blank`. Only with `href`. */
+  declare target: string | undefined;
+  /** The link's relationship, such as `noopener`. Only with `href`. */
+  declare rel: string | undefined;
+  /** Downloads the link's target, with this file name if not empty. Only with `href`. */
+  declare download: string | undefined;
   declare disabled: boolean;
 
   readonly #internals: ElementInternals;
@@ -105,6 +121,10 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.type = 'button';
     this.name = '';
     this.value = '';
+    this.href = undefined;
+    this.target = undefined;
+    this.rel = undefined;
+    this.download = undefined;
     this.disabled = false;
     this.#internals = this.attachInternals();
   }
@@ -127,22 +147,48 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.requestUpdate();
   }
 
+  /**
+   * Focuses the link or button, except a disabled link: its `tabindex="-1"`
+   * keeps `tabIndex` at -1 but would otherwise still let `delegatesFocus` land
+   * on it.
+   */
+  override focus(options?: FocusOptions): void {
+    if (this.href != null && this.disabled) return;
+    super.focus(options);
+  }
+
   override render() {
-    const disabled = this.disabled || this.#formDisabled;
-    return html`<button
-      part="base"
-      class="variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}"
-      type="button"
-      ?disabled=${disabled}
-      @click=${this.#onClick}
-    >
-      <span part="prefix" ?hidden=${!this.#hasPrefix}
+    const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}`;
+    const content = html`<span part="prefix" ?hidden=${!this.#hasPrefix}
         ><slot name="prefix" @slotchange=${this.#onPrefixChange}></slot
       ></span>
       <span part="label"><slot></slot></span>
       <span part="suffix" ?hidden=${!this.#hasSuffix}
         ><slot name="suffix" @slotchange=${this.#onSuffixChange}></slot
-      ></span>
+      ></span>`;
+    // A fieldset does not disable links, so only `disabled` applies.
+    if (this.href != null) {
+      return html`<a
+        part="base"
+        class=${classes}
+        href=${this.disabled ? nothing : this.href}
+        target=${this.target ?? nothing}
+        rel=${this.rel ?? nothing}
+        download=${this.download ?? nothing}
+        role=${this.disabled ? 'link' : nothing}
+        aria-disabled=${this.disabled ? 'true' : nothing}
+        tabindex=${this.disabled ? '-1' : nothing}
+        >${content}</a
+      >`;
+    }
+    return html`<button
+      part="base"
+      class=${classes}
+      type="button"
+      ?disabled=${this.disabled || this.#formDisabled}
+      @click=${this.#onClick}
+    >
+      ${content}
     </button>`;
   }
 
@@ -158,14 +204,16 @@ export class MbButton extends DelegatesFocus(LitElement) {
 
   readonly #onFormKeydown = (event: KeyboardEvent): void => {
     const form = this.#form;
-    if (form === null || this.type !== 'submit') return;
+    if (form === null || this.type !== 'submit' || this.href != null) return;
     if (event.key !== 'Enter' || event.defaultPrevented || event.isComposing) return;
     const target = event.composedPath()[0];
     if (!(target instanceof HTMLInputElement) || !implicitSubmitTypes.has(target.type) || target.form !== form) return;
     const elements = [...form.elements];
     // A native submit button is the form's default button; the platform handles Enter.
     if (elements.some(isNativeSubmit)) return;
-    const first = elements.find((element) => element instanceof MbButton && element.type === 'submit');
+    const first = elements.find(
+      (element) => element instanceof MbButton && element.type === 'submit' && element.href == null,
+    );
     if (first !== this) return;
     event.preventDefault();
     if (!this.disabled && !this.#formDisabled) this.#submit(form);

@@ -35,11 +35,15 @@ export const buttonStyles = [
       transition-timing-function: var(--mb-motion-easing-standard);
     }
 
-    [part='base']:hover:not(:disabled) {
+    a[part='base'] {
+      text-decoration: none;
+    }
+
+    [part='base']:hover:not(:disabled, [aria-disabled='true']) {
       background: var(--mb-button-bg-hover, var(--_solid-hover));
     }
 
-    [part='base']:active:not(:disabled) {
+    [part='base']:active:not(:disabled, [aria-disabled='true']) {
       transform: scale(var(--mb-button-press-scale, 0.97));
     }
 
@@ -54,19 +58,21 @@ export const buttonStyles = [
       color: var(--mb-button-fg, var(--_text));
     }
 
-    [part='base'].variant-outline:hover:not(:disabled),
-    [part='base'].variant-ghost:hover:not(:disabled) {
+    [part='base'].variant-outline:hover:not(:disabled, [aria-disabled='true']),
+    [part='base'].variant-ghost:hover:not(:disabled, [aria-disabled='true']) {
       background: var(--mb-button-bg-hover, var(--_subtle));
     }
 
-    [part='base']:disabled {
+    [part='base']:disabled,
+    [part='base'][aria-disabled='true'] {
       cursor: not-allowed;
       background: var(--mb-color-bg-disabled);
       color: var(--mb-color-fg-disabled);
       border-color: transparent;
     }
 
-    [part='base'].variant-ghost:disabled {
+    [part='base'].variant-ghost:disabled,
+    [part='base'].variant-ghost[aria-disabled='true'] {
       background: transparent;
     }
 
@@ -98,7 +104,8 @@ export const buttonStyles = [
         border-color: ButtonText;
       }
 
-      [part='base']:disabled {
+      [part='base']:disabled,
+      [part='base'][aria-disabled='true'] {
         color: GrayText;
         border-color: GrayText;
       }
