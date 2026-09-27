@@ -1,14 +1,14 @@
 {% for tag in api %}
 {% set el = elements[tag] %}
 <h2 id="{{ tag }}-api"><code>&lt;{{ tag }}&gt;</code></h2>
-<p>{{ el.description }}</p>
+{{ el.description | markdown | safe }}
 {% if el.attributes and el.attributes.length %}
 <h3>Attributes</h3>
 <table>
   <thead><tr><th>Attribute</th><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
   <tbody>
   {% for a in el.attributes %}
-    <tr><td><code>{{ a.name }}</code></td><td><code>{{ a.fieldName }}</code></td><td><code>{{ a.type.text }}</code></td><td><code>{{ a.default }}</code></td><td>{{ a.description }}</td></tr>
+    <tr><td><code>{{ a.name }}</code></td><td><code>{{ a.fieldName }}</code></td><td><code>{{ a.type.text }}</code></td><td><code>{{ a.default }}</code></td><td>{{ a.description | markdownInline | safe }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
@@ -19,14 +19,14 @@
 <h3>Properties</h3>
 <table>
   <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
-  <tbody>{% for m in fields %}<tr><td><code>{{ m.name }}</code></td><td><code>{{ m.type.text }}</code></td><td>{{ m.description }}</td></tr>{% endfor %}</tbody>
+  <tbody>{% for m in fields %}<tr><td><code>{{ m.name }}</code></td><td><code>{{ m.type.text }}</code></td><td>{{ m.description | markdownInline | safe }}</td></tr>{% endfor %}</tbody>
 </table>
 {% endif %}
 {% if methods.length %}
 <h3>Methods</h3>
 <table>
   <thead><tr><th>Method</th><th>Description</th></tr></thead>
-  <tbody>{% for m in methods %}<tr><td><code>{{ m.name }}({% for p in m.parameters %}{{ p.name }}{% if not loop.last %}, {% endif %}{% endfor %})</code></td><td>{{ m.description }}</td></tr>{% endfor %}</tbody>
+  <tbody>{% for m in methods %}<tr><td><code>{{ m.name }}({% for p in m.parameters %}{{ p.name }}{% if not loop.last %}, {% endif %}{% endfor %})</code></td><td>{{ m.description | markdownInline | safe }}</td></tr>{% endfor %}</tbody>
 </table>
 {% endif %}
 {% for section in [['Events', el.events], ['Slots', el.slots], ['Parts', el.cssParts], ['Custom states', el.cssStates], ['Component tokens', el.cssProperties]] %}
@@ -34,7 +34,7 @@
 <h3>{{ section[0] }}</h3>
 <table>
   <thead><tr><th>Name</th><th>Description</th></tr></thead>
-  <tbody>{% for item in section[1] %}<tr><td><code>{{ item.name or '(default)' }}</code></td><td>{{ item.description }}</td></tr>{% endfor %}</tbody>
+  <tbody>{% for item in section[1] %}<tr><td><code>{{ item.name or '(default)' }}</code></td><td>{{ item.description | markdownInline | safe }}</td></tr>{% endfor %}</tbody>
 </table>
 {% endif %}
 {% endfor %}

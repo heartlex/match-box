@@ -9,5 +9,12 @@ export default function (eleventyConfig) {
     'node_modules/lit-element': 'vendor/lit-element',
     'node_modules/@lit/reactive-element': 'vendor/@lit/reactive-element',
   });
+  // Manifest descriptions are Markdown: render them instead of escaping them.
+  let markdown;
+  eleventyConfig.amendLibrary('md', (library) => {
+    markdown = library;
+  });
+  eleventyConfig.addFilter('markdown', (text = '') => markdown.render(text));
+  eleventyConfig.addFilter('markdownInline', (text = '') => markdown.renderInline(text));
   return { dir: { input: 'site', output: '_site' }, markdownTemplateEngine: 'njk' };
 }
