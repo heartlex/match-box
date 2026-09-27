@@ -5,3 +5,11 @@ export {
   type DisclosureSuiteOptions,
 } from './disclosure.ts';
 export { dialogConformance, type DialogFixture, type DialogSuiteOptions } from './dialog.ts';
+export {
+  listboxConformance,
+  listboxSuiteOptions,
+  type ListboxFixture,
+  type ListboxMountSpec,
+  type ListboxOptionSpec,
+  type ListboxSuiteOptions,
+} from './listbox.ts';
