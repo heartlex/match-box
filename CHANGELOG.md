@@ -3,6 +3,13 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.2.2
+
+### Fixed
+
+- The docs site renders component API descriptions as Markdown, so code
+  spans no longer show as backticks or double-escaped HTML.
+
 ## 0.2.1
 
 ### Fixed
