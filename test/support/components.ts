@@ -39,6 +39,33 @@ export function resolveColor(token: string, within: Element = document.body): st
   return color;
 }
 
+/** The computed `px` length of a custom property, resolved on a probe element. */
+export function resolveLength(token: string, within: Element = document.body): string {
+  const probe = document.createElement('div');
+  probe.style.width = `var(${token})`;
+  within.append(probe);
+  const width = getComputedStyle(probe).width;
+  probe.remove();
+  return width;
+}
+
+const noMotion =
+  ':root, [data-theme] { --mb-motion-duration-fast: 0ms; --mb-motion-duration-medium: 0ms; --mb-motion-duration-slow: 0ms; }';
+
+/** Turns motion on or off for the page. Off, every transition ends at once, so tests see end states. */
+export function setMotion(enabled: boolean): void {
+  const existing = document.querySelector('style[data-no-motion]');
+  if (enabled) {
+    existing?.remove();
+    return;
+  }
+  if (existing) return;
+  const style = document.createElement('style');
+  style.dataset['noMotion'] = '';
+  style.textContent = noMotion;
+  document.head.append(style);
+}
+
 /** Loads src/tokens/tokens.css once. */
 export async function loadTokens(): Promise<void> {
   if (document.querySelector('link[data-tokens]')) return;
@@ -49,4 +76,5 @@ export async function loadTokens(): Promise<void> {
   const loaded = new Promise((resolve) => link.addEventListener('load', resolve));
   document.head.append(link);
   await loaded;
+  setMotion(false);
 }

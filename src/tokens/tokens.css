@@ -7,6 +7,8 @@
  *    solid, solid-hover, on-solid, text, subtle, border.
  * 3. Semantic tokens, dark values: explicit [data-theme="dark"], and the
  *    same values when the system prefers dark and no light theme is forced.
+ * 4. Reduced motion: every motion duration is 0ms, on :root and in every
+ *    themed subtree.
  *
  * Set data-theme on any ancestor to theme a subtree.
  */
@@ -62,6 +64,7 @@
   --mb-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --mb-font-size-1: 0.875rem;
   --mb-font-size-2: 1rem;
+  --mb-font-size-3: 1.125rem;
   --mb-font-weight-bold: 600;
 }
 
@@ -127,6 +130,31 @@
   --mb-font-weight-strong: var(--mb-font-weight-bold);
   --mb-line-height-body: 1.5;
   --mb-focus-ring-width: 2px;
+  --mb-size-sm-height: 1.75rem;
+  --mb-size-sm-padding-inline: var(--mb-space-2);
+  --mb-size-sm-font-size: var(--mb-font-size-1);
+  --mb-size-sm-gap: var(--mb-space-1);
+  --mb-size-sm-icon: 0.875rem;
+  --mb-size-md-height: 2.25rem;
+  --mb-size-md-padding-inline: var(--mb-space-3);
+  --mb-size-md-font-size: var(--mb-font-size-2);
+  --mb-size-md-gap: var(--mb-space-2);
+  --mb-size-md-icon: 1rem;
+  --mb-size-lg-height: 2.75rem;
+  --mb-size-lg-padding-inline: var(--mb-space-4);
+  --mb-size-lg-font-size: var(--mb-font-size-3);
+  --mb-size-lg-gap: var(--mb-space-2);
+  --mb-size-lg-icon: 1.25rem;
+  --mb-dialog-width-sm: 24rem;
+  --mb-dialog-width-md: 32rem;
+  --mb-dialog-width-lg: 48rem;
+  --mb-motion-duration-fast: 120ms;
+  --mb-motion-duration-medium: 200ms;
+  --mb-motion-duration-slow: 300ms;
+  --mb-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --mb-motion-easing-enter: cubic-bezier(0, 0, 0, 1);
+  --mb-motion-easing-exit: cubic-bezier(0.3, 0, 1, 1);
+  --mb-motion-easing-spring: linear(0, 0.058 5%, 0.193 10%, 0.358 15%, 0.523 20%, 0.671 25%, 0.793 30%, 0.886 35%, 0.953 40%, 0.997 45%, 1.023 50%, 1.036 55%, 1.04 60%, 1.038 65%, 1.032 70%, 1.026 75%, 1.019 80%, 1.013 85%, 1.008 90%, 1.005 95%, 1);
 }
 
 /* 3. Semantic tokens, dark. Keep the two blocks below identical. */
@@ -223,5 +251,15 @@
     --mb-color-danger-subtle: var(--mb-red-950);
     --mb-color-danger-border: var(--mb-red-400);
     --mb-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.48);
+  }
+}
+
+/* 4. Reduced motion. [data-theme] too: a themed subtree redeclares the durations. */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme] {
+    --mb-motion-duration-fast: 0ms;
+    --mb-motion-duration-medium: 0ms;
+    --mb-motion-duration-slow: 0ms;
   }
 }
