@@ -102,7 +102,12 @@ height, as `min-block-size` so wrapped text still grows. At `md`:
 
 - `mb-button`: unchanged, `2.25rem`.
 - `mb-option`: from `2rem` to `2.25rem`.
-- `mb-disclosure` trigger: from `2.5rem` to `2.25rem`.
+- `mb-disclosure` trigger: from `2.5rem` to `2.25rem`; its default
+  vertical padding drops from `var(--mb-space-stack-md)` to
+  `var(--mb-space-stack-sm)` so the height can shrink.
+- `mb-option` and `mb-disclosure` (trigger and panel): horizontal padding
+  from `0.5rem` to `0.75rem`, the scale's `md` value.
+- `mb-disclosure` trigger: gap from `0.75rem` to `0.5rem`.
 
 Listed under **Changed** in `CHANGELOG.md`, as allowed in `0.x`.
 
@@ -118,7 +123,7 @@ Listed under **Changed** in `CHANGELOG.md`, as allowed in `0.x`.
 | `--mb-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
 | `--mb-motion-easing-enter` | `cubic-bezier(0, 0, 0, 1)` |
 | `--mb-motion-easing-exit` | `cubic-bezier(0.3, 0, 1, 1)` |
-| `--mb-motion-easing-spring` | a `linear()` curve sampled from a spring that overshoots by 4% and settles without a second overshoot; the plan lists its stops |
+| `--mb-motion-easing-spring` | `linear(0, 0.058 5%, 0.193 10%, 0.358 15%, 0.523 20%, 0.671 25%, 0.793 30%, 0.886 35%, 0.953 40%, 0.997 45%, 1.023 50%, 1.036 55%, 1.04 60%, 1.038 65%, 1.032 70%, 1.026 75%, 1.019 80%, 1.013 85%, 1.008 90%, 1.005 95%, 1)`, sampled from a damped spring (damping ratio 0.716) that overshoots by 4% |
 
 - `tokens.css` sets every duration to `0ms` under
   `@media (prefers-reduced-motion: reduce)`. A theme turns motion off the
@@ -150,8 +155,14 @@ and cannot animate. The panel becomes a grid:
   accessibility tree in all three engines, as `hidden` did. It applies at
   the end of the closing transition.
 - The template stops writing `hidden` on the panel. The core never wrote
-  it (`src/core/dom/disclosure.ts`), so the core, the controllers, and the
-  headless patterns do not change. The `panel` part keeps its name.
+  it (`src/core/dom/disclosure.ts`), so the core behaviors, the
+  controllers, and the headless patterns do not change. The `panel` part
+  keeps its name.
+- The disclosure and accordion conformance suites in `core/testing` check
+  `panel.checkVisibility({ visibilityProperty: true })` instead of
+  `checkVisibility()`, which ignores `visibility: hidden`. A panel hidden
+  with `hidden` or `display: none` still passes, so the change is backward
+  compatible for consumers of the suites.
 
 ### Listbox entry animation
 
