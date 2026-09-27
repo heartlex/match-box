@@ -11,6 +11,8 @@ const entries = {
   'match-box/core/a11y': 'dist/core/a11y/index.js',
   'match-box/core/testing': 'dist/core/testing/index.js',
   'match-box/lit': 'dist/lit/index.js',
+  'match-box/components': 'dist/components/index.js',
+  'match-box/components/define/all.js': 'dist/components/define/all.js',
   'match-box/tokens.css': 'dist/tokens/tokens.css',
 };
 

@@ -8,6 +8,7 @@ describe('entry points', () => {
     '../../src/core/dom/index.ts',
     '../../src/core/a11y/index.ts',
     '../../src/lit/index.ts',
+    '../../src/components/index.ts',
   ])('%s imports without touching the DOM', async (path) => {
     expect(typeof globalThis.document).toBe('undefined');
     const module = (await import(path)) as object;
