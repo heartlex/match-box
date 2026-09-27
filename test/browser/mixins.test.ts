@@ -39,6 +39,13 @@ describe('FormAssociated', () => {
     expect(new FormData(form).get('city')).to.equal('Oslo');
   });
 
+  it('submits under a name set as a property', async () => {
+    const { form, field } = await mountForm('<test-field></test-field>');
+    field.name = 'city';
+    await typeInto(field, 'Oslo');
+    expect(new FormData(form).get('city')).to.equal('Oslo');
+  });
+
   it('reports valueMissing when required and empty', async () => {
     const { field } = await mountForm('<test-field name="city" required></test-field>');
     expect(field.validity.valueMissing).to.equal(true);
@@ -61,10 +68,19 @@ describe('FormAssociated', () => {
     expect(field.validationMessage).to.equal('Too short.');
   });
 
-  it('sets user-invalid only after the user leaves the field', async () => {
+  it('does not set user-invalid when the user only tabs through', async () => {
     const { field } = await mountForm('<test-field required></test-field><button>after</button>');
-    expect(field.matches(':state(user-invalid)')).to.equal(false);
     field.focus();
+    (field.nextElementSibling as HTMLElement).focus();
+    expect(field.matches(':state(user-invalid)')).to.equal(false);
+  });
+
+  it('sets user-invalid once the user edits the field and leaves it', async () => {
+    const { field } = await mountForm('<test-field required></test-field><button>after</button>');
+    await typeInto(field, 'x');
+    await sendKeys({ press: 'Backspace' });
+    await field.updateComplete;
+    expect(field.matches(':state(user-invalid)')).to.equal(false);
     (field.nextElementSibling as HTMLElement).focus();
     expect(field.matches(':state(user-invalid)')).to.equal(true);
   });

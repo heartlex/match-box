@@ -146,7 +146,7 @@ describe('ListboxState setItems', () => {
     expect(state.activeIndex).toBe(0);
   });
 
-  it('falls back to the first selected, then first enabled option', () => {
+  it('falls back to the option now at the old position, clamped to the end', () => {
     const state = listbox();
     state.moveTo(3);
     state.selectActive();
@@ -157,18 +157,26 @@ describe('ListboxState setItems', () => {
     expect(state.activeItem?.key).toBe('kiwi');
   });
 
-  it('drops selected keys that are gone', () => {
+  it('keeps selected keys while their options are filtered out', () => {
     const state = listbox({ multiple: true });
     state.setSelected(['apple', 'date']);
     state.setItems(fruit.slice(0, 2));
-    expect([...state.selected]).toEqual(['apple']);
+    state.setItems(fruit);
+    expect([...state.selected]).toEqual(['apple', 'date']);
+  });
+
+  it('falls back to the nearest enabled option when the active one is removed', () => {
+    const state = listbox();
+    state.moveTo(3);
+    state.setItems(fruit.filter((item) => item.key !== 'date'));
+    expect(state.activeItem?.key).toBe('blueberry');
   });
 
   it('moves off an option that became disabled', () => {
     const state = listbox();
     state.moveTo(1);
     state.setItems(fruit.map((item) => (item.key === 'banana' ? { ...item, disabled: true } : item)));
-    expect(state.activeItem?.key).toBe('apple');
+    expect(state.activeItem?.key).toBe('date');
   });
 });
 

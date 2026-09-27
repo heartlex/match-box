@@ -33,7 +33,8 @@ function isOutside(dialog: HTMLDialogElement, event: MouseEvent): boolean {
  * Writes on the dialog: `ariaLabelledByElements` when a title is given.
  * `state.show()` calls `showModal()`; `state.close(value)` calls
  * `close(value)`; a native close (Escape, `<form method="dialog">`) updates
- * the state with the dialog's `returnValue`.
+ * the state with the dialog's `returnValue`, and a native open updates it
+ * too. `sync()` rewrites references only; it never opens or closes.
  */
 export function attachDialog(
   elements: DialogElements,
@@ -45,11 +46,30 @@ export function attachDialog(
   const controller = new AbortController();
   const { signal } = controller;
 
-  const render = (): void => {
+  const writeReferences = (): void => {
     writer.writeReferences(dialog, { ariaLabelledByElements: title ? [title] : null });
-    if (state.open && !dialog.open) dialog.showModal();
-    else if (!state.open && dialog.open) dialog.close(state.returnValue);
   };
+
+  const render = (): void => {
+    writeReferences();
+    if (state.open && !dialog.open) {
+      dialog.returnValue = '';
+      dialog.showModal();
+    } else if (!state.open && dialog.open) {
+      dialog.close(state.returnValue);
+    }
+  };
+
+  // Adopt a dialog opened natively (showModal(), a command invoker) into the state.
+  dialog.addEventListener(
+    'toggle',
+    (event) => {
+      if (event.newState !== 'open' || state.open) return;
+      dialog.returnValue = '';
+      state.show();
+    },
+    { signal },
+  );
 
   // The close event is queued, so the dialog may have reopened before it runs.
   dialog.addEventListener(
@@ -84,7 +104,7 @@ export function attachDialog(
 
   return {
     state,
-    sync: render,
+    sync: writeReferences,
     dispose() {
       controller.abort();
       unsubscribe();

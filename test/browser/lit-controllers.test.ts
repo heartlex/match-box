@@ -1,10 +1,12 @@
 import { expect } from 'chai';
+import { LitElement, html } from 'lit';
 import {
   dialogConformance,
   disclosureConformance,
   listboxConformance,
   type ListboxMountSpec,
 } from '../../src/core/testing/index.ts';
+import { DialogController } from '../../src/lit/index.ts';
 import { TestDialog, TestDisclosure, TestListbox } from '../skin/lit.ts';
 import { expectNoAxeViolations } from '../support/axe.ts';
 import { driver } from '../support/driver.ts';
@@ -69,6 +71,22 @@ listboxConformance({
   },
 });
 
+class TestLateDialog extends LitElement {
+  static override properties = { ready: { type: Boolean } };
+  declare ready: boolean;
+  readonly dialog = new DialogController(this, () => ({ dialog: this.renderRoot.querySelector('dialog') }));
+
+  constructor() {
+    super();
+    this.ready = false;
+  }
+
+  override render() {
+    return this.ready ? html`<dialog><p>Loaded</p></dialog>` : html`<p>Loading</p>`;
+  }
+}
+customElements.define('test-late-dialog', TestLateDialog);
+
 async function mountListbox(): Promise<TestListbox> {
   const element = new TestListbox();
   element.options = [{ label: 'Apple' }, { label: 'Banana' }];
@@ -124,5 +142,26 @@ describe('lit adapter', () => {
     document.body.append(element);
     await element.updateComplete;
     expect(optionsOf(element)[1]?.getAttribute('aria-selected')).to.equal('true');
+  });
+
+  it('attaches once a conditionally rendered element appears, and rebinds when it is replaced', async () => {
+    const element = new TestLateDialog();
+    document.body.append(element);
+    await element.updateComplete;
+    element.ready = true;
+    await element.updateComplete;
+    const first = element.renderRoot.querySelector('dialog');
+    element.dialog.state.show();
+    expect(first?.open).to.equal(true);
+    element.dialog.state.close();
+    element.ready = false;
+    await element.updateComplete;
+    element.ready = true;
+    await element.updateComplete;
+    const second = element.renderRoot.querySelector('dialog');
+    expect(second).not.to.equal(first);
+    element.dialog.state.show();
+    expect(second?.open).to.equal(true);
+    element.dialog.state.close();
   });
 });

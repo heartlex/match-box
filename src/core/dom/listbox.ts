@@ -1,3 +1,4 @@
+import { deepActiveElement } from '../a11y/active-element.ts';
 import { ListboxState, type ListboxItem, type ListboxStateOptions } from '../state/listbox.ts';
 import { AttributeWriter } from './attribute-writer.ts';
 import type { Behavior } from './behavior.ts';
@@ -26,13 +27,16 @@ export interface AttachListboxOptions extends ListboxStateOptions {
 }
 
 /**
- * Default option description: key from `data-value` (else the index),
- * label from the text content, disabled from `data-disabled`.
+ * Default option description: label from the text content, key from
+ * `data-value` (else the label), disabled from `data-disabled`. Options with
+ * the same label and no `data-value` share a key; set `data-value` or pass
+ * `describeItem` when labels repeat.
  */
-export function describeOption(element: HTMLElement, index: number): ListboxItem {
+export function describeOption(element: HTMLElement): ListboxItem {
+  const label = element.textContent?.trim() ?? '';
   return {
-    key: element.dataset['value'] ?? String(index),
-    label: element.textContent?.trim() ?? '',
+    key: element.dataset['value'] ?? label,
+    label,
     disabled: element.hasAttribute('data-disabled'),
   };
 }
@@ -58,6 +62,8 @@ export function attachListbox(
   const controller = new AbortController();
   const { signal } = controller;
   let current: readonly HTMLElement[] = [];
+  // The option that last received focus, to recover focus if it is removed.
+  let focused: HTMLElement | undefined;
 
   const render = (): void => {
     writer.retain([root, ...current]);
@@ -78,14 +84,19 @@ export function attachListbox(
     });
   };
 
+  const focusActive = (): void => {
+    current[state.activeIndex]?.focus();
+  };
+
   const sync = (): void => {
+    const active = deepActiveElement();
+    const lostFocus = focused !== undefined && !focused.isConnected && (active === null || active === document.body);
+    const onOption = active instanceof HTMLElement && current.includes(active);
     current = [...items()];
     state.setItems(current.map(describe));
     render();
-  };
-
-  const focusActive = (): void => {
-    current[state.activeIndex]?.focus();
+    // Move focus with the active option when the focused one was removed or disabled.
+    if ((lostFocus || onOption) && deepActiveElement() !== current[state.activeIndex]) focusActive();
   };
 
   const select = (): void => {
@@ -130,6 +141,14 @@ export function attachListbox(
       if (!handleKey(event.key)) return;
       event.preventDefault();
       focusActive();
+    },
+    { signal },
+  );
+
+  root.addEventListener(
+    'focusin',
+    (event) => {
+      focused = current[indexOf(event)];
     },
     { signal },
   );

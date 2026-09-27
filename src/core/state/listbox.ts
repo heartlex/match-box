@@ -80,7 +80,7 @@ export class ListboxState extends Store {
     return this.#items[this.#activeIndex];
   }
 
-  /** Keys of the selected options. */
+  /** Keys of the selected options. May include keys whose options are currently absent. */
   get selected(): ReadonlySet<string> {
     return this.#selected;
   }
@@ -92,18 +92,22 @@ export class ListboxState extends Store {
 
   /**
    * Replaces the options. Keeps the active option if its key is still present
-   * and enabled; otherwise activates the first selected enabled option, then
-   * the first enabled one. Drops selected keys that are no longer present.
-   * Does nothing when the new list equals the current one.
+   * and enabled; otherwise activates the nearest enabled option at its old
+   * position, so keyboard users keep their place. With no previous active
+   * option, activates the first selected enabled option, then the first
+   * enabled one. Selected keys are kept even when their options are absent,
+   * so filtering never loses a selection. Does nothing when the new list
+   * equals the current one.
    */
   setItems(items: readonly ListboxItem[]): void {
     if (sameItems(this.#items, items)) return;
+    const previousIndex = this.#activeIndex;
     const activeKey = this.activeItem?.key;
     this.#items = [...items];
-    const keys = new Set(items.map((item) => item.key));
-    this.#selected = new Set([...this.#selected].filter((key) => keys.has(key)));
     const kept = items.findIndex((item) => item.key === activeKey && !item.disabled);
-    this.#activeIndex = kept !== -1 ? kept : this.#initialIndex();
+    if (kept !== -1) this.#activeIndex = kept;
+    else if (previousIndex !== -1) this.#activeIndex = this.#nearestEnabled(previousIndex);
+    else this.#activeIndex = this.#initialIndex();
     this.notify();
   }
 
@@ -191,6 +195,12 @@ export class ListboxState extends Store {
   #initialIndex(): number {
     const selected = this.#items.findIndex((item) => this.#selected.has(item.key) && !item.disabled);
     return selected !== -1 ? selected : this.#items.findIndex((item) => !item.disabled);
+  }
+
+  #nearestEnabled(index: number): number {
+    const from = Math.min(index, this.#items.length - 1);
+    const after = this.#findEnabled(from, 1);
+    return after !== -1 ? after : this.#findEnabled(from, -1);
   }
 
   #findEnabled(from: number, step: 1 | -1): number {

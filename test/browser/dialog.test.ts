@@ -40,4 +40,34 @@ describe('attachDialog', () => {
     expect(dialog.open).to.equal(true);
     behavior.state.close();
   });
+
+  it('a dismissal after a confirm does not report the old return value', async () => {
+    const dialog = document.createElement('dialog');
+    dialog.innerHTML = '<p>Body</p>';
+    document.body.append(dialog);
+    const behavior = attachDialog({ dialog });
+    behavior.state.show();
+    behavior.state.close('confirm');
+    behavior.state.show();
+    await sendMouse({ type: 'click', position: [2, 2] });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(behavior.state.open).to.equal(false);
+    expect(behavior.state.returnValue).to.equal('');
+    expect(dialog.returnValue).to.equal('');
+  });
+
+  it('adopts a dialog opened natively, so sync keeps it open and outside click closes it', async () => {
+    const dialog = document.createElement('dialog');
+    dialog.innerHTML = '<p>Body</p>';
+    document.body.append(dialog);
+    const behavior = attachDialog({ dialog });
+    dialog.showModal();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(behavior.state.open).to.equal(true);
+    behavior.sync();
+    expect(dialog.open).to.equal(true);
+    await sendMouse({ type: 'click', position: [2, 2] });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(dialog.open).to.equal(false);
+  });
 });

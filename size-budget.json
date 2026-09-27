@@ -1,9 +1,9 @@
 {
-  "match-box/core": 3500,
+  "match-box/core": 3700,
   "match-box/core/state": 1300,
-  "match-box/core/dom": 2800,
+  "match-box/core/dom": 3000,
   "match-box/core/a11y": 1000,
   "match-box/core/testing": 2100,
-  "match-box/lit": 3600,
+  "match-box/lit": 4000,
   "match-box/tokens.css": 1000
 }

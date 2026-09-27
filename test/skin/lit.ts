@@ -6,8 +6,8 @@ import type { ListboxOptionSpec } from '../../src/core/testing/index.ts';
 
 export class TestDisclosure extends LitElement {
   readonly disclosure = new DisclosureController(this, () => ({
-    trigger: this.renderRoot.querySelector('button') as HTMLElement,
-    panel: this.renderRoot.querySelector('div') as HTMLElement,
+    trigger: this.renderRoot.querySelector('button'),
+    panel: this.renderRoot.querySelector('div'),
   }));
 
   override render() {
@@ -19,8 +19,8 @@ customElements.define('test-disclosure', TestDisclosure);
 
 export class TestDialog extends LitElement {
   readonly dialog = new DialogController(this, () => ({
-    dialog: this.renderRoot.querySelector('dialog') as HTMLDialogElement,
-    title: this.renderRoot.querySelector('h2') as HTMLElement,
+    dialog: this.renderRoot.querySelector('dialog'),
+    title: this.renderRoot.querySelector('h2'),
   }));
 
   override render() {
@@ -54,8 +54,8 @@ export class TestListbox extends LitElement {
     this.listbox ??= new ListboxController(
       this,
       () => ({
-        root: this.renderRoot.querySelector('[part=listbox]') as HTMLElement,
-        label: this.renderRoot.querySelector('[part=label]') as HTMLElement,
+        root: this.renderRoot.querySelector('[part=listbox]'),
+        label: this.renderRoot.querySelector('[part=label]'),
         items: () => [...this.renderRoot.querySelectorAll<HTMLElement>('[part=option]')],
       }),
       { multiple: this.multiple },

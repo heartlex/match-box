@@ -46,8 +46,8 @@ function setState(states: CustomStateSet, name: string, on: boolean): void {
  * Makes a Lit element a form control through `ElementInternals`.
  *
  * Custom states: `:state(invalid)` whenever a validator fails;
- * `:state(user-invalid)` once the user has left the control or a form
- * submission reported it, until the next reset. Use `:disabled` for the
+ * `:state(user-invalid)` once the user has changed the value and left the
+ * control, or a form submission reported it, until the next reset. Use `:disabled` for the
  * disabled state; the platform matches it on form-associated elements.
  */
 export function FormAssociated<T extends Constructor<LitElement>>(
@@ -58,7 +58,7 @@ export function FormAssociated<T extends Constructor<LitElement>>(
 
     static properties = {
       value: { type: String },
-      name: { type: String },
+      name: { type: String, reflect: true },
       disabled: { type: Boolean, reflect: true },
       required: { type: Boolean, reflect: true },
       validators: { attribute: false },
@@ -72,6 +72,7 @@ export function FormAssociated<T extends Constructor<LitElement>>(
 
     #internals: ElementInternals | undefined;
     #interacted = false;
+    #edited = false;
 
     // Mixin constructors must accept any arguments.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,8 +84,9 @@ export function FormAssociated<T extends Constructor<LitElement>>(
       this.disabled = false;
       this.required = false;
       this.validators = [];
+      // Like :user-invalid, leaving the control counts only after the user changed it.
       this.addEventListener('focusout', () => {
-        this.#markInteracted();
+        if (this.#edited) this.#markInteracted();
       });
       this.addEventListener('invalid', () => {
         this.#markInteracted();
@@ -117,7 +119,10 @@ export function FormAssociated<T extends Constructor<LitElement>>(
 
     protected override updated(changed: PropertyValues): void {
       super.updated(changed);
-      if (changed.has('value')) this.internals.setFormValue(this.value);
+      if (changed.has('value')) {
+        this.internals.setFormValue(this.value);
+        if (this.matches(':focus-within')) this.#edited = true;
+      }
       if (changed.has('value') || changed.has('required') || changed.has('validators')) {
         this.#validate();
       }
@@ -126,6 +131,7 @@ export function FormAssociated<T extends Constructor<LitElement>>(
     formResetCallback(): void {
       this.value = this.getAttribute('value') ?? '';
       this.#interacted = false;
+      this.#edited = false;
       this.#syncStates();
     }
 

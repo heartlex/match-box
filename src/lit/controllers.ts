@@ -9,13 +9,21 @@ import { attachListbox, type AttachListboxOptions, type ListboxElements } from '
 import { DialogState } from '../core/state/dialog.ts';
 import { DisclosureState, type DisclosureStateOptions } from '../core/state/disclosure.ts';
 import { ListboxState } from '../core/state/listbox.ts';
-import { BehaviorController } from './behavior-controller.ts';
+import { BehaviorController, type Pending } from './behavior-controller.ts';
 
 /** Lit controller for {@link attachListbox}. */
 export class ListboxController extends BehaviorController<ListboxState, ListboxElements> {
-  constructor(host: ReactiveControllerHost, elements: () => ListboxElements, options: AttachListboxOptions = {}) {
-    super(host, options.state ?? new ListboxState(options), elements, (els, state) =>
-      attachListbox(els, { ...options, state }),
+  constructor(
+    host: ReactiveControllerHost,
+    elements: () => Pending<ListboxElements>,
+    options: AttachListboxOptions = {},
+  ) {
+    super(
+      host,
+      options.state ?? new ListboxState(options),
+      elements,
+      (els, state) => attachListbox(els, { ...options, state }),
+      ['root'],
     );
   }
 }
@@ -24,20 +32,32 @@ export class ListboxController extends BehaviorController<ListboxState, ListboxE
 export class DisclosureController extends BehaviorController<DisclosureState, DisclosureElements> {
   constructor(
     host: ReactiveControllerHost,
-    elements: () => DisclosureElements,
+    elements: () => Pending<DisclosureElements>,
     options: AttachDisclosureOptions & DisclosureStateOptions = {},
   ) {
-    super(host, options.state ?? new DisclosureState(options), elements, (els, state) =>
-      attachDisclosure(els, { state }),
+    super(
+      host,
+      options.state ?? new DisclosureState(options),
+      elements,
+      (els, state) => attachDisclosure(els, { state }),
+      ['trigger', 'panel'],
     );
   }
 }
 
 /** Lit controller for {@link attachDialog}. */
 export class DialogController extends BehaviorController<DialogState, DialogElements> {
-  constructor(host: ReactiveControllerHost, elements: () => DialogElements, options: AttachDialogOptions = {}) {
-    super(host, options.state ?? new DialogState(), elements, (els, state) =>
-      attachDialog(els, { ...options, state }),
+  constructor(
+    host: ReactiveControllerHost,
+    elements: () => Pending<DialogElements>,
+    options: AttachDialogOptions = {},
+  ) {
+    super(
+      host,
+      options.state ?? new DialogState(),
+      elements,
+      (els, state) => attachDialog(els, { ...options, state }),
+      ['dialog'],
     );
   }
 }
