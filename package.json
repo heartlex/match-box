@@ -1,0 +1,83 @@
+{
+  "name": "match-box",
+  "version": "0.0.0",
+  "description": "Headless, framework-free accessible behaviors with a Lit adapter and design tokens.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
+    "./core/state": {
+      "types": "./dist/core/state/index.d.ts",
+      "default": "./dist/core/state/index.js"
+    },
+    "./core/dom": {
+      "types": "./dist/core/dom/index.d.ts",
+      "default": "./dist/core/dom/index.js"
+    },
+    "./core/a11y": {
+      "types": "./dist/core/a11y/index.d.ts",
+      "default": "./dist/core/a11y/index.js"
+    },
+    "./core/testing": {
+      "types": "./dist/core/testing/index.d.ts",
+      "default": "./dist/core/testing/index.js"
+    },
+    "./lit": {
+      "types": "./dist/lit/index.d.ts",
+      "default": "./dist/lit/index.js"
+    },
+    "./tokens.css": "./dist/tokens/tokens.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node --input-type=module -e \"import { cpSync } from 'node:fs'; cpSync('src/tokens', 'dist/tokens', { recursive: true });\"",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:unit": "vitest run",
+    "test:browser": "npm run build && web-test-runner",
+    "test": "npm run test:unit && npm run test:browser",
+    "size": "node scripts/check-size.js",
+    "docs": "npm run build && eleventy && typedoc"
+  },
+  "peerDependencies": {
+    "chai": "^6.0.0",
+    "lit": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "lit": {
+      "optional": true
+    },
+    "chai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "@eslint/js": "^10.0.1",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@web/dev-server-esbuild": "^2.0.0",
+    "@web/test-runner": "^1.0.0",
+    "@web/test-runner-commands": "^1.0.1",
+    "@web/test-runner-playwright": "^1.0.0",
+    "axe-core": "^4.13.0",
+    "chai": "^6.2.2",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
+    "lit": "^3.3.3",
+    "playwright": "^1.63.0",
+    "typedoc": "^0.28.20",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
+  }
+}
