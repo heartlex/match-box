@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { DelegatesFocus } from '../../lit/delegates-focus.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
+import { sizeName, type Size } from '../shared/size.ts';
 import { buttonStyles } from './button.styles.ts';
 
 export type ButtonVariant = 'default' | 'outline' | 'ghost';
@@ -59,6 +60,9 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * @cssprop --mb-button-font-family - Font family.
  * @cssprop --mb-button-font-size - Font size.
  * @cssprop --mb-button-font-weight - Font weight.
+ * @cssprop --mb-button-icon-size - Size of slotted prefix and suffix icons.
+ * @cssprop --mb-button-duration - Duration of color and press transitions.
+ * @cssprop --mb-button-press-scale - Scale while pressed.
  */
 export class MbButton extends DelegatesFocus(LitElement) {
   static formAssociated = true;
@@ -66,6 +70,7 @@ export class MbButton extends DelegatesFocus(LitElement) {
   static override properties = {
     variant: {},
     color: {},
+    size: {},
     type: {},
     name: {},
     value: {},
@@ -76,6 +81,8 @@ export class MbButton extends DelegatesFocus(LitElement) {
   declare variant: ButtonVariant;
   /** The color role. */
   declare color: ColorRole;
+  /** Height, padding, font size, and icon size, from the size scale. Unknown values render as `md`. */
+  declare size: Size;
   /** What the button does in a form. */
   declare type: ButtonType;
   /** The name submitted with `value`, as on a native submit button. */
@@ -94,6 +101,7 @@ export class MbButton extends DelegatesFocus(LitElement) {
     super();
     this.variant = 'default';
     this.color = 'neutral';
+    this.size = 'md';
     this.type = 'button';
     this.name = '';
     this.value = '';
@@ -123,7 +131,7 @@ export class MbButton extends DelegatesFocus(LitElement) {
     const disabled = this.disabled || this.#formDisabled;
     return html`<button
       part="base"
-      class="variant-${this.variant} color-${colorRole(this.color)}"
+      class="variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}"
       type="button"
       ?disabled=${disabled}
       @click=${this.#onClick}

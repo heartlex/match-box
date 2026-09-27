@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { sendKeys } from '@web/test-runner-commands';
+import { emulateMedia, sendKeys, sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/button.ts';
 import type { MbButton } from '../../../src/components/index.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
 async function formWith(markup: string): Promise<{ form: HTMLFormElement; button: MbButton; submits: number[] }> {
@@ -149,5 +149,74 @@ describe('mb-button', () => {
     await sendKeys({ press: 'Enter' });
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(submits).to.have.length(0);
+  });
+
+  it('size sets height, padding, font size, and gap from the scale, md by default', async () => {
+    const { container } = await mount(
+      '<mb-button size="sm">A</mb-button><mb-button>B</mb-button><mb-button size="lg">C</mb-button><mb-button size="huge">D</mb-button>',
+    );
+    const [sm, md, lg, unknown] = [...container.querySelectorAll('mb-button')].map((button) =>
+      getComputedStyle(part(button, 'base')),
+    ) as [CSSStyleDeclaration, CSSStyleDeclaration, CSSStyleDeclaration, CSSStyleDeclaration];
+    for (const [style, size] of [
+      [sm, 'sm'],
+      [md, 'md'],
+      [lg, 'lg'],
+      [unknown, 'md'],
+    ] as const) {
+      expect(style.minBlockSize, `${size} height`).to.equal(resolveLength(`--mb-size-${size}-height`));
+      expect(style.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
+      expect(style.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
+      expect(style.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
+    }
+    expect(container.querySelectorAll('mb-button')[1]?.hasAttribute('size'), 'not reflected').to.equal(false);
+    expect(md.minBlockSize).to.equal('36px');
+  });
+
+  it('a component token beats the size scale', async () => {
+    const { element } = await mount<MbButton>('<mb-button size="lg" style="--mb-button-height: 50px">Go</mb-button>');
+    expect(getComputedStyle(part(element, 'base')).minBlockSize).to.equal('50px');
+  });
+
+  it('sizes slotted prefix and suffix icons from the scale', async () => {
+    const svg = '<svg slot="prefix" viewBox="0 0 16 16"></svg>';
+    const { element } = await mount<MbButton>(`<mb-button size="lg">${svg}Go</mb-button>`);
+    const icon = element.querySelector('svg') as SVGElement;
+    expect(getComputedStyle(icon).width).to.equal(resolveLength('--mb-size-lg-icon'));
+  });
+
+  describe('motion', () => {
+    before(() => setMotion(true));
+    after(() => setMotion(false));
+    afterEach(() => emulateMedia({ reducedMotion: 'no-preference' }));
+
+    it('transitions colors and transform with the fast duration, or --mb-button-duration', async () => {
+      const { container } = await mount(
+        '<mb-button>Go</mb-button><div style="--mb-button-duration: 123ms"><mb-button>Go</mb-button></div>',
+      );
+      const [plain, tuned] = [...container.querySelectorAll('mb-button')].map((button) =>
+        getComputedStyle(part(button, 'base')),
+      ) as [CSSStyleDeclaration, CSSStyleDeclaration];
+      expect(plain.transitionProperty).to.equal('background-color, color, border-color, transform');
+      expect(plain.transitionDuration.split(', ')[0]).to.equal('0.12s');
+      expect(tuned.transitionDuration.split(', ')[0]).to.equal('0.123s');
+    });
+
+    it('has no transition duration under reduced motion', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+      const { element } = await mount<MbButton>('<mb-button>Go</mb-button>');
+      expect(getComputedStyle(part(element, 'base')).transitionDuration.split(', ')[0]).to.equal('0s');
+    });
+  });
+
+  it('scales down while pressed, by --mb-button-press-scale', async () => {
+    const { element } = await mount<MbButton>('<mb-button style="--mb-button-press-scale: 0.5">Go</mb-button>');
+    const base = part(element, 'base');
+    const box = base.getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(box.left + box.width / 2), Math.round(box.top + box.height / 2)] });
+    await sendMouse({ type: 'down' });
+    const pressed = getComputedStyle(base).transform;
+    await sendMouse({ type: 'up' });
+    expect(pressed).to.equal('matrix(0.5, 0, 0, 0.5, 0, 0)');
   });
 });
