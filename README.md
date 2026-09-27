@@ -4,10 +4,11 @@ A design system built on Lit whose accessible behaviors do not depend on Lit.
 The headless core works from plain HTML, any framework, or Lit; Lit is the
 first adapter, not the foundation.
 
-v1 ships foundations only: design tokens, the headless core (listbox,
-disclosure, and native dialog behaviors), the Lit adapter (controllers plus
-`FormAssociated` and `DelegatesFocus` mixins), and conformance test suites.
-Styled components arrive in v2.
+It ships design tokens with five color roles, the headless core (listbox,
+disclosure, accordion, and native dialog behaviors), the Lit adapter
+(controllers plus `FormAssociated` and `DelegatesFocus` mixins),
+conformance test suites, and styled components: `mb-button`,
+`mb-disclosure`, `mb-accordion`, `mb-dialog`, `mb-listbox`.
 
 ## Install
 
@@ -20,7 +21,24 @@ npm install match-box
 | `match-box/core` | State classes, `attachX` DOM behaviors, accessibility utilities |
 | `match-box/core/testing` | Conformance suites for Mocha and Chai (needs `chai`) |
 | `match-box/lit` | Reactive controllers and mixins (needs `lit`) |
+| `match-box/components` | Component classes, unregistered (needs `lit`) |
+| `match-box/components/define/<name>.js` | Registers `<mb-name>` (and what it needs); `all.js` registers everything |
 | `match-box/tokens.css` | Light and dark design tokens |
+
+```html
+<script type="module">
+  import 'match-box/components/define/all.js';
+</script>
+<link rel="stylesheet" href="node_modules/match-box/dist/tokens/tokens.css" />
+
+<mb-listbox label="Fruit" name="fruit">
+  <mb-option>Apple</mb-option>
+  <mb-option selected>Banana</mb-option>
+</mb-listbox>
+<mb-button color="primary" variant="outline">Save</mb-button>
+```
+
+Or use the headless core directly:
 
 ```js
 import { attachListbox } from 'match-box/core';

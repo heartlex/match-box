@@ -1,0 +1,45 @@
+---
+layout: layout.njk
+title: Dialog
+api: [mb-dialog]
+---
+
+# Dialog
+
+```js
+import 'match-box/components/define/dialog.js';
+```
+
+<div class="demo">
+  <mb-button color="danger" id="open-dialog">Delete project</mb-button>
+  <mb-dialog label="Delete project?" color="danger" id="demo-dialog">
+    <p>This removes the project and its history.</p>
+    <form method="dialog" slot="footer">
+      <mb-button type="submit" variant="ghost">Cancel</mb-button>
+      <button value="delete">Delete</button>
+    </form>
+  </mb-dialog>
+  <p>Returned: <output id="dialog-result"></output></p>
+</div>
+<script type="module">
+  const dialog = document.getElementById('demo-dialog');
+  document.getElementById('open-dialog').addEventListener('click', () => dialog.show());
+  dialog.addEventListener('close', () => {
+    document.getElementById('dialog-result').value = dialog.returnValue || '(dismissed)';
+  });
+</script>
+
+```html
+<mb-dialog label="Delete project?" color="danger">
+  <p>This removes the project and its history.</p>
+  <form method="dialog" slot="footer">
+    <button value="delete">Delete</button>
+  </form>
+</mb-dialog>
+```
+
+A `<form method="dialog">` inside closes the dialog with the submit
+button's `value` as `returnValue`. A dismissal (Escape, outside click, the
+close button) leaves `returnValue` empty.
+
+{% include "api.njk" %}
