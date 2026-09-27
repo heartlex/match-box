@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }} · match-box</title>
+    <link rel="stylesheet" href="/pkg/tokens/tokens.css" />
+    <script type="importmap">
+      { "imports": { "match-box/core": "/pkg/core/index.js" } }
+    </script>
+    <style>
+      body {
+        margin: 0 auto;
+        max-width: 48rem;
+        padding: var(--mb-space-stack-lg) var(--mb-space-inline-lg);
+        font: var(--mb-font-size-body) / var(--mb-line-height-body) var(--mb-font-family-body);
+        color: var(--mb-color-fg-default);
+        background: var(--mb-color-bg-canvas);
+      }
+      .demo {
+        padding: var(--mb-space-stack-lg) var(--mb-space-inline-lg);
+        background: var(--mb-color-bg-surface);
+        border: 1px solid var(--mb-color-border-default);
+        border-radius: var(--mb-radius-surface);
+      }
+      [role='option'][aria-selected='true'] {
+        background: var(--mb-color-bg-accent);
+        color: var(--mb-color-fg-on-accent);
+      }
+      [role='option'][aria-disabled='true'] {
+        color: var(--mb-color-fg-disabled);
+      }
+      :focus-visible {
+        outline: var(--mb-focus-ring-width) solid var(--mb-color-border-focus);
+      }
+    </style>
+  </head>
+  <body>
+    <nav><a href="/">match-box</a> · <a href="/patterns/listbox/">Listbox</a> ·
+      <a href="/patterns/disclosure/">Disclosure</a> · <a href="/patterns/dialog/">Dialog</a> ·
+      <a href="/api/">API</a></nav>
+    <main>{{ content | safe }}</main>
+  </body>
+</html>

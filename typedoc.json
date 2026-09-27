@@ -1,0 +1,7 @@
+{
+  "name": "match-box",
+  "entryPoints": ["src/core/index.ts", "src/core/testing/index.ts", "src/lit/index.ts"],
+  "tsconfig": "tsconfig.build.json",
+  "out": "_site/api",
+  "excludePrivate": true
+}
