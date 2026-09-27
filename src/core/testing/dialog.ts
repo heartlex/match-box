@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { deepActiveElement } from '../a11y/active-element.ts';
-import { interactionTypes, nextFrame, type Audit, type Driver } from './driver.ts';
+import { containsComposed, interactionTypes, nextFrame, type Audit, type Driver } from './driver.ts';
 
 export interface DialogFixture {
   /** Opens the dialog when activated. */
@@ -58,7 +58,7 @@ export function dialogConformance({ name, mount, driver, audit }: DialogSuiteOpt
         expect(dialog.open).to.equal(true);
         expect(dialog.matches(':modal'), 'modal').to.equal(true);
         expect(dialog.ariaLabelledByElements?.[0]).to.equal(fixture.title);
-        expect(dialog.contains(deepActiveElement()), 'focus inside').to.equal(true);
+        expect(containsComposed(dialog, deepActiveElement()), 'focus inside').to.equal(true);
         if (audit) await audit(dialog);
       });
 

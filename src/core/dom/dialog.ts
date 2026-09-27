@@ -11,8 +11,11 @@ export interface DialogElements {
 
 export interface AttachDialogOptions {
   state?: DialogState;
-  /** Close when a click starts and ends outside the dialog box. Defaults to true. */
-  dismissOnOutsideClick?: boolean;
+  /**
+   * Close when a click starts and ends outside the dialog box. Defaults to
+   * true. Pass a function to decide at click time, e.g. from an attribute.
+   */
+  dismissOnOutsideClick?: boolean | (() => boolean);
 }
 
 function isOutside(dialog: HTMLDialogElement, event: MouseEvent): boolean {
@@ -80,24 +83,24 @@ export function attachDialog(
     { signal },
   );
 
-  if (options.dismissOnOutsideClick ?? true) {
-    let pressedOutside = false;
-    dialog.addEventListener(
-      'pointerdown',
-      (event) => {
-        pressedOutside = isOutside(dialog, event);
-      },
-      { signal },
-    );
-    dialog.addEventListener(
-      'click',
-      (event) => {
-        if (pressedOutside && isOutside(dialog, event)) state.close();
-        pressedOutside = false;
-      },
-      { signal },
-    );
-  }
+  const dismiss = options.dismissOnOutsideClick ?? true;
+  const dismissOnOutsideClick = typeof dismiss === 'function' ? dismiss : () => dismiss;
+  let pressedOutside = false;
+  dialog.addEventListener(
+    'pointerdown',
+    (event) => {
+      pressedOutside = isOutside(dialog, event);
+    },
+    { signal },
+  );
+  dialog.addEventListener(
+    'click',
+    (event) => {
+      if (pressedOutside && isOutside(dialog, event) && dismissOnOutsideClick()) state.close();
+      pressedOutside = false;
+    },
+    { signal },
+  );
 
   const unsubscribe = state.subscribe(render);
   render();

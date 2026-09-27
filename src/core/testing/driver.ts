@@ -29,3 +29,16 @@ export function nextFrame(): Promise<void> {
     });
   });
 }
+
+/**
+ * True if `node` is `ancestor` or inside it in the flat tree: through slot
+ * assignment and out of shadow roots to their hosts.
+ */
+export function containsComposed(ancestor: Node, node: Node | null): boolean {
+  for (let current: Node | null = node; current !== null; ) {
+    if (current === ancestor) return true;
+    const slot = current instanceof Element ? current.assignedSlot : null;
+    current = slot ?? current.parentNode ?? (current instanceof ShadowRoot ? current.host : null);
+  }
+  return false;
+}

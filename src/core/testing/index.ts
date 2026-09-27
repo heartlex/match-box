@@ -5,7 +5,14 @@ export {
   type AccordionMountSpec,
   type AccordionSuiteOptions,
 } from './accordion.ts';
-export { interactionTypes, nextFrame, type Audit, type Driver, type InteractionType } from './driver.ts';
+export {
+  containsComposed,
+  interactionTypes,
+  nextFrame,
+  type Audit,
+  type Driver,
+  type InteractionType,
+} from './driver.ts';
 export {
   disclosureConformance,
   type DisclosureFixture,
