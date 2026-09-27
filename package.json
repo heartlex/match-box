@@ -1,6 +1,6 @@
 {
   "name": "match-box",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Headless, framework-free accessible behaviors with a Lit adapter and design tokens.",
   "license": "MIT",
   "type": "module",

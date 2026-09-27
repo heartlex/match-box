@@ -3,6 +3,15 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.2.1
+
+### Fixed
+
+- `mb-button` takes `name` and `value` and submits them as a native submit
+  button does. In a `<form method="dialog">` inside `mb-dialog`, a submit
+  `mb-button` now closes the dialog with its `value` as `returnValue`.
+- The dialog demo styles its Delete action with `mb-button`.
+
 ## 0.2.0
 
 ### Added
