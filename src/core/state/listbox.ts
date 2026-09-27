@@ -52,7 +52,7 @@ function sameItems(a: readonly ListboxItem[], b: readonly ListboxItem[]): boolea
  * only when no option is enabled.
  */
 export class ListboxState extends Store {
-  readonly multiple: boolean;
+  #multiple: boolean;
   #items: readonly ListboxItem[] = [];
   #activeIndex = -1;
   #selected: ReadonlySet<string> = new Set();
@@ -63,9 +63,14 @@ export class ListboxState extends Store {
 
   constructor(options: ListboxStateOptions = {}) {
     super();
-    this.multiple = options.multiple ?? false;
+    this.#multiple = options.multiple ?? false;
     this.#timeout = options.typeaheadTimeout ?? 500;
     this.#timers = options.timers ?? defaultTimers;
+  }
+
+  /** Whether more than one option can be selected. Change it with `setMultiple`. */
+  get multiple(): boolean {
+    return this.#multiple;
   }
 
   get items(): readonly ListboxItem[] {
@@ -108,6 +113,21 @@ export class ListboxState extends Store {
     if (kept !== -1) this.#activeIndex = kept;
     else if (previousIndex !== -1) this.#activeIndex = this.#nearestEnabled(previousIndex);
     else this.#activeIndex = this.#initialIndex();
+    this.notify();
+  }
+
+  /**
+   * Switches between single and multiple selection. Turning multiple off
+   * keeps only the first selected key, in option order.
+   */
+  setMultiple(multiple: boolean): void {
+    if (multiple === this.#multiple) return;
+    this.#multiple = multiple;
+    if (!multiple && this.#selected.size > 1) {
+      const first =
+        this.#items.find((item) => this.#selected.has(item.key))?.key ?? [...this.#selected][0];
+      this.#selected = new Set(first === undefined ? [] : [first]);
+    }
     this.notify();
   }
 

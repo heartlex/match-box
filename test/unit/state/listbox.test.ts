@@ -129,6 +129,34 @@ describe('ListboxState selection', () => {
   });
 });
 
+describe('ListboxState setMultiple', () => {
+  it('turning multiple off keeps the first selected option in option order', () => {
+    const state = listbox({ multiple: true });
+    state.setSelected(['date', 'banana']);
+    state.setMultiple(false);
+    expect(state.multiple).toBe(false);
+    expect([...state.selected]).toEqual(['banana']);
+  });
+
+  it('turning multiple on lets selectActive add to the selection', () => {
+    const state = listbox();
+    state.selectActive();
+    state.setMultiple(true);
+    state.moveNext();
+    state.selectActive();
+    expect([...state.selected]).toEqual(['apple', 'banana']);
+  });
+
+  it('notifies only on change', () => {
+    const state = listbox();
+    let count = 0;
+    state.subscribe(() => (count += 1));
+    state.setMultiple(false);
+    state.setMultiple(true);
+    expect(count).toBe(1);
+  });
+});
+
 describe('ListboxState setItems', () => {
   it('does nothing when the items are equal', () => {
     const state = listbox();
