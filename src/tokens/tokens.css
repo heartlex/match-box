@@ -1,0 +1,140 @@
+/*
+ * match-box tokens. Written by hand.
+ *
+ * 1. Primitives: private. Only the semantic tier below may reference them.
+ * 2. Semantic tokens, light values: public API.
+ * 3. Semantic tokens, dark values: explicit [data-theme="dark"], and the
+ *    same values when the system prefers dark and no light theme is forced.
+ *
+ * Set data-theme on any ancestor to theme a subtree.
+ */
+
+/* 1. Primitives */
+:root {
+  --mb-gray-0: #ffffff;
+  --mb-gray-50: #f7f7f8;
+  --mb-gray-100: #ebebee;
+  --mb-gray-200: #d7d7dc;
+  --mb-gray-300: #b9b9c1;
+  --mb-gray-400: #8e8e99;
+  --mb-gray-500: #6b6b76;
+  --mb-gray-600: #52525b;
+  --mb-gray-700: #3d3d44;
+  --mb-gray-800: #27272c;
+  --mb-gray-900: #18181b;
+  --mb-gray-950: #0e0e10;
+  --mb-blue-300: #8cb4ff;
+  --mb-blue-400: #5b93f5;
+  --mb-blue-500: #2f6fe0;
+  --mb-blue-600: #1f57c0;
+  --mb-blue-700: #17449a;
+  --mb-red-300: #ff9a93;
+  --mb-red-400: #f0625a;
+  --mb-red-500: #d93a2e;
+  --mb-red-600: #b62a20;
+  --mb-green-300: #7fd49a;
+  --mb-green-600: #1f7a3d;
+  --mb-space-1: 0.25rem;
+  --mb-space-2: 0.5rem;
+  --mb-space-3: 0.75rem;
+  --mb-space-4: 1rem;
+  --mb-radius-2: 0.25rem;
+  --mb-radius-3: 0.5rem;
+  --mb-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mb-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --mb-font-size-1: 0.875rem;
+  --mb-font-size-2: 1rem;
+  --mb-font-weight-bold: 600;
+}
+
+/* 2. Semantic tokens, light */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --mb-color-bg-canvas: var(--mb-gray-50);
+  --mb-color-bg-surface: var(--mb-gray-0);
+  --mb-color-bg-surface-raised: var(--mb-gray-0);
+  --mb-color-bg-accent: var(--mb-blue-600);
+  --mb-color-bg-accent-hover: var(--mb-blue-700);
+  --mb-color-bg-danger: var(--mb-red-600);
+  --mb-color-bg-disabled: var(--mb-gray-100);
+  --mb-color-fg-default: var(--mb-gray-900);
+  --mb-color-fg-muted: var(--mb-gray-600);
+  --mb-color-fg-subtle: var(--mb-gray-500);
+  --mb-color-fg-on-accent: var(--mb-gray-0);
+  --mb-color-fg-accent: var(--mb-blue-600);
+  --mb-color-fg-danger: var(--mb-red-600);
+  --mb-color-fg-success: var(--mb-green-600);
+  --mb-color-fg-disabled: var(--mb-gray-400);
+  --mb-color-border-default: var(--mb-gray-200);
+  --mb-color-border-strong: var(--mb-gray-400);
+  --mb-color-border-focus: var(--mb-blue-500);
+  --mb-color-border-danger: var(--mb-red-500);
+  --mb-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.16);
+  --mb-space-inline-sm: var(--mb-space-2);
+  --mb-space-inline-md: var(--mb-space-3);
+  --mb-space-inline-lg: var(--mb-space-4);
+  --mb-space-stack-sm: var(--mb-space-1);
+  --mb-space-stack-md: var(--mb-space-2);
+  --mb-space-stack-lg: var(--mb-space-4);
+  --mb-radius-control: var(--mb-radius-2);
+  --mb-radius-surface: var(--mb-radius-3);
+  --mb-font-family-body: var(--mb-font-sans);
+  --mb-font-family-code: var(--mb-font-mono);
+  --mb-font-size-body: var(--mb-font-size-2);
+  --mb-font-size-small: var(--mb-font-size-1);
+  --mb-font-weight-strong: var(--mb-font-weight-bold);
+  --mb-line-height-body: 1.5;
+  --mb-focus-ring-width: 2px;
+}
+
+/* 3. Semantic tokens, dark. Keep the two blocks below identical. */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --mb-color-bg-canvas: var(--mb-gray-950);
+  --mb-color-bg-surface: var(--mb-gray-900);
+  --mb-color-bg-surface-raised: var(--mb-gray-800);
+  --mb-color-bg-accent: var(--mb-blue-400);
+  --mb-color-bg-accent-hover: var(--mb-blue-300);
+  --mb-color-bg-danger: var(--mb-red-400);
+  --mb-color-bg-disabled: var(--mb-gray-800);
+  --mb-color-fg-default: var(--mb-gray-50);
+  --mb-color-fg-muted: var(--mb-gray-300);
+  --mb-color-fg-subtle: var(--mb-gray-400);
+  --mb-color-fg-on-accent: var(--mb-gray-950);
+  --mb-color-fg-accent: var(--mb-blue-300);
+  --mb-color-fg-danger: var(--mb-red-300);
+  --mb-color-fg-success: var(--mb-green-300);
+  --mb-color-fg-disabled: var(--mb-gray-600);
+  --mb-color-border-default: var(--mb-gray-700);
+  --mb-color-border-strong: var(--mb-gray-500);
+  --mb-color-border-focus: var(--mb-blue-400);
+  --mb-color-border-danger: var(--mb-red-400);
+  --mb-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.48);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --mb-color-bg-canvas: var(--mb-gray-950);
+    --mb-color-bg-surface: var(--mb-gray-900);
+    --mb-color-bg-surface-raised: var(--mb-gray-800);
+    --mb-color-bg-accent: var(--mb-blue-400);
+    --mb-color-bg-accent-hover: var(--mb-blue-300);
+    --mb-color-bg-danger: var(--mb-red-400);
+    --mb-color-bg-disabled: var(--mb-gray-800);
+    --mb-color-fg-default: var(--mb-gray-50);
+    --mb-color-fg-muted: var(--mb-gray-300);
+    --mb-color-fg-subtle: var(--mb-gray-400);
+    --mb-color-fg-on-accent: var(--mb-gray-950);
+    --mb-color-fg-accent: var(--mb-blue-300);
+    --mb-color-fg-danger: var(--mb-red-300);
+    --mb-color-fg-success: var(--mb-green-300);
+    --mb-color-fg-disabled: var(--mb-gray-600);
+    --mb-color-border-default: var(--mb-gray-700);
+    --mb-color-border-strong: var(--mb-gray-500);
+    --mb-color-border-focus: var(--mb-blue-400);
+    --mb-color-border-danger: var(--mb-red-400);
+    --mb-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.48);
+  }
+}
