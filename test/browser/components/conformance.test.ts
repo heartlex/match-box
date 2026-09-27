@@ -1,9 +1,10 @@
 import '../../../src/components/define/all.ts';
-import type { MbAccordion, MbDialog, MbDisclosure } from '../../../src/components/index.ts';
+import type { MbAccordion, MbDialog, MbDisclosure, MbListbox } from '../../../src/components/index.ts';
 import {
   accordionConformance,
   dialogConformance,
   disclosureConformance,
+  listboxConformance,
 } from '../../../src/core/testing/index.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
 import { loadTokens, mount, part } from '../../support/components.ts';
@@ -43,6 +44,25 @@ dialogConformance({
       dialog: part<HTMLDialogElement>(dialog, 'dialog'),
       title: part(dialog, 'title'),
       confirm: container.querySelector('button[value=confirm]') as HTMLElement,
+      teardown: () => container.remove(),
+    };
+  },
+});
+
+listboxConformance({
+  name: 'mb-listbox',
+  driver,
+  audit,
+  async mount(spec) {
+    const options = spec.options
+      .map((option) => `<mb-option${option.disabled ? ' disabled' : ''}>${option.label}</mb-option>`)
+      .join('');
+    const { element, container } = await mount<MbListbox>(
+      `<mb-listbox label="Fruit"${spec.multiple ? ' multiple' : ''}>${options}</mb-listbox>`,
+    );
+    return {
+      root: part(element, 'listbox'),
+      options: [...element.querySelectorAll<HTMLElement>('mb-option')],
       teardown: () => container.remove(),
     };
   },

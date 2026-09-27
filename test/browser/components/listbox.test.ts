@@ -1,0 +1,120 @@
+import { expect } from 'chai';
+import { sendMouse } from '@web/test-runner-commands';
+import '../../../src/components/define/listbox.ts';
+import type { MbListbox, MbOption } from '../../../src/components/index.ts';
+import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { driver } from '../../support/driver.ts';
+
+const fruit = '<mb-option>Apple</mb-option><mb-option value="b">Banana</mb-option><mb-option>Cherry</mb-option>';
+
+async function mountListbox(attributes = '', options = fruit): Promise<MbListbox> {
+  const { element } = await mount<MbListbox>(`<mb-listbox label="Fruit" ${attributes}>${options}</mb-listbox>`);
+  return element;
+}
+
+const optionsOf = (listbox: MbListbox): MbOption[] => [...listbox.querySelectorAll('mb-option')];
+const option = (listbox: MbListbox, index: number): MbOption => optionsOf(listbox)[index];
+
+async function inForm(markup: string): Promise<{ form: HTMLFormElement; listbox: MbListbox }> {
+  const { element: form } = await mount<HTMLFormElement>(`<form>${markup}</form>`);
+  return { form, listbox: form.querySelector('mb-listbox') as MbListbox };
+}
+
+describe('mb-listbox', () => {
+  before(loadTokens);
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it('option value defaults to its text and follows text changes', async () => {
+    const listbox = await mountListbox();
+    expect(optionsOf(listbox).map((o) => o.value)).to.deep.equal(['Apple', 'b', 'Cherry']);
+    option(listbox, 2).textContent = 'Date';
+    await settle(document.body);
+    listbox.value = 'Date';
+    await settle(document.body);
+    expect(option(listbox, 2).selected).to.equal(true);
+  });
+
+  it('value and values follow the selection in option order', async () => {
+    const listbox = await mountListbox('multiple');
+    listbox.values = ['Cherry', 'Apple'];
+    await settle(document.body);
+    expect([listbox.value, listbox.values]).to.deep.equal(['Apple', ['Apple', 'Cherry']]);
+    listbox.value = 'b';
+    await settle(document.body);
+    expect(listbox.values).to.deep.equal(['b']);
+  });
+
+  it('submits one entry per selected value under its name', async () => {
+    const { form, listbox } = await inForm(`<mb-listbox label="Fruit" name="fruit" multiple>${fruit}</mb-listbox>`);
+    listbox.values = ['Apple', 'b'];
+    await settle(document.body);
+    expect(new FormData(form).getAll('fruit')).to.deep.equal(['Apple', 'b']);
+  });
+
+  it('required fails until something is selected', async () => {
+    const { listbox } = await inForm(`<mb-listbox label="Fruit" name="fruit" required>${fruit}</mb-listbox>`);
+    expect(listbox.validity.valueMissing).to.equal(true);
+    listbox.value = 'Apple';
+    await settle(document.body);
+    expect(listbox.validity.valid).to.equal(true);
+  });
+
+  it('starts with options marked selected and returns to them on reset', async () => {
+    const options = '<mb-option>Apple</mb-option><mb-option selected>Banana</mb-option>';
+    const { form, listbox } = await inForm(`<mb-listbox label="Fruit" name="fruit">${options}</mb-listbox>`);
+    expect(listbox.value).to.equal('Banana');
+    listbox.value = 'Apple';
+    await settle(document.body);
+    form.reset();
+    await settle(document.body);
+    expect(listbox.value).to.equal('Banana');
+  });
+
+  it('a disabled fieldset disables every option', async () => {
+    const { listbox } = await inForm(`<fieldset disabled><mb-listbox label="Fruit">${fruit}</mb-listbox></fieldset>`);
+    await settle(document.body);
+    expect(optionsOf(listbox).map((o) => o.getAttribute('aria-disabled'))).to.deep.equal(['true', 'true', 'true']);
+  });
+
+  it('fires input and change on user selection only', async () => {
+    const listbox = await mountListbox();
+    const events: string[] = [];
+    listbox.addEventListener('input', () => events.push('input'));
+    listbox.addEventListener('change', () => events.push('change'));
+    listbox.value = 'Cherry';
+    await settle(document.body);
+    expect(events).to.deep.equal([]);
+    await driver.click(option(listbox, 0));
+    expect(events).to.deep.equal(['input', 'change']);
+    await driver.click(option(listbox, 0));
+    expect(events).to.deep.equal(['input', 'change']);
+  });
+
+  it('focus() and a label click move focus to the active option', async () => {
+    const { container } = await mount(`<label for="fruit">Fruit</label><mb-listbox id="fruit" label="Fruit">${fruit}</mb-listbox>`);
+    const listbox = container.querySelector('mb-listbox') as MbListbox;
+    listbox.focus();
+    expect(document.activeElement).to.equal(option(listbox, 0));
+    (document.activeElement as HTMLElement).blur();
+    const box = (container.querySelector('label') as HTMLElement).getBoundingClientRect();
+    await sendMouse({ type: 'click', position: [Math.round(box.left + 2), Math.round(box.top + 2)] });
+    expect(document.activeElement).to.equal(option(listbox, 0));
+  });
+
+  it('turning multiple off keeps the first selected option and updates the ARIA', async () => {
+    const listbox = await mountListbox('multiple');
+    listbox.values = ['b', 'Cherry'];
+    listbox.multiple = false;
+    await settle(document.body);
+    expect(listbox.values).to.deep.equal(['b']);
+    expect(part(listbox, 'listbox').hasAttribute('aria-multiselectable')).to.equal(false);
+  });
+
+  it('names the listbox from its label', async () => {
+    const listbox = await mountListbox();
+    expect(part(listbox, 'listbox').ariaLabelledByElements?.[0]).to.equal(part(listbox, 'label'));
+  });
+});
