@@ -35,7 +35,9 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * With `type="submit"`, Enter in a text field of its form submits the form
  * when the form has no native submit button, as a native submit button
  * would. The first submit `mb-button` in the form handles it; a disabled one
- * blocks it.
+ * blocks it. It submits as a native submit button would: `name` and `value`
+ * join the form data, and it is the submitter a `<form method="dialog">`
+ * takes its return value from.
  *
  * @tag mb-button
  * @slot - The label.
@@ -65,6 +67,8 @@ export class MbButton extends DelegatesFocus(LitElement) {
     variant: {},
     color: {},
     type: {},
+    name: {},
+    value: {},
     disabled: { type: Boolean, reflect: true },
   };
 
@@ -74,6 +78,10 @@ export class MbButton extends DelegatesFocus(LitElement) {
   declare color: ColorRole;
   /** What the button does in a form. */
   declare type: ButtonType;
+  /** The name submitted with `value`, as on a native submit button. */
+  declare name: string;
+  /** The value submitted with `name`; a `<form method="dialog">` returns it. */
+  declare value: string;
   declare disabled: boolean;
 
   readonly #internals: ElementInternals;
@@ -87,6 +95,8 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.variant = 'default';
     this.color = 'neutral';
     this.type = 'button';
+    this.name = '';
+    this.value = '';
     this.disabled = false;
     this.#internals = this.attachInternals();
   }
@@ -150,12 +160,30 @@ export class MbButton extends DelegatesFocus(LitElement) {
     const first = elements.find((element) => element instanceof MbButton && element.type === 'submit');
     if (first !== this) return;
     event.preventDefault();
-    if (!this.disabled && !this.#formDisabled) form.requestSubmit();
+    if (!this.disabled && !this.#formDisabled) this.#submit(form);
   };
 
   #onClick(): void {
-    if (this.type === 'submit') this.#internals.form?.requestSubmit();
-    else if (this.type === 'reset') this.#internals.form?.reset();
+    const form = this.#internals.form;
+    if (form === null) return;
+    if (this.type === 'submit') this.#submit(form);
+    else if (this.type === 'reset') form.reset();
+  }
+
+  // A custom element cannot be a submitter, so a temporary native submit
+  // button carries `name` and `value` into the form data and `event.submitter`.
+  #submit(form: HTMLFormElement): void {
+    const proxy = document.createElement('button');
+    proxy.type = 'submit';
+    proxy.hidden = true;
+    if (this.name) proxy.name = this.name;
+    proxy.value = this.value;
+    form.append(proxy);
+    try {
+      form.requestSubmit(proxy);
+    } finally {
+      proxy.remove();
+    }
   }
 }
 
