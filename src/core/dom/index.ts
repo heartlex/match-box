@@ -5,3 +5,4 @@ export {
   type References,
 } from './attribute-writer.ts';
 export type { Behavior } from './behavior.ts';
+export { attachDisclosure, type AttachDisclosureOptions, type DisclosureElements } from './disclosure.ts';
