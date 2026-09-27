@@ -7,6 +7,13 @@ export interface DisclosureLike {
   readonly state: DisclosureState;
 }
 
+/**
+ * Item keys per accordion state. They live as long as the state, not the
+ * attach, so a state that outlives a detach (a Lit host that is moved) keeps
+ * recognizing its items when it attaches again.
+ */
+const itemKeys = new WeakMap<AccordionState, { keys: WeakMap<DisclosureState, string>; next: number }>();
+
 export interface AccordionElements {
   /** The accordion's disclosures, in order. Read on attach and on every `sync()`. */
   items: () => readonly DisclosureLike[];
@@ -30,16 +37,20 @@ export function attachAccordion(
   options: AttachAccordionOptions = {},
 ): Behavior<AccordionState> {
   const state = options.state ?? new AccordionState(options);
-  const keys = new WeakMap<DisclosureState, string>();
-  let next = 0;
+  let registry = itemKeys.get(state);
+  if (registry === undefined) {
+    registry = { keys: new WeakMap(), next: 0 };
+    itemKeys.set(state, registry);
+  }
+  const { keys } = registry;
   let current: readonly DisclosureState[] = [];
   let unsubscribeItems: (() => void)[] = [];
 
   const keyOf = (item: DisclosureState): string => {
     let key = keys.get(item);
     if (key === undefined) {
-      next += 1;
-      key = String(next);
+      registry.next += 1;
+      key = String(registry.next);
       keys.set(item, key);
     }
     return key;

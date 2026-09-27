@@ -4,10 +4,38 @@ import { colorRole, type ColorRole } from '../shared/color.ts';
 import { buttonStyles } from './button.styles.ts';
 
 export type ButtonVariant = 'default' | 'outline' | 'ghost';
+
+// Input types in which Enter submits the form (implicit submission).
+const implicitSubmitTypes = new Set([
+  'text',
+  'search',
+  'url',
+  'tel',
+  'email',
+  'password',
+  'date',
+  'month',
+  'week',
+  'time',
+  'datetime-local',
+  'number',
+]);
+
+function isNativeSubmit(element: Element): boolean {
+  return (
+    (element instanceof HTMLButtonElement && element.type === 'submit') ||
+    (element instanceof HTMLInputElement && (element.type === 'submit' || element.type === 'image'))
+  );
+}
 export type ButtonType = 'button' | 'submit' | 'reset';
 
 /**
  * A button.
+ *
+ * With `type="submit"`, Enter in a text field of its form submits the form
+ * when the form has no native submit button, as a native submit button
+ * would. The first submit `mb-button` in the form handles it; a disabled one
+ * blocks it.
  *
  * @tag mb-button
  * @slot - The label.
@@ -49,6 +77,7 @@ export class MbButton extends DelegatesFocus(LitElement) {
   declare disabled: boolean;
 
   readonly #internals: ElementInternals;
+  #form: HTMLFormElement | null = null;
   #formDisabled = false;
   #hasPrefix = false;
   #hasSuffix = false;
@@ -65,6 +94,13 @@ export class MbButton extends DelegatesFocus(LitElement) {
   /** The form this button submits or resets, if any. */
   get form(): HTMLFormElement | null {
     return this.#internals.form;
+  }
+
+  /** Called by the platform when the button joins or leaves a form. */
+  formAssociatedCallback(form: HTMLFormElement | null): void {
+    this.#form?.removeEventListener('keydown', this.#onFormKeydown);
+    this.#form = form;
+    form?.addEventListener('keydown', this.#onFormKeydown);
   }
 
   /** Called by the platform when a `<fieldset>` ancestor is disabled or enabled. */
@@ -101,6 +137,21 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.#hasSuffix = hasContent(event);
     this.requestUpdate();
   }
+
+  readonly #onFormKeydown = (event: KeyboardEvent): void => {
+    const form = this.#form;
+    if (form === null || this.type !== 'submit') return;
+    if (event.key !== 'Enter' || event.defaultPrevented || event.isComposing) return;
+    const target = event.composedPath()[0];
+    if (!(target instanceof HTMLInputElement) || !implicitSubmitTypes.has(target.type) || target.form !== form) return;
+    const elements = [...form.elements];
+    // A native submit button is the form's default button; the platform handles Enter.
+    if (elements.some(isNativeSubmit)) return;
+    const first = elements.find((element) => element instanceof MbButton && element.type === 'submit');
+    if (first !== this) return;
+    event.preventDefault();
+    if (!this.disabled && !this.#formDisabled) form.requestSubmit();
+  };
 
   #onClick(): void {
     if (this.type === 'submit') this.#internals.form?.requestSubmit();

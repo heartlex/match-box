@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { sendKeys } from '@web/test-runner-commands';
 import '../../../src/components/define/button.ts';
 import type { MbButton } from '../../../src/components/index.ts';
 import { loadTokens, mount, part, settle } from '../../support/components.ts';
@@ -76,5 +77,65 @@ describe('mb-button', () => {
   it('keeps reflected attributes off the host unless set', async () => {
     const { element } = await mount<MbButton>('<mb-button>Save</mb-button>');
     expect(element.getAttributeNames()).to.deep.equal([]);
+  });
+
+  it('Enter in a text field submits through a submit mb-button, once', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><input name="user"><input name="pass" type="password"><mb-button type="submit">Sign in</mb-button></form>',
+    );
+    const submits: number[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(1);
+    });
+    (form.querySelector('input[name=pass]') as HTMLInputElement).focus();
+    await sendKeys({ press: 'Enter' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(submits).to.have.length(1);
+  });
+
+  it('Enter submits once when the form also has one text field only', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><input name="q"><mb-button type="submit">Search</mb-button></form>',
+    );
+    const submits: number[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(1);
+    });
+    (form.querySelector('input') as HTMLInputElement).focus();
+    await sendKeys({ press: 'Enter' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(submits).to.have.length(1);
+  });
+
+  it('Enter leaves submission to a native submit button when there is one', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><input name="a"><input name="b"><button>Native</button><mb-button type="submit">Send</mb-button></form>',
+    );
+    const submitters: (string | undefined)[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitters.push(event.submitter?.localName);
+    });
+    (form.querySelector('input') as HTMLInputElement).focus();
+    await sendKeys({ press: 'Enter' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(submitters).to.deep.equal(['button']);
+  });
+
+  it('Enter does not submit when the submit mb-button is disabled', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><input name="a"><input name="b"><mb-button type="submit" disabled>Send</mb-button></form>',
+    );
+    const submits: number[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(1);
+    });
+    (form.querySelector('input') as HTMLInputElement).focus();
+    await sendKeys({ press: 'Enter' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(submits).to.have.length(0);
   });
 });

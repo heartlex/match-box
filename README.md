@@ -62,7 +62,8 @@ npm run docs      # builds the site into _site
 ```
 
 Design: [docs/superpowers/specs/2026-09-18-match-box-design.md](docs/superpowers/specs/2026-09-18-match-box-design.md).
-Styling contract for the future skin: [docs/styling-contract.md](docs/styling-contract.md).
+Styling contract for the components: [docs/styling-contract.md](docs/styling-contract.md).
+Changes between versions: [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

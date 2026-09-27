@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/listbox.ts';
 import type { MbListbox, MbOption } from '../../../src/components/index.ts';
+import { expectNoAxeViolations } from '../../support/axe.ts';
 import { loadTokens, mount, part, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
@@ -116,5 +117,40 @@ describe('mb-listbox', () => {
   it('names the listbox from its label', async () => {
     const listbox = await mountListbox();
     expect(part(listbox, 'listbox').ariaLabelledByElements?.[0]).to.equal(part(listbox, 'label'));
+  });
+
+  it('is named by a <label for> when it has no label attribute', async () => {
+    const { container } = await mount(`<label for="fruit">Fruit</label><mb-listbox id="fruit">${fruit}</mb-listbox>`);
+    const listbox = container.querySelector('mb-listbox') as MbListbox;
+    // Compare identity as a boolean: chai's failure message for these two elements never finishes rendering.
+    const label = container.querySelector('label');
+    expect(part(listbox, 'listbox').ariaLabelledByElements?.[0] === label, 'labelled by the <label>').to.equal(true);
+    await expectNoAxeViolations(container);
+  });
+
+  it('drops a removed option from the value, the form, and validity', async () => {
+    const { form, listbox } = await inForm(`<mb-listbox label="Fruit" name="fruit" required>${fruit}</mb-listbox>`);
+    listbox.value = 'b';
+    await settle(document.body);
+    option(listbox, 1).remove();
+    await settle(document.body);
+    expect([listbox.value, listbox.values]).to.deep.equal(['', []]);
+    expect(new FormData(form).getAll('fruit')).to.deep.equal([]);
+    expect(listbox.validity.valueMissing).to.equal(true);
+  });
+
+  it('selects nothing for a value no option has', async () => {
+    const listbox = await mountListbox();
+    listbox.value = 'nonexistent';
+    await settle(document.body);
+    expect([listbox.value, listbox.values]).to.deep.equal(['', []]);
+  });
+
+  it('applies a selection set before its options exist once they arrive', async () => {
+    const listbox = await mountListbox('multiple', '');
+    listbox.values = ['Apple', 'Cherry'];
+    listbox.insertAdjacentHTML('beforeend', fruit);
+    await settle(document.body);
+    expect(listbox.values).to.deep.equal(['Apple', 'Cherry']);
   });
 });

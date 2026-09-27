@@ -42,4 +42,15 @@ describe('mb-accordion', () => {
     await settle(document.body);
     expect([first.open, second.open]).to.deep.equal([false, true]);
   });
+
+  it('keeps the same item open when moved after a user change', async () => {
+    const { element } = await mount<MbAccordion>(`<mb-accordion>${item('A')}${item('B')}${item('C')}</mb-accordion>`);
+    (disclosures(element)[2]).open = true;
+    await settle(document.body);
+    const other = document.createElement('div');
+    document.body.append(other);
+    other.append(element);
+    await settle(document.body);
+    expect(disclosures(element).map((d) => d.open)).to.deep.equal([false, false, true]);
+  });
 });

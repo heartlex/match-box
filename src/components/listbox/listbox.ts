@@ -11,7 +11,7 @@ import { MbOption } from './option.ts';
  *
  * @tag mb-listbox
  * @slot - `mb-option` elements.
- * @csspart label - The visible label, which also names the listbox.
+ * @csspart label - The visible label, which also names the listbox. Without a `label` attribute, an associated `<label for>` names it instead.
  * @csspart listbox - The element with the listbox role.
  * @cssstate invalid - A validator fails, e.g. `required` with nothing selected.
  * @cssstate user-invalid - Invalid after the user changed the selection and left, or a submit was attempted.
@@ -42,7 +42,11 @@ export class MbListbox extends FormAssociated(LitElement) {
     this,
     () => ({
       root: this.renderRoot.querySelector<HTMLElement>('[part=listbox]'),
-      label: this.renderRoot.querySelector<HTMLElement>('[part=label]'),
+      // The label attribute, else the first <label> associated with the host.
+      label:
+        this.label === ''
+          ? ((this.internals.labels[0] ?? null) as HTMLElement | null)
+          : this.renderRoot.querySelector<HTMLElement>('[part=label]'),
       items: () => this.#options(),
     }),
     { describeItem: (element) => this.#describe(element as MbOption) },
@@ -72,13 +76,17 @@ export class MbListbox extends FormAssociated(LitElement) {
     this.#observer = new MutationObserver(() => this.requestUpdate());
   }
 
-  /** Values of all selected options, in option order. */
+  /**
+   * Values of the selected options, in option order. Only options that exist
+   * count, like a native `<select>`; a selection set before its options
+   * arrive applies once they do.
+   */
   get values(): string[] {
     const selected = this.listbox.state.selected;
-    const inOrder = this.#options()
+    const present = this.#options()
       .map((option) => option.value)
       .filter((value) => selected.has(value));
-    return [...new Set([...inOrder, ...selected])];
+    return [...new Set(present)];
   }
 
   set values(values: readonly string[]) {

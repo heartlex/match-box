@@ -98,4 +98,16 @@ describe('mb-dialog', () => {
     expect(slot.assignedNodes()[0]?.textContent).to.equal('Custom title');
     expect(part(dialog, 'footer').hidden).to.equal(true);
   });
+
+  it('stays modal when moved while open', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const other = document.createElement('div');
+    document.body.append(other);
+    other.append(dialog);
+    await settle(document.body);
+    expect(part<HTMLDialogElement>(dialog, 'dialog').matches(':modal')).to.equal(true);
+    dialog.close();
+  });
 });

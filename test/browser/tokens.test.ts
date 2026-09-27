@@ -65,6 +65,7 @@ const nonTextPairs: [string, string][] = [
   ['--mb-color-border-focus', '--mb-color-bg-surface'],
   ['--mb-color-border-strong', '--mb-color-bg-surface'],
   ...roles.map((role): [string, string] => [`--mb-color-${role}-border`, '--mb-color-bg-surface']),
+  ...roles.map((role): [string, string] => [`--mb-color-${role}-border`, '--mb-color-bg-surface-raised']),
 ];
 
 describe('tokens.css', () => {
@@ -150,6 +151,13 @@ describe('tokens.css', () => {
   });
 
   for (const theme of ['light', 'dark']) {
+    it(`neutral fills stand apart from raised surfaces such as dialogs in the ${theme} theme`, () => {
+      document.documentElement.dataset['theme'] = theme;
+      const raised = token('--mb-color-bg-surface-raised');
+      expect(token('--mb-color-neutral-solid'), 'neutral solid').not.to.equal(raised);
+      expect(token('--mb-color-neutral-subtle'), 'neutral subtle').not.to.equal(raised);
+    });
+
     it(`meets WCAG AA contrast in the ${theme} theme`, () => {
       document.documentElement.dataset['theme'] = theme;
       for (const [fg, bg] of textPairs) {

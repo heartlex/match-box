@@ -58,6 +58,12 @@ export function attachDialog(
     if (state.open && !dialog.open) {
       dialog.returnValue = '';
       dialog.showModal();
+    } else if (state.open && !dialog.matches(':modal')) {
+      // Removing an open dialog from the document drops it from the top layer
+      // but keeps it open; reopen it as a modal. The queued close event is
+      // ignored because the dialog is open again when it runs.
+      dialog.close();
+      dialog.showModal();
     } else if (!state.open && dialog.open) {
       dialog.close(state.returnValue);
     }
