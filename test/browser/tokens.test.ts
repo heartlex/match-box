@@ -44,22 +44,28 @@ function contrast(a: string, b: string): number {
   return (high + 0.05) / (low + 0.05);
 }
 
-const textPairs = [
+const roles = ['neutral', 'primary', 'secondary', 'tertiary', 'danger'] as const;
+const roleTokens = ['solid', 'solid-hover', 'on-solid', 'text', 'subtle', 'border'] as const;
+
+const textPairs: [string, string][] = [
   ['--mb-color-fg-default', '--mb-color-bg-surface'],
   ['--mb-color-fg-default', '--mb-color-bg-canvas'],
   ['--mb-color-fg-muted', '--mb-color-bg-surface'],
   ['--mb-color-fg-subtle', '--mb-color-bg-surface'],
-  ['--mb-color-fg-accent', '--mb-color-bg-surface'],
-  ['--mb-color-fg-danger', '--mb-color-bg-surface'],
   ['--mb-color-fg-success', '--mb-color-bg-surface'],
-  ['--mb-color-fg-on-accent', '--mb-color-bg-accent'],
-  ['--mb-color-fg-on-accent', '--mb-color-bg-danger'],
-] as const;
+  ...roles.flatMap((role): [string, string][] => [
+    [`--mb-color-${role}-on-solid`, `--mb-color-${role}-solid`],
+    [`--mb-color-${role}-on-solid`, `--mb-color-${role}-solid-hover`],
+    [`--mb-color-${role}-text`, '--mb-color-bg-surface'],
+    [`--mb-color-${role}-text`, `--mb-color-${role}-subtle`],
+  ]),
+];
 
-const nonTextPairs = [
+const nonTextPairs: [string, string][] = [
   ['--mb-color-border-focus', '--mb-color-bg-surface'],
   ['--mb-color-border-strong', '--mb-color-bg-surface'],
-] as const;
+  ...roles.map((role): [string, string] => [`--mb-color-${role}-border`, '--mb-color-bg-surface']),
+];
 
 describe('tokens.css', () => {
   before(async () => {
@@ -97,6 +103,18 @@ describe('tokens.css', () => {
     const themed = [...light.keys()].filter((name) => /^--mb-(color|shadow)-/.test(name));
     expect([...dark.keys()].sort()).to.deep.equal(themed.sort());
     expect([...media.entries()]).to.deep.equal([...dark.entries()]);
+  });
+
+  it('defines six tokens for each of the five color roles in both themes', () => {
+    const expected = roles.flatMap((role) => roleTokens.map((name) => `--mb-color-${role}-${name}`));
+    const light = [...block(':root, [data-theme="light"]').keys()];
+    const dark = [...block('[data-theme="dark"]').keys()];
+    for (const name of expected) {
+      expect(light, `light ${name}`).to.include(name);
+      expect(dark, `dark ${name}`).to.include(name);
+    }
+    const declared = [...light, ...dark].filter((name) => /^--mb-color-(neutral|primary|secondary|tertiary|danger)-/.test(name));
+    expect(declared.length).to.equal(expected.length * 2);
   });
 
   it('semantic tokens reference only primitives', () => {
