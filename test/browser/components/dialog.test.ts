@@ -53,6 +53,18 @@ describe('mb-dialog', () => {
     expect([dialog.open, dialog.returnValue]).to.deep.equal([false, 'confirm']);
   });
 
+  it('a submit mb-button in a method="dialog" form closes it with its value', async () => {
+    const dialog = await mountDialog(
+      '',
+      '<form method="dialog" slot="footer"><mb-button type="submit" value="delete">Delete</mb-button></form>',
+    );
+    dialog.show();
+    await settle(document.body);
+    await driver.click(part(dialog.querySelector('mb-button') as HTMLElement, 'base'));
+    await tick();
+    expect([dialog.open, dialog.returnValue]).to.deep.equal([false, 'delete']);
+  });
+
   it('Escape fires cancel from the host, and preventing it keeps the dialog open', async () => {
     const dialog = await mountDialog();
     dialog.addEventListener('cancel', (event) => event.preventDefault());

@@ -42,6 +42,18 @@ describe('mb-button', () => {
     expect(submits).to.have.length(1);
   });
 
+  it('type="submit" submits its name and value, and leaves no proxy behind', async () => {
+    const { form } = await formWith('<mb-button type="submit" name="action" value="save">Save</mb-button>');
+    const submitted: { value: string | undefined; data: [string, FormDataEntryValue][] }[] = [];
+    form.addEventListener('submit', (event) => {
+      const submitter = event.submitter as HTMLButtonElement | null;
+      submitted.push({ value: submitter?.value, data: [...new FormData(form, submitter)] });
+    });
+    await driver.click(part(form.querySelector('mb-button') as MbButton, 'base'));
+    expect(submitted).to.deep.equal([{ value: 'save', data: [['city', 'Oslo'], ['action', 'save']] }]);
+    expect(form.querySelectorAll('button')).to.have.length(0);
+  });
+
   it('type="reset" resets its form', async () => {
     const { form, button } = await formWith('<mb-button type="reset">Reset</mb-button>');
     (form.elements.namedItem('city') as HTMLInputElement).value = 'Rome';

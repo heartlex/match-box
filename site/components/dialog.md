@@ -16,7 +16,7 @@ import 'match-box/components/define/dialog.js';
     <p>This removes the project and its history.</p>
     <form method="dialog" slot="footer">
       <mb-button type="submit" variant="ghost">Cancel</mb-button>
-      <button value="delete">Delete</button>
+      <mb-button type="submit" color="danger" value="delete">Delete</mb-button>
     </form>
   </mb-dialog>
   <p>Returned: <output id="dialog-result"></output></p>
@@ -33,13 +33,15 @@ import 'match-box/components/define/dialog.js';
 <mb-dialog label="Delete project?" color="danger">
   <p>This removes the project and its history.</p>
   <form method="dialog" slot="footer">
-    <button value="delete">Delete</button>
+    <mb-button type="submit" variant="ghost">Cancel</mb-button>
+    <mb-button type="submit" color="danger" value="delete">Delete</mb-button>
   </form>
 </mb-dialog>
 ```
 
 A `<form method="dialog">` inside closes the dialog with the submit
-button's `value` as `returnValue`. A dismissal (Escape, outside click, the
+button's `value` as `returnValue`; a submit `mb-button` works like a native
+one. A dismissal (Escape, outside click, the
 close button) leaves `returnValue` empty.
 
 {% include "api.njk" %}
