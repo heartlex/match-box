@@ -120,7 +120,7 @@ the list of attributes it writes.
 
 | Pattern | Proves |
 |---|---|
-| Listbox | Roving tabindex, single and multi selection, typeahead, disabled items |
+| Listbox | Roving tabindex, single and multi selection, typeahead, disabled items. `aria-activedescendant` is not in v1 but the layer 2 API must not preclude adding it as a focus strategy for the v2 combobox |
 | Disclosure | The simplest pattern; the teaching example and base for accordion and menu later |
 | Dialog | Open state, outside-click dismissal, `returnValue`, on top of the native `<dialog>` element |
 | Form association | ElementInternals value, validity, reset, label click, `:state(invalid)` |
@@ -162,6 +162,10 @@ One `attachX(elements, options)` function per pattern returning
   or tag. No DOM shape is assumed.
 - All listeners are registered with a single `AbortController`; `dispose`
   aborts it and removes the attributes it wrote.
+- Each behavior remembers the attributes it last wrote per element and
+  removes any that are no longer produced on the next update, so an item that
+  stops being active loses `aria-selected` without the template's help. (This
+  is how Zag's vanilla adapter applies props, verified 2026-09-27.)
 - Nothing runs at import time. No `window` or `document` access at module
   scope anywhere in `core` or `lit`. This is the one rule kept from the SSR
   design because it costs nothing and cannot be retrofitted mechanically.
@@ -194,6 +198,10 @@ pattern and returns the relevant elements. The suite asserts:
 - Required ARIA roles, states, and properties at each step.
 - Focus location after each interaction.
 
+Each suite runs twice, once driving the pattern by keyboard and once by
+pointer, following the `interactionType` idea in React Aria's test
+utilities.
+
 The Lit adapter, the future styled components, and any consumer skin run the
 same suite. Passing the suite is the definition of a conforming
 implementation. Consumers on other runners adapt the suite themselves.
@@ -216,8 +224,10 @@ Exactly two in v1.
 
 `FormAssociated(Base)`:
 
-- Sets `static formAssociated = true` and calls `attachInternals()` in the
-  constructor.
+- Sets `static formAssociated = true`. `ElementInternals` is created lazily
+  through a getter on first access rather than in the constructor, so it is
+  usable from methods that run during construction. (Material Web's
+  `mixinElementInternals` does this; verified 2026-09-27.)
 - Provides `value`, `name`, `disabled`, `required`, and read-only `validity`.
 - Implements `formResetCallback`, `formDisabledCallback`, and
   `formStateRestoreCallback`.
@@ -309,19 +319,36 @@ native `<dialog>` element. No polyfills.
 | Decision | Alternatives rejected | Reason |
 |---|---|---|
 | Three-layer core, framework-free, Lit as first adapter | Merged attach function; Lit-only controllers; base-class mixins; statechart plus connect | Only shape where a Node test and a plain HTML page both reach the behavior |
-| Own the primitives | Zag.js | Behavior layer is the product |
+| Own the primitives | Zag.js | Behavior layer is the product. Note: Zag now ships a vanilla adapter (`@zag-js/vanilla`) usable from Lit, so this is a product decision, not a technical necessity |
 | Foundations only in v1 | Eight core components | Prove the layers before adding a skin |
 | One package | Monorepo with four packages | Boundaries live in subpaths; versioning tooling has no job yet |
 | Hand-written tokens | W3C JSON with Style Dictionary | No design file to sync with |
 | No density axis | Three density files | Meaningful only once components consume spacing |
 | Client only | SSR with four rules and a hydration test level | Removes the hardest unsolved problem in the first draft |
-| Native `<dialog>` | Hand-rolled focus trap, inert, stack | Platform owns the a11y and composes across shadow roots |
+| Native `<dialog>` | Hand-rolled focus trap, inert, stack | Platform owns the a11y and composes across shadow roots. Zag still hand-rolls (trapFocus, preventBodyScroll, ariaHidden) because it supports non-modal and positioned dialogs; v1 is modal only, so the platform path holds |
 | TypeDoc | custom-elements manifest | v1 has no custom elements |
 | Conformance suites on Mocha and Chai | Injected assertion interface | Matches the runner in use; less code |
 | Eleventy docs, no Storybook | Storybook | Earns its place with the skin |
 | `tsc` only | Rollup, Vite library mode | Fewest moving parts |
 
-## 9. Changes from the 2026-09-18 draft
+## 9. Verification against current libraries (2026-09-27)
+
+Checked against source on the main branches of adobe/react-spectrum,
+chakra-ui/zag, material-components/material-web, and the lit.dev controller
+docs.
+
+| Claim in this spec | Status | Detail |
+|---|---|---|
+| State, behavior, component layering is mainstream | Confirmed | React Aria: state hooks are platform-agnostic, behavior hooks depend on the platform and return props to spread, components render. `useListBox(props, state, ref)` takes a ref |
+| Shipped conformance testers exist | Confirmed | `@react-aria/test-utils` has testers for listbox, dialog, menu, tabs, select, combobox, table, tree, and more, with `interactionType` of mouse, touch, or keyboard |
+| Zag is machine, connect, adapters | Confirmed | Statecharts; `connect` returns prop getters; elements located by id within a scope, never by selector |
+| Zag has no vanilla adapter | Wrong | `@zag-js/vanilla` exists and applies props imperatively with per-element bookkeeping of previously written attributes |
+| Zag's dialog is on native `<dialog>` | Not the case | Zag hand-rolls focus trap, scroll lock, and aria-hidden. The v1 decision stands for modal-only, see decisions log |
+| Zag listbox uses roving tabindex | Not the case | Zag uses `aria-activedescendant` with the container at `tabindex=0`. Both are APG-valid; v1 keeps roving and must not preclude activedescendant |
+| Material Web form association is a mixin | Confirmed, with a refinement | `formAssociated` static is on the mixin; internals come from a separate mixin with a lazy getter; reset and restore callbacks are left optional |
+| Controllers are Lit's unit of reusable behavior | Confirmed | Lit docs: controllers have their own identity, do not extend the prototype, and allow multiple instances per host |
+
+## 10. Changes from the 2026-09-18 draft
 
 Removed: monorepo and Changesets, token build pipeline, density axis,
 generated `tokens.ts`, SSR rules and test level, deterministic `uniqueId`,
