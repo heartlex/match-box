@@ -1,4 +1,9 @@
 import type { ReactiveControllerHost } from 'lit';
+import {
+  attachAccordion,
+  type AccordionElements,
+  type AttachAccordionOptions,
+} from '../core/dom/accordion.ts';
 import { attachDialog, type AttachDialogOptions, type DialogElements } from '../core/dom/dialog.ts';
 import {
   attachDisclosure,
@@ -6,6 +11,7 @@ import {
   type DisclosureElements,
 } from '../core/dom/disclosure.ts';
 import { attachListbox, type AttachListboxOptions, type ListboxElements } from '../core/dom/listbox.ts';
+import { AccordionState } from '../core/state/accordion.ts';
 import { DialogState } from '../core/state/dialog.ts';
 import { DisclosureState, type DisclosureStateOptions } from '../core/state/disclosure.ts';
 import { ListboxState } from '../core/state/listbox.ts';
@@ -58,6 +64,23 @@ export class DialogController extends BehaviorController<DialogState, DialogElem
       elements,
       (els, state) => attachDialog(els, { ...options, state }),
       ['dialog'],
+    );
+  }
+}
+
+/** Lit controller for {@link attachAccordion}. */
+export class AccordionController extends BehaviorController<AccordionState, AccordionElements> {
+  constructor(
+    host: ReactiveControllerHost,
+    elements: () => Pending<AccordionElements>,
+    options: AttachAccordionOptions = {},
+  ) {
+    super(
+      host,
+      options.state ?? new AccordionState(options),
+      elements,
+      (els, state) => attachAccordion(els, { ...options, state }),
+      ['items'],
     );
   }
 }
