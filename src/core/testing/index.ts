@@ -4,3 +4,4 @@ export {
   type DisclosureFixture,
   type DisclosureSuiteOptions,
 } from './disclosure.ts';
+export { dialogConformance, type DialogFixture, type DialogSuiteOptions } from './dialog.ts';

@@ -6,3 +6,4 @@ export {
 } from './attribute-writer.ts';
 export type { Behavior } from './behavior.ts';
 export { attachDisclosure, type AttachDisclosureOptions, type DisclosureElements } from './disclosure.ts';
+export { attachDialog, type AttachDialogOptions, type DialogElements } from './dialog.ts';
