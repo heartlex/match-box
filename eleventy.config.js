@@ -1,4 +1,8 @@
+import { HtmlBasePlugin } from '@11ty/eleventy';
+
 export default function (eleventyConfig) {
+  // Pages serves the site under /match-box/; locally ELEVENTY_PATH_PREFIX is unset and it stays at /.
+  eleventyConfig.addPlugin(HtmlBasePlugin);
   // The site consumes the built package exactly as a user would.
   eleventyConfig.addPassthroughCopy({ dist: 'pkg' });
   eleventyConfig.addPassthroughCopy('site/demos');
@@ -16,5 +20,9 @@ export default function (eleventyConfig) {
   });
   eleventyConfig.addFilter('markdown', (text = '') => markdown.render(text));
   eleventyConfig.addFilter('markdownInline', (text = '') => markdown.renderInline(text));
-  return { dir: { input: 'site', output: '_site' }, markdownTemplateEngine: 'njk' };
+  return {
+    dir: { input: 'site', output: '_site' },
+    markdownTemplateEngine: 'njk',
+    pathPrefix: process.env.ELEVENTY_PATH_PREFIX ?? '/',
+  };
 }

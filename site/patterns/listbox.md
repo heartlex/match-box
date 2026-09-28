@@ -62,7 +62,7 @@ class FruitPicker extends LitElement {
 
 <div class="demo" id="demo"></div>
 <script type="module">
-  import { mountListbox } from '/demos/demos.js';
+  import { mountListbox } from 'demos/demos.js';
   mountListbox(document.getElementById('demo'), {
     multiple: false,
     options: [{ label: 'Apple' }, { label: 'Banana' }, { label: 'Cherry', disabled: true }, { label: 'Date' }],
