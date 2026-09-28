@@ -83,3 +83,21 @@ function easingToken(style: CSSStyleDeclaration, value: string): string {
 export function targetsOf(targets: Element | Iterable<Element>): Element[] {
   return targets instanceof Element ? [targets] : [...new Set(targets)];
 }
+
+/**
+ * Resolves when every animation has finished or been cancelled. Aborting
+ * `signal` finishes the ones still running, which applies their end state.
+ */
+export function settled(animations: Animation[], signal: AbortSignal | undefined): Promise<void> {
+  if (animations.length === 0) return Promise.resolve();
+  const finish = (): void => {
+    for (const animation of animations) {
+      if (animation.playState !== 'idle' && animation.playState !== 'finished') animation.finish();
+    }
+  };
+  signal?.addEventListener('abort', finish, { once: true });
+  // `finished` rejects when an animation is cancelled; that still counts as settled.
+  return Promise.all(animations.map((animation) => animation.finished.catch(() => undefined))).then(() => {
+    signal?.removeEventListener('abort', finish);
+  });
+}
