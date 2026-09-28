@@ -1,6 +1,7 @@
 import { LitElement, html, type PropertyValues } from 'lit';
 import { AccordionController } from '../../lit/controllers.ts';
 import { MbDisclosure } from '../disclosure/disclosure.ts';
+import type { Size } from '../shared/size.ts';
 import { accordionStyles } from './accordion.styles.ts';
 
 /**
@@ -16,12 +17,15 @@ export class MbAccordion extends LitElement {
   static override properties = {
     multiple: { type: Boolean, reflect: true },
     headingLevel: { type: Number, attribute: 'heading-level' },
+    size: {},
   };
 
   /** Allow several disclosures to be open at once. */
   declare multiple: boolean;
   /** Heading level for disclosures that do not set their own. Defaults to 3. */
   declare headingLevel: number;
+  /** Size for disclosures that do not set their own. Defaults to `md`. */
+  declare size: Size;
 
   readonly accordion = new AccordionController(this, () => ({
     items: () => this.#disclosures().map((disclosure) => disclosure.disclosure),
@@ -31,6 +35,7 @@ export class MbAccordion extends LitElement {
     super();
     this.multiple = false;
     this.headingLevel = 3;
+    this.size = 'md';
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -42,6 +47,7 @@ export class MbAccordion extends LitElement {
     super.updated(changed);
     for (const disclosure of this.#disclosures()) {
       if (!disclosure.hasAttribute('heading-level')) disclosure.headingLevel = this.headingLevel;
+      if (!disclosure.hasAttribute('size')) disclosure.size = this.size;
     }
   }
 
