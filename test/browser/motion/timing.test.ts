@@ -52,6 +52,12 @@ describe('resolveTiming', () => {
     expect(resolveTiming(bare, {}, fallback)).to.include({ duration: 200, easing: 'cubic-bezier(0.2, 0, 0, 1)' });
   });
 
+  it('uses the tokens.css curve as the built-in spring', () => {
+    const fromTokens = getComputedStyle(document.documentElement).getPropertyValue('--mb-motion-easing-spring').trim();
+    const bare = element('--mb-motion-easing-spring: initial');
+    expect(resolveTiming(bare, { easing: 'spring' }, fallback).easing).to.equal(fromTokens);
+  });
+
   it('turns a token that is not a time into 0', () => {
     expect(resolveTiming(element('--mb-motion-duration-medium: fast'), {}, fallback).duration).to.equal(0);
   });

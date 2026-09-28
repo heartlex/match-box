@@ -3,6 +3,17 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.4.0
+
+### Added
+
+- `match-box/motion`: `reveal` animates elements the first time they enter
+  the viewport; `stagger` plays one animation on a group, offset in time;
+  `flip` animates elements from their old layout to the new one after a
+  DOM change; `exit` animates an element out, then removes it. Durations
+  and easings come from the motion tokens; nothing animates under
+  `prefers-reduced-motion: reduce`; an `AbortSignal` jumps to the end.
+
 ## 0.3.0
 
 ### Added

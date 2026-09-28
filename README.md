@@ -23,6 +23,7 @@ npm install match-box
 | `match-box/lit` | Reactive controllers and mixins (needs `lit`) |
 | `match-box/components` | Component classes, unregistered (needs `lit`) |
 | `match-box/components/define/<name>.js` | Registers `<mb-name>` (and what it needs); `all.js` registers everything |
+| `match-box/motion` | `reveal`, `stagger`, `flip`, `exit`: motion helpers for applications |
 | `match-box/tokens.css` | Light and dark design tokens |
 
 ```html
