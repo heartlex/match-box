@@ -6,6 +6,7 @@ interface DialogArgs {
   color: string;
   size: string;
   persistent: boolean;
+  closeLabel: string;
 }
 
 // Dialogs open from a trigger, never on load, so a docs page does not fill with modals.
@@ -15,7 +16,13 @@ const openNext = (event: Event): void => {
 
 const dialog = (args: DialogArgs, trigger: string) =>
   html`<mb-button color=${args.color} @click=${openNext}>${trigger}</mb-button>
-    <mb-dialog label=${args.label} color=${args.color} size=${args.size} ?persistent=${args.persistent}>
+    <mb-dialog
+      label=${args.label}
+      color=${args.color}
+      size=${args.size}
+      ?persistent=${args.persistent}
+      close-label=${args.closeLabel}
+    >
       <p>This removes the project and its history.</p>
       <form method="dialog" slot="footer">
         <mb-button type="submit" variant="ghost">Cancel</mb-button>
@@ -23,12 +30,25 @@ const dialog = (args: DialogArgs, trigger: string) =>
       </form>
     </mb-dialog>`;
 
+const args: DialogArgs = {
+  label: 'Delete project?',
+  color: 'danger',
+  size: 'md',
+  persistent: false,
+  closeLabel: 'Close',
+};
+
 const meta: Meta<DialogArgs> = {
   title: 'Components/Dialog',
   component: 'mb-dialog',
   tags: ['autodocs'],
-  args: { label: 'Delete project?', color: 'danger', size: 'md', persistent: false },
+  args,
+  // Only the args the render uses; Storybook would add a row for every manifest entry.
+  parameters: { controls: { include: Object.keys(args) } },
   argTypes: {
+    // `label` is also a shadow part; without this Storybook offers a JSON editor.
+    label: { control: 'text', description: 'Accessible name and visible title' },
+    closeLabel: { control: 'text', description: 'The `close-label` attribute' },
     color: { control: 'select', options: ['neutral', 'primary', 'secondary', 'tertiary', 'danger'] },
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
   },

@@ -202,6 +202,11 @@ Tests do not run here: tags are cut from `main`, which CI has checked.
 
 Pages is enabled with source "GitHub Actions" — a repository setting,
 changed by the user or by `gh api` as heartlex with the user's approval.
+Enabling it creates the `github-pages` environment, whose default
+deployment policy allows only the default branch; a `v*` tag rule is added
+to it (Settings → Environments → github-pages, or
+`gh api -X POST repos/heartlex/match-box/environments/github-pages/deployment-branch-policies -f name='v*' -f type=tag`),
+or tag pushes build but fail to deploy.
 
 ### First publish
 

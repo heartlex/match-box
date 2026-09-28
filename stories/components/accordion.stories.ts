@@ -4,16 +4,24 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 interface AccordionArgs {
   multiple: boolean;
   size: string;
+  headingLevel: number;
 }
+
+const args: AccordionArgs = { multiple: false, size: 'md', headingLevel: 3 };
 
 const meta: Meta<AccordionArgs> = {
   title: 'Components/Accordion',
   component: 'mb-accordion',
   tags: ['autodocs'],
-  args: { multiple: false, size: 'md' },
-  argTypes: { size: { control: 'select', options: ['sm', 'md', 'lg'] } },
+  args,
+  // Only the args the render uses; Storybook would add a row for every manifest entry.
+  parameters: { controls: { include: Object.keys(args) } },
+  argTypes: {
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    headingLevel: { control: { type: 'range', min: 1, max: 6 }, description: 'The `heading-level` attribute' },
+  },
   render: (args) =>
-    html`<mb-accordion ?multiple=${args.multiple} size=${args.size}>
+    html`<mb-accordion ?multiple=${args.multiple} size=${args.size} heading-level=${args.headingLevel}>
       <mb-disclosure><span slot="summary">Shipping</span>Orders ship within two business days.</mb-disclosure>
       <mb-disclosure><span slot="summary">Returns</span>Return any item within 30 days.</mb-disclosure>
       <mb-disclosure><span slot="summary">Warranty</span>Two years on all hardware.</mb-disclosure>

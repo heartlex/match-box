@@ -7,14 +7,21 @@ interface ListboxArgs {
   color: string;
   size: string;
   disabled: boolean;
+  required: boolean;
 }
+
+const args: ListboxArgs = { label: 'Fruit', multiple: false, color: 'neutral', size: 'md', disabled: false, required: false };
 
 const meta: Meta<ListboxArgs> = {
   title: 'Components/Listbox',
   component: 'mb-listbox',
   tags: ['autodocs'],
-  args: { label: 'Fruit', multiple: false, color: 'neutral', size: 'md', disabled: false },
+  args,
+  // Only the args the render uses; Storybook would add a row for every manifest entry.
+  parameters: { controls: { include: Object.keys(args) } },
   argTypes: {
+    // `label` is also a shadow part; without this Storybook offers a JSON editor.
+    label: { control: 'text', description: 'Accessible name' },
     color: { control: 'select', options: ['neutral', 'primary', 'secondary', 'tertiary', 'danger'] },
     size: { control: 'select', options: ['sm', 'md', 'lg'] },
   },
@@ -25,6 +32,7 @@ const meta: Meta<ListboxArgs> = {
       color=${args.color}
       size=${args.size}
       ?disabled=${args.disabled}
+      ?required=${args.required}
     >
       <mb-option>Apple</mb-option>
       <mb-option selected>Banana</mb-option>

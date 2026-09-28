@@ -13,11 +13,15 @@ interface ButtonArgs {
 
 const colors = ['neutral', 'primary', 'secondary', 'tertiary', 'danger'];
 
+const args: ButtonArgs = { label: 'Button', variant: 'default', color: 'neutral', size: 'md', href: '', disabled: false };
+
 const meta: Meta<ButtonArgs> = {
   title: 'Components/Button',
   component: 'mb-button',
   tags: ['autodocs'],
-  args: { label: 'Button', variant: 'default', color: 'neutral', size: 'md', href: '', disabled: false },
+  args,
+  // Only the args the render uses; Storybook would add a row for every manifest entry.
+  parameters: { controls: { include: Object.keys(args) } },
   argTypes: {
     label: { control: 'text', description: 'Default slot content' },
     variant: { control: 'select', options: ['default', 'outline', 'ghost'] },
