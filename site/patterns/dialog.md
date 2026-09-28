@@ -58,6 +58,6 @@ class ConfirmOrder extends LitElement {
 
 <div class="demo" id="demo"></div>
 <script type="module">
-  import { mountDialog } from '/demos/demos.js';
+  import { mountDialog } from 'demos/demos.js';
   mountDialog(document.getElementById('demo'));
 </script>

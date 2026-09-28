@@ -56,6 +56,6 @@ class ShippingDetails extends LitElement {
 
 <div class="demo" id="demo"></div>
 <script type="module">
-  import { mountDisclosure } from '/demos/demos.js';
+  import { mountDisclosure } from 'demos/demos.js';
   mountDisclosure(document.getElementById('demo'));
 </script>

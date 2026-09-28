@@ -4,6 +4,8 @@ A design system built on Lit whose accessible behaviors do not depend on Lit.
 The headless core works from plain HTML, any framework, or Lit; Lit is the
 first adapter, not the foundation.
 
+Documentation: [guide, API reference, and Storybook](https://heartlex.github.io/match-box/).
+
 It ships design tokens with five color roles, the headless core (listbox,
 disclosure, accordion, and native dialog behaviors), the Lit adapter
 (controllers plus `FormAssociated` and `DelegatesFocus` mixins),
@@ -60,6 +62,8 @@ npm run lint
 npm run typecheck
 npm run size      # bundle size per subpath against size-budget.json
 npm run docs      # builds the site into _site
+npm run storybook # Storybook on http://localhost:6006
+npm run storybook:build && npm run storybook:smoke  # static build, every story checked with axe
 ```
 
 Design: [docs/superpowers/specs/2026-09-18-match-box-design.md](docs/superpowers/specs/2026-09-18-match-box-design.md).

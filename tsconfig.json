@@ -10,7 +10,9 @@
     "verbatimModuleSyntax": true,
     "rewriteRelativeImportExtensions": true,
     "noEmit": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "stories", ".storybook/*.ts", "vitest.config.ts"]
 }

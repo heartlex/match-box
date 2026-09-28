@@ -8,17 +8,18 @@
     <script type="importmap">
       {
         "imports": {
-          "match-box/core": "/pkg/core/index.js",
-          "match-box/components": "/pkg/components/index.js",
-          "match-box/components/": "/pkg/components/",
-          "match-box/motion": "/pkg/motion/index.js",
-          "lit": "/vendor/lit/index.js",
-          "lit/": "/vendor/lit/",
-          "lit-html": "/vendor/lit-html/lit-html.js",
-          "lit-html/": "/vendor/lit-html/",
-          "lit-element/": "/vendor/lit-element/",
-          "@lit/reactive-element": "/vendor/@lit/reactive-element/reactive-element.js",
-          "@lit/reactive-element/": "/vendor/@lit/reactive-element/"
+          "match-box/core": "{{ '/pkg/core/index.js' | htmlBaseUrl }}",
+          "match-box/components": "{{ '/pkg/components/index.js' | htmlBaseUrl }}",
+          "match-box/components/": "{{ '/pkg/components/' | htmlBaseUrl }}",
+          "match-box/motion": "{{ '/pkg/motion/index.js' | htmlBaseUrl }}",
+          "demos/": "{{ '/demos/' | htmlBaseUrl }}",
+          "lit": "{{ '/vendor/lit/index.js' | htmlBaseUrl }}",
+          "lit/": "{{ '/vendor/lit/' | htmlBaseUrl }}",
+          "lit-html": "{{ '/vendor/lit-html/lit-html.js' | htmlBaseUrl }}",
+          "lit-html/": "{{ '/vendor/lit-html/' | htmlBaseUrl }}",
+          "lit-element/": "{{ '/vendor/lit-element/' | htmlBaseUrl }}",
+          "@lit/reactive-element": "{{ '/vendor/@lit/reactive-element/reactive-element.js' | htmlBaseUrl }}",
+          "@lit/reactive-element/": "{{ '/vendor/@lit/reactive-element/' | htmlBaseUrl }}"
         }
       }
     </script>
@@ -76,7 +77,7 @@
       <a href="/api/">API</a> · Components: <a href="/components/button/">Button</a> ·
       <a href="/components/disclosure/">Disclosure</a> · <a href="/components/accordion/">Accordion</a> ·
       <a href="/components/dialog/">Dialog</a> · <a href="/components/listbox/">Listbox</a> ·
-      <a href="/theming/">Theming</a> · <a href="/motion/">Motion</a></nav>
+      <a href="/theming/">Theming</a> · <a href="/motion/">Motion</a> · <a href="/storybook/">Storybook</a></nav>
     <main>{{ content | safe }}</main>
   </body>
 </html>
