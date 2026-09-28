@@ -108,3 +108,5 @@ library from the `open` state and the `close` event:
   --mb-motion-duration-slow: 0ms;
 }
 ```
+
+For motion in your own pages, see [Motion](/motion/).

@@ -13,6 +13,7 @@ const entries = {
   'match-box/lit': 'dist/lit/index.js',
   'match-box/components': 'dist/components/index.js',
   'match-box/components/define/all.js': 'dist/components/define/all.js',
+  'match-box/motion': 'dist/motion/index.js',
   'match-box/tokens.css': 'dist/tokens/tokens.css',
 };
 
