@@ -1,11 +1,12 @@
 import { html, nothing } from 'lit';
 import { setCustomElementsManifest, type Preview } from '@storybook/web-components-vite';
 import manifest from '../dist/custom-elements.json' with { type: 'json' };
+import { publicManifest } from './manifest.ts';
 import '../src/tokens/tokens.css';
 import '../src/components/define/all.ts';
 
 // The same manifest as the Eleventy API tables: attributes, slots, parts, events, and CSS properties.
-setCustomElementsManifest(manifest);
+setCustomElementsManifest(publicManifest(manifest));
 
 // What tokens.css does under prefers-reduced-motion: reduce. A page cannot emulate the media query.
 const noMotion = '--mb-motion-duration-fast: 0ms; --mb-motion-duration-medium: 0ms; --mb-motion-duration-slow: 0ms;';
