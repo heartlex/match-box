@@ -181,8 +181,8 @@ and cannot animate. The panel becomes a grid:
 - With `href`, `type`, `name`, and `value` are ignored and a click never
   submits or resets a form. Keyboard and role are the native link's: Enter
   activates, Space does not.
-- `disabled` with `href`: `<a>` without `href`, with `role="link"`,
-  `aria-disabled="true"`, and `tabindex="-1"`. Disabled styling; no
+- `disabled` with `href`: `<a>` without `href` or `tabindex`, with
+  `role="link"` and `aria-disabled="true"`. Disabled styling; no
   navigation; not focusable, like a disabled `mb-button`.
 - Links get `text-decoration: none` and no visited color. The look comes
   from the button tokens in every variant, color, and size.

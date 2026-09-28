@@ -32,6 +32,15 @@ import 'match-box/components/define/button.js';
     <mb-button variant="ghost" color="tertiary">Tertiary</mb-button>
     <mb-button variant="ghost" color="danger">Danger</mb-button>
   </div>
+  <div class="row">
+    <mb-button size="sm" color="primary">Small</mb-button>
+    <mb-button color="primary">Medium</mb-button>
+    <mb-button size="lg" color="primary">Large</mb-button>
+  </div>
+  <div class="row">
+    <mb-button href="#api" variant="outline">Link to the API</mb-button>
+    <mb-button href="#api" disabled>Disabled link</mb-button>
+  </div>
   <div class="row"><mb-button disabled>Disabled</mb-button></div>
 </div>
 
@@ -44,5 +53,14 @@ import 'match-box/components/define/button.js';
 ```
 
 `variant` sets the structure and `color` the color role; any pair works.
+
+`size` is `sm`, `md` (default), or `lg`. With `href`, the button is a link:
+Enter follows it, it never submits a form, and `target`, `rel`, and
+`download` pass through.
+
+```html
+<mb-button size="sm">Small</mb-button>
+<mb-button href="/docs" target="_blank" rel="noopener">Docs</mb-button>
+```
 
 {% include "api.njk" %}

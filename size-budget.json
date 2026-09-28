@@ -5,7 +5,7 @@
   "match-box/core/a11y": 1000,
   "match-box/core/testing": 2700,
   "match-box/lit": 4600,
-  "match-box/components": 9600,
-  "match-box/components/define/all.js": 9600,
-  "match-box/tokens.css": 1500
+  "match-box/components": 10400,
+  "match-box/components/define/all.js": 10400,
+  "match-box/tokens.css": 1700
 }

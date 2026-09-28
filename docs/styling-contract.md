@@ -1,6 +1,6 @@
 # Styling contract for the match-box skin
 
-Status: v2 step 1. `match-box/components` implements this contract for
+Status: 0.3.0. `match-box/components` implements this contract for
 button, disclosure, accordion, dialog, and listbox.
 
 ## Customization surfaces
@@ -67,7 +67,16 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   `--mb-focus-ring-width` and `--mb-color-border-focus`, and an
   `@media (forced-colors: active)` block that keeps borders, selection, and
   focus visible.
-- No `size` attribute in the first skin release.
+- `size` picks a size, `sm`, `md` (default), or `lg`, on components whose
+  controls have a height. Each size is five tokens,
+  `--mb-size-<s>-height`, `-padding-inline`, `-font-size`, `-gap`, and
+  `-icon`; a shared class maps them to private properties, as with color
+  roles. `mb-dialog`'s `size` is its width, from `--mb-dialog-width-<s>`.
+- Motion reads `--mb-motion-duration-*` and `--mb-motion-easing-*`, through
+  a component token where one exists. Every duration is `0ms` under
+  `prefers-reduced-motion: reduce`. Applications that drive their own
+  animation library set the durations to `0ms` and hook the `open` state
+  and the `close` event.
 - No `margin` on the host element. Layout belongs to the consumer.
 - Icons come through a slot. No icon set is bundled.
 

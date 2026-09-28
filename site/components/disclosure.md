@@ -19,6 +19,10 @@ import 'match-box/components/define/disclosure.js';
     <span slot="summary">Returns</span>
     Return any item within 30 days.
   </mb-disclosure>
+  <mb-disclosure size="sm">
+    <span slot="summary">Small</span>
+    A small disclosure.
+  </mb-disclosure>
 </div>
 
 ```html
