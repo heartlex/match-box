@@ -59,7 +59,11 @@
     "test": "npm run test:unit && npm run test:browser",
     "size": "node scripts/check-size.js",
     "docs": "npm run build && eleventy && typedoc",
-    "docs:prefix-check": "ELEVENTY_PATH_PREFIX=/match-box/ eleventy --output=_site-prefix-check && node scripts/check-site-prefix.js _site-prefix-check /match-box/"
+    "docs:prefix-check": "ELEVENTY_PATH_PREFIX=/match-box/ eleventy --output=_site-prefix-check && node scripts/check-site-prefix.js _site-prefix-check /match-box/",
+    "storybook": "npm run build && storybook dev -p 6006",
+    "storybook:build": "npm run build && storybook build -o storybook-static",
+    "storybook:smoke": "node scripts/storybook-smoke.js storybook-static",
+    "storybook:smoke:self-test": "npm run build && STORYBOOK_SMOKE_FIXTURE=1 storybook build -o storybook-smoke-fixture && node scripts/storybook-smoke.js storybook-smoke-fixture --expect-fail smoke-fixture--throws,smoke-fixture--logs-error,smoke-fixture--axe-violation,smoke-fixture--empty"
   },
   "peerDependencies": {
     "chai": "^6.0.0",
@@ -77,6 +81,9 @@
     "@11ty/eleventy": "^3.1.6",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@eslint/js": "^10.0.1",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/web-components-vite": "^10.6.0",
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^2.0.0",
@@ -90,9 +97,11 @@
     "globals": "^17.12.0",
     "lit": "^3.3.3",
     "playwright": "^1.63.0",
+    "storybook": "^10.6.0",
     "typedoc": "^0.28.20",
     "typescript": "~6.0",
     "typescript-eslint": "^8.70.1",
+    "vite": "^8.3.1",
     "vitest": "^5.0.2"
   },
   "customElements": "dist/custom-elements.json"
