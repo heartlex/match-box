@@ -147,16 +147,6 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.requestUpdate();
   }
 
-  /**
-   * Focuses the link or button, except a disabled link: its `tabindex="-1"`
-   * keeps `tabIndex` at -1 but would otherwise still let `delegatesFocus` land
-   * on it.
-   */
-  override focus(options?: FocusOptions): void {
-    if (this.href != null && this.disabled) return;
-    super.focus(options);
-  }
-
   override render() {
     const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}`;
     const content = html`<span part="prefix" ?hidden=${!this.#hasPrefix}
@@ -177,7 +167,6 @@ export class MbButton extends DelegatesFocus(LitElement) {
         download=${this.download ?? nothing}
         role=${this.disabled ? 'link' : nothing}
         aria-disabled=${this.disabled ? 'true' : nothing}
-        tabindex=${this.disabled ? '-1' : nothing}
         >${content}</a
       >`;
     }

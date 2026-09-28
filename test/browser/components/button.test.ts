@@ -292,13 +292,13 @@ describe('mb-button', () => {
       const { element } = await mount<MbButton>('<mb-button href="#linked" disabled>Off</mb-button>');
       const base = part<HTMLAnchorElement>(element, 'base');
       expect(base.hasAttribute('href')).to.equal(false);
-      expect([base.getAttribute('role'), base.getAttribute('aria-disabled'), base.tabIndex]).to.deep.equal([
-        'link',
-        'true',
-        -1,
-      ]);
+      expect([base.getAttribute('role'), base.getAttribute('aria-disabled'), base.hasAttribute('tabindex')]).to.deep.equal(
+        ['link', 'true', false],
+      );
       element.focus();
       expect(element.shadowRoot?.activeElement ?? null).to.equal(null);
+      base.focus();
+      expect(element.shadowRoot?.activeElement ?? null, 'direct focus').to.equal(null);
       await driver.click(base);
       await tick();
       expect(location.hash).to.equal('');
