@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { emulateMedia } from '@web/test-runner-commands';
 import '../../../src/components/define/all.ts';
-import { colorRoles, MbButton, type MbListbox } from '../../../src/components/index.ts';
+import { colorRoles, MbButton, sizes, type MbDialog, type MbListbox } from '../../../src/components/index.ts';
 import { define } from '../../../src/components/shared/define.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, resolveColor, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, setMotion, settle } from '../../support/components.ts';
 
 const transparent = 'rgba(0, 0, 0, 0)';
 const variants = ['default', 'outline', 'ghost'] as const;
@@ -16,6 +16,7 @@ describe('styling contract', () => {
     document.body.replaceChildren();
     document.documentElement.removeAttribute('data-theme');
     await emulateMedia({ forcedColors: 'none' });
+    await emulateMedia({ reducedMotion: 'no-preference' });
   });
 
   for (const role of colorRoles) {
@@ -100,6 +101,56 @@ describe('styling contract', () => {
       await expectNoAxeViolations(container);
     });
   }
+
+  for (const theme of ['light', 'dark']) {
+    it(`every size, and link buttons, pass axe in the ${theme} theme`, async () => {
+      document.documentElement.dataset['theme'] = theme;
+      const markup = sizes.flatMap((size) => [
+        `<mb-button size="${size}" color="primary">Save ${size}</mb-button>`,
+        `<mb-button size="${size}" href="#docs" variant="outline">Docs ${size}</mb-button>`,
+        `<mb-disclosure size="${size}" open><span slot="summary">${size}</span>Body</mb-disclosure>`,
+        `<mb-listbox size="${size}" label="List ${size}" multiple><mb-option selected>A</mb-option><mb-option>B</mb-option></mb-listbox>`,
+      ]);
+      const surface = 'background: var(--mb-color-bg-surface); color: var(--mb-color-fg-default)';
+      const { container } = await mount(`<main style="${surface}">${markup.join('')}</main>`);
+      await expectNoAxeViolations(container);
+    });
+  }
+
+  it('small controls are at least 24 by 24 pixels (WCAG 2.5.8)', async () => {
+    const { container } = await mount(
+      '<mb-button size="sm">A</mb-button><mb-disclosure size="sm"><span slot="summary">A</span>B</mb-disclosure>' +
+        '<mb-listbox size="sm" label="L"><mb-option>A</mb-option></mb-listbox>',
+    );
+    const targets = [
+      part(container.querySelector('mb-button') as Element, 'base'),
+      part(container.querySelector('mb-disclosure') as Element, 'trigger'),
+      part(container.querySelector('mb-option') as Element, 'base'),
+    ];
+    for (const target of targets) {
+      const box = target.getBoundingClientRect();
+      expect(Math.min(box.width, box.height), target.localName).to.be.at.least(24);
+    }
+  });
+
+  it('every animation has no duration under reduced motion', async () => {
+    setMotion(true);
+    await emulateMedia({ reducedMotion: 'reduce' });
+    const { container } = await mount(
+      '<mb-button>A</mb-button><mb-disclosure><span slot="summary">A</span>B</mb-disclosure>' +
+        '<mb-listbox label="L"><mb-option>A</mb-option></mb-listbox><mb-dialog label="D">Body</mb-dialog>',
+    );
+    const parts = [
+      part(container.querySelector('mb-button') as Element, 'base'),
+      part(container.querySelector('mb-disclosure') as Element, 'panel'),
+      part(container.querySelector('mb-disclosure') as Element, 'icon'),
+      part(container.querySelector('mb-option') as Element, 'base'),
+      part(container.querySelector('mb-dialog') as MbDialog, 'dialog'),
+    ];
+    const durations = parts.flatMap((element) => getComputedStyle(element).transitionDuration.split(', '));
+    setMotion(false);
+    expect([...new Set(durations)]).to.deep.equal(['0s']);
+  });
 
   it('define is safe to call again for a registered tag', () => {
     expect(() => {
