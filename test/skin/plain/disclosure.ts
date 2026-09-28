@@ -23,3 +23,24 @@ export function mountPlainDisclosure(): DisclosureFixture {
     },
   };
 }
+
+/** Like mountPlainDisclosure, but hides the panel with `visibility: hidden`, as mb-disclosure does. */
+export function mountVisibilityDisclosure(): DisclosureFixture {
+  const fixture = mountPlainDisclosure();
+  const { trigger, panel } = fixture;
+  const show = (): void => {
+    panel.hidden = false;
+    panel.style.visibility = trigger.getAttribute('aria-expanded') === 'true' ? '' : 'hidden';
+  };
+  const observer = new MutationObserver(show);
+  observer.observe(trigger, { attributes: true, attributeFilter: ['aria-expanded'] });
+  show();
+  return {
+    trigger,
+    panel,
+    teardown() {
+      observer.disconnect();
+      fixture.teardown();
+    },
+  };
+}
