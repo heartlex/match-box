@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { sendKeys } from '@web/test-runner-commands';
+import { emulateMedia, sendKeys } from '@web/test-runner-commands';
 import '../../../src/components/define/dialog.ts';
 import type { MbDialog } from '../../../src/components/index.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
@@ -121,5 +121,50 @@ describe('mb-dialog', () => {
     await settle(document.body);
     expect(part<HTMLDialogElement>(dialog, 'dialog').matches(':modal')).to.equal(true);
     dialog.close();
+  });
+
+  it('size sets the width from the dialog widths, and --mb-dialog-width wins', async () => {
+    const widths: number[] = [];
+    for (const attributes of ['size="sm"', '', 'size="lg"', 'size="sm" style="--mb-dialog-width: 20rem"']) {
+      const dialog = await mountDialog(attributes);
+      dialog.show();
+      await settle(document.body);
+      widths.push(part(dialog, 'dialog').getBoundingClientRect().width);
+      dialog.close();
+      document.body.replaceChildren();
+    }
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const cap = window.innerWidth - 2 * rem;
+    expect(widths).to.deep.equal([24 * rem, 32 * rem, Math.min(48 * rem, cap), 20 * rem]);
+  });
+
+  describe('motion', () => {
+    before(() => setMotion(true));
+    after(() => setMotion(false));
+    afterEach(() => emulateMedia({ reducedMotion: 'no-preference' }));
+
+    it('transitions opacity, scale, and the top layer with --mb-dialog-duration', async () => {
+      const dialog = await mountDialog('style="--mb-dialog-duration: 123ms"');
+      const style = getComputedStyle(part(dialog, 'dialog'));
+      expect(style.transitionProperty.split(', ').slice(0, 2)).to.deep.equal(['opacity', 'transform']);
+      expect(style.transitionDuration.split(', ')[0]).to.equal('0.123s');
+    });
+
+    it('still opens modally and closes with the submitter value', async () => {
+      const dialog = await mountDialog('', '<form method="dialog" slot="footer"><button value="confirm">OK</button></form>');
+      dialog.show();
+      await settle(document.body);
+      expect(part<HTMLDialogElement>(dialog, 'dialog').matches(':modal')).to.equal(true);
+      const closed = new Promise((resolve) => dialog.addEventListener('close', resolve, { once: true }));
+      (dialog.querySelector('button') as HTMLButtonElement).click();
+      await closed;
+      expect([dialog.open, dialog.returnValue]).to.deep.equal([false, 'confirm']);
+    });
+
+    it('has no transition duration under reduced motion', async () => {
+      await emulateMedia({ reducedMotion: 'reduce' });
+      const dialog = await mountDialog();
+      expect(getComputedStyle(part(dialog, 'dialog')).transitionDuration.split(', ')[0]).to.equal('0s');
+    });
   });
 });
