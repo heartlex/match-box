@@ -7,5 +7,6 @@
   "match-box/lit": 4600,
   "match-box/components": 10400,
   "match-box/components/define/all.js": 10400,
+  "match-box/motion": 2000,
   "match-box/tokens.css": 1700
 }
