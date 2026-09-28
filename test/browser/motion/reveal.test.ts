@@ -120,6 +120,23 @@ describe('reveal', () => {
     await until(() => playing(animation));
   });
 
+  it('reveals a target too tall to ever reach the threshold once it enters', async () => {
+    const [target] = mount('<div class="spacer"></div><div data-t style="height: 2000vh"></div>');
+    reveal(target);
+    const [animation] = target.getAnimations();
+    target.scrollIntoView();
+    await until(() => playing(animation), 1000);
+  });
+
+  it('keeps waiting while less than the threshold of a target is in view', async () => {
+    const [target] = mount('<div class="spacer"></div><div data-t style="height: 100vh"></div>');
+    reveal(target, { threshold: 0.5 });
+    const [animation] = target.getAnimations();
+    window.scrollTo(0, target.offsetTop - window.innerHeight + 20);
+    for (let frame = 0; frame < 5; frame++) await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(animation.playState).to.equal('paused');
+  });
+
   it('does nothing for no targets', () => {
     const stop = reveal([]);
     stop();

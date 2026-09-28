@@ -47,10 +47,21 @@ export function reveal(targets: Element | Iterable<Element>, options: RevealOpti
     release(event.currentTarget as Element)?.finish();
   };
 
+  // A target taller than the root divided by the threshold can never reach it,
+  // so it enters with its first visible pixel; the 0 threshold reports that pixel.
+  const thresholds = [threshold].flat();
+  const minimum = Math.min(...thresholds);
+  const entered = (entry: IntersectionObserverEntry): boolean => {
+    if (!entry.isIntersecting) return false;
+    const rootHeight = entry.rootBounds?.height ?? window.innerHeight;
+    // The small tolerance absorbs rounding in the reported ratio.
+    return entry.intersectionRatio >= minimum - 0.001 || entry.boundingClientRect.height * minimum > rootHeight;
+  };
+
   const observer = new IntersectionObserver(
     (entries) => {
       const entering = entries
-        .filter((entry) => entry.isIntersecting && waiting.has(entry.target))
+        .filter((entry) => entered(entry) && waiting.has(entry.target))
         .map((entry) => entry.target)
         .sort(byDocumentOrder);
       entering.forEach((element, index) => {
@@ -60,7 +71,7 @@ export function reveal(targets: Element | Iterable<Element>, options: RevealOpti
         animation?.play();
       });
     },
-    { threshold, rootMargin },
+    { threshold: [0, ...thresholds], rootMargin },
   );
 
   const stop = (): void => {

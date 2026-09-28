@@ -48,6 +48,22 @@ describe('exit', () => {
     expect(getComputedStyle(target).opacity).to.equal('0');
   });
 
+  it('exits again after a remove: false exit the caller undid', async () => {
+    const target = box();
+    const hidden = exit(target, { remove: false });
+    animationOf(target).finish();
+    await hidden;
+    // The caller restores the element, as a reusable panel would.
+    for (const animation of target.getAnimations()) animation.cancel();
+    target.removeAttribute('inert');
+    const done = exit(target);
+    expect(done).to.not.equal(hidden);
+    expect(target.getAnimations()).to.have.length(1);
+    animationOf(target).finish();
+    await done;
+    expect(target.isConnected).to.equal(false);
+  });
+
   it('returns the same promise to a second call', () => {
     const target = box();
     expect(exit(target)).to.equal(exit(target));

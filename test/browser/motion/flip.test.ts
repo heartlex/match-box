@@ -85,6 +85,22 @@ describe('flip', () => {
     await done;
   });
 
+  it('skips targets that are not rendered before or after the change', async () => {
+    const { items } = mountList();
+    items[0].hidden = true;
+    // A filter: A shows again, C is hidden, B moves down to make room for A.
+    const done = flip(items, () => {
+      items[0].hidden = false;
+      items[2].hidden = true;
+    });
+    await tick();
+    expect(items[0].getAnimations(), 'shown by the change').to.have.length(0);
+    expect(items[2].getAnimations(), 'hidden by the change').to.have.length(0);
+    expect(items[1].getAnimations(), 'moved').to.have.length(1);
+    items[1].getAnimations()[0].finish();
+    await done;
+  });
+
   it('animates a target that the change moves out and back in', async () => {
     const { list, items } = mountList();
     const top = items[0].getBoundingClientRect().top;

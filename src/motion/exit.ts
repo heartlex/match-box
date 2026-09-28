@@ -32,12 +32,13 @@ export function exit(target: Element, options: ExitOptions = {}): Promise<void> 
       ? undefined
       : target.animate(keyframes, { duration, easing, delay, fill: 'forwards' });
   const done = settled(animation ? [animation] : [], signal).then(() => {
+    // Only a running exit is shared; a finished one never blocks the next.
+    exiting.delete(target);
     if (!remove) return;
     target.remove();
     // Put back later (an undo), the element is as it was before the exit.
     animation?.cancel();
     if (!wasInert) target.removeAttribute('inert');
-    exiting.delete(target);
   });
   exiting.set(target, done);
   return done;

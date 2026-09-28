@@ -36,13 +36,17 @@ export function flipKeyframes(first: RectLike, last: RectLike, scale: boolean): 
   ];
 }
 
+// Disconnected and display: none elements have no boxes.
+const rendered = (element: Element): boolean => element.getClientRects().length > 0;
+
 // The flip animation running on each element, so a new flip can start from where it is.
 const running = new WeakMap<Element, Animation>();
 
 /**
  * Runs `change`, then animates each target from where it was to where it is.
  * Targets are taken when `flip` is called: elements that `change` adds are not
- * animated, and targets it removes are skipped. Resolves when every animation
+ * animated, and targets it removes, or that are not rendered before or after
+ * it (`display: none`, `hidden`), are skipped. Resolves when every animation
  * finishes; rejects only if `change` throws.
  */
 export async function flip(
@@ -52,17 +56,18 @@ export async function flip(
 ): Promise<void> {
   const { scale = true, signal } = options;
   const elements = targetsOf(targets);
-  // Measured before cancelling, so the rects include any running flip.
-  const first = new Map(elements.map((element) => [element, element.getBoundingClientRect()]));
+  // Measured before cancelling, so the rects include any running flip. An element
+  // that is not rendered has no place to start from: its rect is the viewport origin.
+  const first = new Map(elements.filter(rendered).map((element) => [element, element.getBoundingClientRect()]));
   for (const element of elements) running.get(element)?.cancel();
   await change();
   if (signal?.aborted) return;
   const animations: Animation[] = [];
-  for (const element of elements) {
-    if (!element.isConnected) continue;
+  for (const [element, rect] of first) {
+    if (!rendered(element)) continue;
     const { duration, easing, delay } = resolveTiming(element, options, { duration: 'medium', easing: 'standard' });
     if (duration === 0) continue;
-    const keyframes = flipKeyframes(first.get(element)!, element.getBoundingClientRect(), scale);
+    const keyframes = flipKeyframes(rect, element.getBoundingClientRect(), scale);
     if (keyframes === null) continue;
     const animation = element.animate(keyframes, { duration, easing, delay });
     running.set(element, animation);
