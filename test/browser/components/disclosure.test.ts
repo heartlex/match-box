@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { emulateMedia, sendKeys } from '@web/test-runner-commands';
+import { emulateMedia } from '@web/test-runner-commands';
 import '../../../src/components/define/disclosure.ts';
 import type { MbDisclosure } from '../../../src/components/index.ts';
 import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
@@ -58,15 +58,14 @@ describe('mb-disclosure', () => {
     expect(part(element, 'trigger').getAttribute('aria-expanded')).to.equal('true');
   });
 
-  it('a closed panel is out of the tab order', async () => {
+  it("a closed panel's content cannot be focused", async () => {
     const { element } = await mount<MbDisclosure>(
-      '<mb-disclosure><span slot="summary">Details</span><a href="#inside">Inside</a></mb-disclosure><button>After</button>',
+      '<mb-disclosure><span slot="summary">Details</span><a href="#inside">Inside</a></mb-disclosure>',
     );
     const link = element.querySelector('a') as HTMLAnchorElement;
     expect(link.checkVisibility({ visibilityProperty: true })).to.equal(false);
-    part(element, 'trigger').focus();
-    await sendKeys({ press: 'Tab' });
-    expect(document.activeElement?.textContent).to.equal('After');
+    link.focus();
+    expect(document.activeElement === link, 'focused').to.equal(false);
   });
 
   it('size sets trigger height, padding, font size, and gap, and panel padding, from the scale', async () => {
