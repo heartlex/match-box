@@ -17,7 +17,7 @@ import 'match-box/components/define/listbox.js';
     <mb-option disabled>Cherry</mb-option>
     <mb-option>Date</mb-option>
   </mb-listbox>
-  <mb-listbox label="Toppings" multiple color="tertiary">
+  <mb-listbox label="Toppings" multiple color="tertiary" size="sm">
     <mb-option value="nuts">Nuts</mb-option>
     <mb-option value="honey" selected>Honey</mb-option>
     <mb-option value="yogurt">Yogurt</mb-option>

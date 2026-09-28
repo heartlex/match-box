@@ -82,7 +82,7 @@ describe('tokens.css', () => {
   afterEach(async () => {
     document.documentElement.removeAttribute('data-theme');
     document.body.replaceChildren();
-    await emulateMedia({ colorScheme: 'light' });
+    await emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
   });
 
   it('prefixes every custom property with --mb-', () => {
@@ -168,4 +168,33 @@ describe('tokens.css', () => {
       }
     });
   }
+
+  it('defines five tokens for each of the three sizes, and a dialog width per size', () => {
+    const light = block(':root, [data-theme="light"]');
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const name of ['height', 'padding-inline', 'font-size', 'gap', 'icon']) {
+        expect(light.has(`--mb-size-${size}-${name}`), `--mb-size-${size}-${name}`).to.equal(true);
+      }
+      expect(light.has(`--mb-dialog-width-${size}`), `--mb-dialog-width-${size}`).to.equal(true);
+    }
+  });
+
+  it('keeps the md size at the step 1 button metrics', () => {
+    expect(token('--mb-size-md-height')).to.equal('2.25rem');
+    expect(token('--mb-size-md-padding-inline')).to.equal('0.75rem');
+    expect(token('--mb-size-md-font-size')).to.equal('1rem');
+    expect(token('--mb-size-md-gap')).to.equal('0.5rem');
+    expect(token('--mb-dialog-width-md')).to.equal('32rem');
+  });
+
+  it('turns every motion duration to 0ms under reduced motion, in themed subtrees too', async () => {
+    const subtree = document.createElement('div');
+    subtree.dataset['theme'] = 'light';
+    document.body.append(subtree);
+    const durations = ['fast', 'medium', 'slow'].map((name) => `--mb-motion-duration-${name}`);
+    expect(durations.map((name) => token(name))).to.deep.equal(['120ms', '200ms', '300ms']);
+    await emulateMedia({ reducedMotion: 'reduce' });
+    expect(durations.map((name) => token(name))).to.deep.equal(['0ms', '0ms', '0ms']);
+    expect(durations.map((name) => token(name, subtree))).to.deep.equal(['0ms', '0ms', '0ms']);
+  });
 });

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { DialogController } from '../../lit/controllers.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
+import { sizeName, type Size } from '../shared/size.ts';
 import { dialogStyles } from './dialog.styles.ts';
 
 /**
@@ -20,7 +21,7 @@ import { dialogStyles } from './dialog.styles.ts';
  * @csspart body - The body wrapper.
  * @csspart footer - The footer wrapper.
  * @cssstate open - The dialog is open.
- * @cssprop --mb-dialog-width - Maximum width.
+ * @cssprop --mb-dialog-width - Maximum width. Overrides `size`.
  * @cssprop --mb-dialog-bg - Background.
  * @cssprop --mb-dialog-border-color - Border color.
  * @cssprop --mb-dialog-accent-color - Top border color.
@@ -28,6 +29,8 @@ import { dialogStyles } from './dialog.styles.ts';
  * @cssprop --mb-dialog-radius - Corner radius.
  * @cssprop --mb-dialog-shadow - Shadow.
  * @cssprop --mb-dialog-backdrop - Backdrop color.
+ * @cssprop --mb-dialog-backdrop-blur - Backdrop blur radius.
+ * @cssprop --mb-dialog-duration - Duration of the open and close animations.
  * @cssprop --mb-dialog-title-font-size - Title font size.
  * @fires close - After the dialog closes, for any reason.
  * @fires cancel - When Escape is pressed. Cancelable: preventing it keeps the dialog open.
@@ -38,6 +41,7 @@ export class MbDialog extends LitElement {
     open: { type: Boolean, reflect: true, noAccessor: true },
     label: {},
     color: {},
+    size: {},
     persistent: { type: Boolean, reflect: true },
     closeLabel: { attribute: 'close-label' },
   };
@@ -45,6 +49,8 @@ export class MbDialog extends LitElement {
   /** The title, used when the `heading` slot is empty. */
   declare label: string;
   declare color: ColorRole;
+  /** Maximum width, from the dialog widths. Unknown values render as `md`. */
+  declare size: Size;
   /** Keep the dialog open on an outside click. Escape still closes it. */
   declare persistent: boolean;
   /** Accessible name of the close button. */
@@ -66,6 +72,7 @@ export class MbDialog extends LitElement {
     super();
     this.label = '';
     this.color = 'neutral';
+    this.size = 'md';
     this.persistent = false;
     this.closeLabel = 'Close';
     this.#internals = this.attachInternals();
@@ -98,16 +105,18 @@ export class MbDialog extends LitElement {
     return this.#dialog.state.returnValue;
   }
 
+  /** Opens the dialog modally and clears `returnValue`. */
   show(): void {
     this.#dialog.state.show();
   }
 
+  /** Closes the dialog. `returnValue` becomes the given value, or empty. */
   close(returnValue?: string): void {
     this.#dialog.state.close(returnValue);
   }
 
   override render() {
-    return html`<dialog part="dialog" class="color-${colorRole(this.color)}" @close=${this.#onClose} @cancel=${this.#onCancel}>
+    return html`<dialog part="dialog" class="color-${colorRole(this.color)} size-${sizeName(this.size)}" @close=${this.#onClose} @cancel=${this.#onCancel}>
       <header part="header">
         <h2 part="title"><slot name="heading">${this.label}</slot></h2>
         <mb-button part="close-button" variant="ghost" @click=${() => this.close()}>

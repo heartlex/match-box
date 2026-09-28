@@ -3,7 +3,7 @@ import { sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/listbox.ts';
 import type { MbListbox, MbOption } from '../../../src/components/index.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
 const fruit = '<mb-option>Apple</mb-option><mb-option value="b">Banana</mb-option><mb-option>Cherry</mb-option>';
@@ -19,6 +19,17 @@ const option = (listbox: MbListbox, index: number): MbOption => optionsOf(listbo
 async function inForm(markup: string): Promise<{ form: HTMLFormElement; listbox: MbListbox }> {
   const { element: form } = await mount<HTMLFormElement>(`<form>${markup}</form>`);
   return { form, listbox: form.querySelector('mb-listbox') as MbListbox };
+}
+
+const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+async function addOption(listbox: MbListbox, label: string): Promise<MbOption> {
+  const added = document.createElement('mb-option');
+  added.textContent = label;
+  listbox.append(added);
+  await settle(document.body);
+  await tick();
+  return added;
 }
 
 describe('mb-listbox', () => {
@@ -152,5 +163,87 @@ describe('mb-listbox', () => {
     listbox.insertAdjacentHTML('beforeend', fruit);
     await settle(document.body);
     expect(listbox.values).to.deep.equal(['Apple', 'Cherry']);
+  });
+
+  it('size sets every option height, padding, font size, gap, and check size, from the scale', async () => {
+    for (const size of ['sm', 'md', 'lg']) {
+      const listbox = await mountListbox(`size="${size}" multiple`);
+      const base = getComputedStyle(part(option(listbox, 0), 'base'));
+      expect(base.minBlockSize, `${size} height`).to.equal(resolveLength(`--mb-size-${size}-height`));
+      expect(base.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
+      expect(base.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
+      expect(base.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
+      expect(getComputedStyle(part(option(listbox, 0), 'check')).width, `${size} check`).to.equal(
+        resolveLength(`--mb-size-${size}-icon`),
+      );
+      document.body.replaceChildren();
+    }
+  });
+
+  it('options are 2.25rem tall at md, and --mb-option-height wins', async () => {
+    const listbox = await mountListbox();
+    expect(part(option(listbox, 0), 'base').getBoundingClientRect().height).to.equal(36);
+    listbox.style.setProperty('--mb-option-height', '50px');
+    expect(getComputedStyle(part(option(listbox, 0), 'base')).minBlockSize).to.equal('50px');
+  });
+
+  describe('motion', () => {
+    before(() => setMotion(true));
+    after(() => setMotion(false));
+
+    it('does not animate options present at the first render', async () => {
+      const listbox = await mountListbox();
+      await tick();
+      expect(optionsOf(listbox).flatMap((o) => o.getAnimations())).to.have.length(0);
+    });
+
+    it('animates options added after the first render', async () => {
+      const listbox = await mountListbox();
+      const added = await addOption(listbox, 'Date');
+      expect(added.getAnimations()).to.have.length(1);
+      expect(optionsOf(listbox).slice(0, 3).flatMap((o) => o.getAnimations())).to.have.length(0);
+    });
+
+    it('animates options added after an empty first render', async () => {
+      const listbox = await mountListbox('', '');
+      const added = await addOption(listbox, 'Date');
+      expect(added.getAnimations()).to.have.length(1);
+    });
+
+    it('does not animate an option that is moved', async () => {
+      const listbox = await mountListbox();
+      listbox.append(option(listbox, 0));
+      await settle(document.body);
+      await tick();
+      expect(optionsOf(listbox).flatMap((o) => o.getAnimations())).to.have.length(0);
+    });
+
+    it('never starts an animation at 0ms', async () => {
+      const listbox = await mountListbox('style="--mb-listbox-duration: 0ms"');
+      const added = await addOption(listbox, 'Date');
+      expect(added.getAnimations()).to.have.length(0);
+    });
+
+    it('an invalid duration or easing adds options without animating or throwing', async () => {
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent): void => {
+        errors.push(event.error);
+      };
+      window.addEventListener('error', onError);
+      const garbled = await mountListbox('style="--mb-listbox-duration: fast"');
+      const first = await addOption(garbled, 'Date');
+      document.body.replaceChildren();
+      const badEasing = await mountListbox('style="--mb-motion-easing-enter: wobbly"');
+      const second = await addOption(badEasing, 'Date');
+      window.removeEventListener('error', onError);
+      expect(errors).to.deep.equal([]);
+      expect(first.getAnimations()).to.have.length(0);
+      expect(second.getAnimations()).to.have.length(1);
+    });
+
+    it('transitions the selection colors with the fast duration', async () => {
+      const listbox = await mountListbox();
+      expect(getComputedStyle(part(option(listbox, 0), 'base')).transitionDuration.split(', ')[0]).to.equal('0.12s');
+    });
   });
 });

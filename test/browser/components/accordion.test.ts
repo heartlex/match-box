@@ -53,4 +53,16 @@ describe('mb-accordion', () => {
     await settle(document.body);
     expect(disclosures(element).map((d) => d.open)).to.deep.equal([false, false, true]);
   });
+
+  it('gives disclosures its size unless they set their own, including ones added later', async () => {
+    const { element } = await mount<MbAccordion>(`<mb-accordion size="sm">${item('A')}${item('B', 'size="lg"')}</mb-accordion>`);
+    const later = document.createElement('div');
+    later.innerHTML = item('C');
+    element.append(later.firstElementChild as Element);
+    await settle(document.body);
+    const sizes = disclosures(element).map((d) =>
+      ['sm', 'md', 'lg'].find((size) => part(d, 'trigger').classList.contains(`size-${size}`)),
+    );
+    expect(sizes).to.deep.equal(['sm', 'lg', 'sm']);
+  });
 });

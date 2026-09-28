@@ -67,7 +67,7 @@ export function accordionConformance({ name, mount, driver, audit }: AccordionSu
           fixture.items.forEach(({ trigger, panel }, index) => {
             const open = indices.includes(index);
             expect(trigger.getAttribute('aria-expanded'), `aria-expanded on item ${index}`).to.equal(String(open));
-            expect(panel.checkVisibility(), `panel ${index} visibility`).to.equal(open);
+            expect(panel.checkVisibility({ visibilityProperty: true }), `panel ${index} visibility`).to.equal(open);
           });
         };
 

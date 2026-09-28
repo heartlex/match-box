@@ -3,6 +3,7 @@ import type { ListboxItem } from '../../core/state/listbox.ts';
 import { ListboxController } from '../../lit/controllers.ts';
 import { FormAssociated } from '../../lit/form-associated.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
+import { sizeName, type Size } from '../shared/size.ts';
 import { listboxStyles } from './listbox.styles.ts';
 import { MbOption } from './option.ts';
 
@@ -21,6 +22,7 @@ import { MbOption } from './option.ts';
  * @cssprop --mb-listbox-radius - Corner radius.
  * @cssprop --mb-listbox-padding - Padding around the options.
  * @cssprop --mb-listbox-max-height - Height after which the options scroll.
+ * @cssprop --mb-listbox-duration - Duration of the animation for options added after the first render.
  * @fires input - After the user changes the selection.
  * @fires change - After the user changes the selection.
  */
@@ -30,6 +32,7 @@ export class MbListbox extends FormAssociated(LitElement) {
     label: {},
     multiple: { type: Boolean, reflect: true },
     color: {},
+    size: {},
   };
 
   /** Visible label; also the listbox's accessible name. */
@@ -37,6 +40,8 @@ export class MbListbox extends FormAssociated(LitElement) {
   declare multiple: boolean;
   /** The color role of selected options. */
   declare color: ColorRole;
+  /** Option height, padding, and font size, from the size scale. Unknown values render as `md`. */
+  declare size: Size;
 
   readonly listbox = new ListboxController(
     this,
@@ -55,12 +60,15 @@ export class MbListbox extends FormAssociated(LitElement) {
   #initialized = false;
   #before: readonly string[] = [];
   readonly #observer: MutationObserver;
+  readonly #seen = new WeakSet<MbOption>();
+  #animateEntries = false;
 
   constructor() {
     super();
     this.label = '';
     this.multiple = false;
     this.color = 'neutral';
+    this.size = 'md';
     this.listbox.state.subscribe(() => {
       const first = this.values[0] ?? '';
       if (this.value !== first) this.value = first;
@@ -137,6 +145,13 @@ export class MbListbox extends FormAssociated(LitElement) {
     }
   }
 
+  protected override firstUpdated(changed: PropertyValues<this>): void {
+    super.firstUpdated(changed);
+    // Options present at the first render never animate.
+    for (const option of this.#options()) this.#seen.add(option);
+    this.#animateEntries = true;
+  }
+
   protected override updated(changed: PropertyValues<this>): void {
     super.updated(changed);
     if (!this.#initialized && this.#options().length > 0) {
@@ -150,13 +165,32 @@ export class MbListbox extends FormAssociated(LitElement) {
 
   override render() {
     return html`<span part="label" ?hidden=${this.label === ''}>${this.label}</span>
-      <div part="listbox" class="color-${colorRole(this.color)} ${this.multiple ? 'multiple' : ''}">
-        <slot @slotchange=${() => this.requestUpdate()}></slot>
+      <div part="listbox" class="color-${colorRole(this.color)} size-${sizeName(this.size)} ${this.multiple ? 'multiple' : ''}">
+        <slot @slotchange=${this.#onSlotChange}></slot>
       </div>`;
   }
 
   #options(): MbOption[] {
     return [...this.children].filter((child): child is MbOption => child instanceof MbOption);
+  }
+
+  #onSlotChange(): void {
+    this.requestUpdate();
+    const added = this.#options().filter((option) => !this.#seen.has(option));
+    for (const option of added) this.#seen.add(option);
+    const root = this.renderRoot.querySelector<HTMLElement>('[part=listbox]');
+    if (!this.#animateEntries || added.length === 0 || root === null) return;
+    const style = getComputedStyle(root);
+    const duration = milliseconds(style.getPropertyValue('--_enter-duration'));
+    // Zero under reduced motion; NaN for a value that is not a time.
+    if (!(duration > 0)) return;
+    const easing = style.getPropertyValue('--_enter-easing').trim();
+    for (const option of added) {
+      option.animate([{ opacity: 0, transform: 'translateY(0.25rem)' }, { opacity: 1, transform: 'none' }], {
+        duration,
+        easing: CSS.supports('animation-timing-function', easing) ? easing : 'ease-out',
+      });
+    }
   }
 
   #describe(option: MbOption): ListboxItem {
@@ -181,4 +215,12 @@ export class MbListbox extends FormAssociated(LitElement) {
     this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     this.dispatchEvent(new Event('change', { bubbles: true }));
   }
+}
+
+/** Milliseconds in a CSS time such as `200ms` or `0.2s`; NaN for anything else. */
+function milliseconds(time: string): number {
+  const value = time.trim();
+  if (value.endsWith('ms')) return Number.parseFloat(value);
+  if (value.endsWith('s')) return Number.parseFloat(value) * 1000;
+  return Number.NaN;
 }

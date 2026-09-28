@@ -34,7 +34,7 @@ export function disclosureConformance({ name, mount, driver, audit }: Disclosure
 
       const expectExpanded = (expanded: boolean): void => {
         expect(fixture.trigger.getAttribute('aria-expanded')).to.equal(String(expanded));
-        expect(fixture.panel.checkVisibility(), 'panel visibility').to.equal(expanded);
+        expect(fixture.panel.checkVisibility({ visibilityProperty: true }), 'panel visibility').to.equal(expanded);
       };
 
       const activate = async (key = 'Enter'): Promise<void> => {

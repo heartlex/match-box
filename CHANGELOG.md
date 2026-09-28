@@ -3,6 +3,35 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.3.0
+
+### Added
+
+- `size` (`sm`, `md`, `lg`) on `mb-button`, `mb-disclosure`,
+  `mb-accordion` (for disclosures without their own), `mb-listbox` (for
+  its options), and `mb-dialog` (width). Tokens: `--mb-size-<s>-height`,
+  `-padding-inline`, `-font-size`, `-gap`, `-icon`;
+  `--mb-dialog-width-<s>`; `--mb-font-size-3`.
+- Motion: color transitions, press feedback, animated disclosure panels,
+  dialog entry and exit, and entry animation for options added to a
+  listbox. Tokens: `--mb-motion-duration-fast`, `-medium`, `-slow`;
+  `--mb-motion-easing-standard`, `-enter`, `-exit`, `-spring`. Every
+  duration is `0ms` under `prefers-reduced-motion: reduce`.
+- `mb-button` renders a link with `href`, and takes `target`, `rel`, and
+  `download`.
+- `mb-dialog`'s `show()` and `close()` are documented.
+
+### Changed
+
+- At the default size, `mb-option` is `2.25rem` tall (was `2rem`) and the
+  `mb-disclosure` trigger is `2.25rem` (was `2.5rem`). Both use `0.75rem`
+  horizontal padding (was `0.5rem`); the disclosure trigger's gap is
+  `0.5rem` (was `0.75rem`).
+- `mb-disclosure`'s panel no longer has a `hidden` attribute when closed;
+  it hides with `visibility: hidden`.
+- The disclosure and accordion conformance suites in `core/testing` check
+  `checkVisibility({ visibilityProperty: true })`.
+
 ## 0.2.2
 
 ### Fixed

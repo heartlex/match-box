@@ -22,6 +22,9 @@ import { optionStyles } from './option.styles.ts';
  * @cssprop --mb-option-gap - Space between check, prefix, label, and suffix.
  * @cssprop --mb-option-padding-block - Vertical padding.
  * @cssprop --mb-option-padding-inline - Horizontal padding.
+ * @cssprop --mb-option-height - Minimum height. Defaults to the listbox size.
+ * @cssprop --mb-option-font-size - Font size. Defaults to the listbox size.
+ * @cssprop --mb-option-icon-size - Size of the checkbox. Defaults to the listbox size.
  */
 export class MbOption extends LitElement {
   static override styles = optionStyles;

@@ -1,11 +1,17 @@
 import { expect } from 'chai';
 import { attachDisclosure } from '../../src/core/dom/index.ts';
 import { disclosureConformance } from '../../src/core/testing/index.ts';
-import { mountPlainDisclosure } from '../skin/plain/disclosure.ts';
+import { mountPlainDisclosure, mountVisibilityDisclosure } from '../skin/plain/disclosure.ts';
 import { expectNoAxeViolations } from '../support/axe.ts';
 import { driver } from '../support/driver.ts';
 
 disclosureConformance({ name: 'plain', mount: mountPlainDisclosure, driver, audit: expectNoAxeViolations });
+disclosureConformance({
+  name: 'plain, hidden by visibility',
+  mount: mountVisibilityDisclosure,
+  driver,
+  audit: expectNoAxeViolations,
+});
 
 describe('attachDisclosure', () => {
   afterEach(() => {

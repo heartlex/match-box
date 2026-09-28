@@ -1,9 +1,10 @@
 import { css } from 'lit';
-import { colorRoleStyles, hostStyles } from '../shared/styles.ts';
+import { colorRoleStyles, hostStyles, sizeStyles } from '../shared/styles.ts';
 
 export const listboxStyles = [
   hostStyles,
   colorRoleStyles,
+  sizeStyles,
   css`
     :host {
       display: block;
@@ -19,6 +20,8 @@ export const listboxStyles = [
     }
 
     [part='listbox'] {
+      --_enter-duration: var(--mb-listbox-duration, var(--mb-motion-duration-medium));
+      --_enter-easing: var(--mb-motion-easing-enter);
       --_check-display: none;
       display: flex;
       flex-direction: column;

@@ -69,3 +69,42 @@ lists its tokens. For anything else, style its parts:
 
 Set `data-theme="light"` or `data-theme="dark"` on any element. Without
 it, the page follows the system preference.
+
+## Sizes
+
+`size` is `sm`, `md` (default), or `lg` on buttons, disclosures,
+accordions, and listboxes. Each size is five tokens; retune a size once and
+every component follows.
+
+| Token | `sm` | `md` | `lg` |
+|---|---|---|---|
+| `--mb-size-<s>-height` | 1.75rem | 2.25rem | 2.75rem |
+| `--mb-size-<s>-padding-inline` | 0.5rem | 0.75rem | 1rem |
+| `--mb-size-<s>-font-size` | 0.875rem | 1rem | 1.125rem |
+| `--mb-size-<s>-gap` | 0.25rem | 0.5rem | 0.5rem |
+| `--mb-size-<s>-icon` | 0.875rem | 1rem | 1.25rem |
+
+`mb-dialog` sizes its width from `--mb-dialog-width-sm`, `-md`, and `-lg`.
+
+## Motion
+
+Every animation reads these tokens. Under `prefers-reduced-motion: reduce`
+every duration is `0ms`.
+
+| Token | Default |
+|---|---|
+| `--mb-motion-duration-fast` | 120ms |
+| `--mb-motion-duration-medium` | 200ms |
+| `--mb-motion-duration-slow` | 300ms |
+| `--mb-motion-easing-standard`, `-enter`, `-exit`, `-spring` | Curves |
+
+Turn motion off everywhere, for example to drive your own animation
+library from the `open` state and the `close` event:
+
+```css
+:root {
+  --mb-motion-duration-fast: 0ms;
+  --mb-motion-duration-medium: 0ms;
+  --mb-motion-duration-slow: 0ms;
+}
+```

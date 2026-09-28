@@ -11,7 +11,7 @@ import 'match-box/components/define/accordion.js';
 ```
 
 <div class="demo">
-  <mb-accordion>
+  <mb-accordion size="sm">
     <mb-disclosure><span slot="summary">Shipping</span>Orders ship within two business days.</mb-disclosure>
     <mb-disclosure><span slot="summary">Returns</span>Return any item within 30 days.</mb-disclosure>
     <mb-disclosure><span slot="summary">Warranty</span>Two years on all hardware.</mb-disclosure>
@@ -26,6 +26,7 @@ import 'match-box/components/define/accordion.js';
 ```
 
 Opening one disclosure closes the others unless `multiple` is set. Each
-trigger sits in a heading, level 3 by default.
+trigger sits in a heading, level 3 by default. `size` applies to every
+disclosure that does not set its own.
 
 {% include "api.njk" %}
