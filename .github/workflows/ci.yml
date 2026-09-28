@@ -22,3 +22,7 @@ jobs:
       - run: npm run test:browser
       - run: npm run size
       - run: npm run docs
+      - run: npm run docs:prefix-check
+      - run: npm run storybook:build
+      - run: npm run storybook:smoke
+      - run: npm run storybook:smoke:self-test

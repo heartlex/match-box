@@ -21,4 +21,5 @@ npm install match-box
 | `match-box/tokens.css` | Design tokens, light and dark. |
 
 Patterns: [Listbox](/patterns/listbox/), [Disclosure](/patterns/disclosure/),
-[Dialog](/patterns/dialog/). Full reference: [API](/api/).
+[Dialog](/patterns/dialog/). Full reference: [API](/api/). Every component,
+pattern, and motion helper is also in [Storybook](/storybook/).
