@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { DisclosureController } from '../../lit/controllers.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
+import { sizeName, type Size } from '../shared/size.ts';
 import { disclosureStyles } from './disclosure.styles.ts';
 
 /**
@@ -20,9 +21,14 @@ import { disclosureStyles } from './disclosure.styles.ts';
  * @cssprop --mb-disclosure-trigger-bg-hover - Trigger background on hover.
  * @cssprop --mb-disclosure-trigger-fg - Trigger text color.
  * @cssprop --mb-disclosure-font-weight - Trigger font weight.
+ * @cssprop --mb-disclosure-font-size - Trigger font size.
+ * @cssprop --mb-disclosure-height - Minimum trigger height.
+ * @cssprop --mb-disclosure-gap - Space between the trigger text and the chevron.
+ * @cssprop --mb-disclosure-icon-size - Chevron box size; the chevron is half of it.
  * @cssprop --mb-disclosure-padding-block - Trigger vertical padding.
  * @cssprop --mb-disclosure-padding-inline - Trigger and panel horizontal padding.
  * @cssprop --mb-disclosure-panel-padding-block - Panel vertical padding.
+ * @cssprop --mb-disclosure-duration - Duration of the panel and chevron animations.
  * @fires toggle - After the panel opens or closes, by the user or in code. A `ToggleEvent` with `newState` and `oldState`.
  */
 export class MbDisclosure extends LitElement {
@@ -30,10 +36,13 @@ export class MbDisclosure extends LitElement {
   static override properties = {
     open: { type: Boolean, reflect: true, noAccessor: true },
     color: {},
+    size: {},
     headingLevel: { type: Number, attribute: 'heading-level' },
   };
 
   declare color: ColorRole;
+  /** Trigger height, padding, and font size, from the size scale. Unknown values render as `md`. */
+  declare size: Size;
   /** Wraps the trigger in a heading of this level (1 to 6). Required inside an accordion. */
   declare headingLevel: number | undefined;
 
@@ -48,6 +57,7 @@ export class MbDisclosure extends LitElement {
   constructor() {
     super();
     this.color = 'neutral';
+    this.size = 'md';
     this.headingLevel = undefined;
     this.#internals = this.attachInternals();
     this.disclosure.state.subscribe(() => {
@@ -75,14 +85,18 @@ export class MbDisclosure extends LitElement {
   }
 
   override render() {
-    const trigger = html`<button part="trigger" class="color-${colorRole(this.color)}" type="button">
+    const size = `size-${sizeName(this.size)}`;
+    const trigger = html`<button part="trigger" class="color-${colorRole(this.color)} ${size}" type="button">
       <span part="summary"><slot name="summary"></slot></span>
       <span part="icon"></span>
     </button>`;
     const level = this.headingLevel;
+    // The panel stays rendered and hides with visibility, so opening and closing can animate.
     return html`${level !== undefined && level >= 1 && level <= 6
         ? html`<div part="heading" role="heading" aria-level=${level}>${trigger}</div>`
         : trigger}
-      <div part="panel" ?hidden=${!this.disclosure.state.expanded}><slot></slot></div>`;
+      <div part="panel" class=${size}>
+        <div class="clip"><div class="content"><slot></slot></div></div>
+      </div>`;
   }
 }
