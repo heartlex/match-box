@@ -3,6 +3,42 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.5.0
+
+### Added
+
+- `mb-field`: a label, description, and error around any form control,
+  connected to it. It shows its `error`, or the control's validation
+  message once the user changed the control and left it, or a submit was
+  attempted.
+- `mb-input`: text, email, password, search, tel, url, and number inputs
+  with `prefix` and `suffix` slots; validity and messages match `<input>`.
+  A `readonly` field is not validated, like `<input readonly>`; a number
+  field reports `badInput`; Enter submits through the form's default
+  submit button, if any (a disabled default button blocks it, and its
+  `name`/`value` are submitted).
+- `mb-checkbox` (with `indeterminate`), `mb-switch`, and
+  `mb-checkbox-group` (submits the checked values; `required` means at
+  least one; optional "select all"). `mb-checkbox` and `mb-switch` keep a
+  property-set `value` across a form reset, keep `checked` set before the
+  element connects, and toggle on `click()`. A disabled checkbox in a
+  group is not submitted and does not count towards "at least one"; a
+  checkbox inside a group does not validate on its own.
+- `mb-listbox` takes its name, description, and error from an `mb-field`.
+- Core: `attachField`, `CheckboxGroupState`, `attachCheckboxGroup`.
+- `core/testing`: `fieldConformance`, `checkboxGroupConformance`,
+  `nameOf`, `referencedText`.
+- `match-box/lit`: protected hooks on `FormAssociated` (`isEmpty`,
+  `requiredMessage`, `intrinsicValidity`, `validationAnchor`,
+  `revalidate`, `markEdited`) and the `FormAssociatedHooks` type.
+
+### Changed
+
+- `mb-button`'s `click()` now activates it like a native button; it did
+  nothing before.
+- `mb-input`, `mb-checkbox`, `mb-switch`, and `mb-field` pin `line-height`
+  and `letter-spacing`, so page CSS no longer changes them.
+
 ## 0.4.0
 
 ### Added

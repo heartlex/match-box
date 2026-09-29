@@ -63,7 +63,10 @@ backgrounds, and `border` at 3:1 against the surface.
 Component tokens override a single component, on the element or any
 ancestor: `mb-button { --mb-button-radius: 999px; }`. Each component page
 lists its tokens. For anything else, style its parts:
-`mb-dialog::part(title) { font-size: 1.5rem; }`.
+`mb-dialog::part(title) { font-size: 1.5rem; }`. Form controls follow the
+same rule: `--mb-input-*`, `--mb-checkbox-*`, `--mb-switch-*`, and
+`--mb-field-*` override one component; the color roles and the size scale
+supply their defaults.
 
 ## Light and dark
 
