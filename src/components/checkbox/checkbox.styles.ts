@@ -61,7 +61,7 @@ export const checkboxStyles = [
       transition-timing-function: var(--mb-motion-easing-standard);
     }
 
-    [part='base']:hover input:not(:disabled) + [part='box'] {
+    :host(:not(:state(user-invalid))) [part='base']:hover input:not(:disabled, :checked, :indeterminate) + [part='box'] {
       border-color: var(--mb-checkbox-border-color-hover, var(--_border));
     }
 

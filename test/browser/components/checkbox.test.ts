@@ -193,6 +193,34 @@ describe('mb-checkbox', () => {
     expect(mark.stroke).to.not.equal(square.backgroundColor);
   });
 
+  it("keeps a checked box's border equal to its fill on hover", async () => {
+    // danger: its border token (red 500) differs from its solid fill (red 600), unlike the
+    // default primary role, where they are the same value and would mask this regression.
+    const { box } = await inForm('<mb-checkbox checked color="danger">Accept</mb-checkbox>');
+    const rect = part(box, 'box').getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)] });
+    const style = getComputedStyle(part(box, 'box'));
+    expect(style.borderTopColor).to.equal(style.backgroundColor);
+    expect(style.borderTopColor).to.equal(resolveColor('--mb-color-danger-solid'));
+  });
+
+  it('keeps the danger border on hover of a user-invalid box', async () => {
+    const { box } = await inForm('<mb-checkbox name="terms" required>Accept</mb-checkbox><button>Submit</button>');
+    inner(box).focus();
+    await sendKeys({ press: 'Space' });
+    await settle(document.body);
+    await sendKeys({ press: 'Space' });
+    await settle(document.body);
+    await sendKeys({ press: 'Tab' });
+    await settle(document.body);
+    expect(box.matches(':state(user-invalid)'), 'user-invalid').to.equal(true);
+
+    const rect = part(box, 'box').getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)] });
+    const style = getComputedStyle(part(box, 'box'));
+    expect(style.borderTopColor).to.equal(resolveColor('--mb-color-danger-border'));
+  });
+
   // Controller ruling: a grouped checkbox must not validate on its own.
   it('a required checkbox inside a group is valid on its own', async () => {
     const { element } = await mount<HTMLElement>(
