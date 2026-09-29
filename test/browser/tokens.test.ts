@@ -45,19 +45,26 @@ function contrast(a: string, b: string): number {
 }
 
 const roles = ['neutral', 'primary', 'secondary', 'tertiary', 'danger'] as const;
-const roleTokens = ['solid', 'solid-hover', 'on-solid', 'text', 'subtle', 'border'] as const;
+const roleTokens = ['solid', 'solid-hover', 'solid-active', 'on-solid', 'text', 'subtle', 'subtle-active', 'border'] as const;
+
+const statuses = ['success', 'warning', 'danger'] as const;
 
 const textPairs: [string, string][] = [
   ['--mb-color-fg-default', '--mb-color-bg-surface'],
   ['--mb-color-fg-default', '--mb-color-bg-canvas'],
   ['--mb-color-fg-muted', '--mb-color-bg-surface'],
   ['--mb-color-fg-subtle', '--mb-color-bg-surface'],
-  ['--mb-color-fg-success', '--mb-color-bg-surface'],
+  ...statuses.flatMap((status): [string, string][] => [
+    [`--mb-color-fg-${status}`, '--mb-color-bg-surface'],
+    [`--mb-color-fg-${status}`, `--mb-color-bg-${status}`],
+  ]),
   ...roles.flatMap((role): [string, string][] => [
     [`--mb-color-${role}-on-solid`, `--mb-color-${role}-solid`],
     [`--mb-color-${role}-on-solid`, `--mb-color-${role}-solid-hover`],
+    [`--mb-color-${role}-on-solid`, `--mb-color-${role}-solid-active`],
     [`--mb-color-${role}-text`, '--mb-color-bg-surface'],
     [`--mb-color-${role}-text`, `--mb-color-${role}-subtle`],
+    [`--mb-color-${role}-text`, `--mb-color-${role}-subtle-active`],
   ]),
 ];
 
@@ -106,7 +113,7 @@ describe('tokens.css', () => {
     expect([...media.entries()]).to.deep.equal([...dark.entries()]);
   });
 
-  it('defines six tokens for each of the five color roles in both themes', () => {
+  it('defines eight tokens for each of the five color roles in both themes', () => {
     const expected = roles.flatMap((role) => roleTokens.map((name) => `--mb-color-${role}-${name}`));
     const light = [...block(':root, [data-theme="light"]').keys()];
     const dark = [...block('[data-theme="dark"]').keys()];
@@ -132,12 +139,12 @@ describe('tokens.css', () => {
     const subtree = document.createElement('div');
     subtree.dataset['theme'] = 'dark';
     document.body.append(subtree);
-    expect(token('--mb-color-bg-surface', subtree)).to.equal('#18181b');
+    expect(token('--mb-color-bg-surface', subtree)).to.equal('#17173f');
   });
 
   it('follows the system dark preference unless light is forced', async () => {
     await emulateMedia({ colorScheme: 'dark' });
-    expect(token('--mb-color-bg-surface')).to.equal('#18181b');
+    expect(token('--mb-color-bg-surface')).to.equal('#17173f');
     document.documentElement.dataset['theme'] = 'light';
     expect(token('--mb-color-bg-surface')).to.equal('#ffffff');
   });
@@ -179,12 +186,16 @@ describe('tokens.css', () => {
     }
   });
 
-  it('keeps the md size at the step 1 button metrics', () => {
-    expect(token('--mb-size-md-height')).to.equal('2.25rem');
-    expect(token('--mb-size-md-padding-inline')).to.equal('0.75rem');
-    expect(token('--mb-size-md-font-size')).to.equal('1rem');
+  it('sets the md size to the matchbox metrics', () => {
+    expect(token('--mb-size-md-height')).to.equal('2.5rem');
+    expect(token('--mb-size-md-padding-inline')).to.equal('1.5rem');
+    expect(token('--mb-size-md-font-size')).to.equal('0.875rem');
     expect(token('--mb-size-md-gap')).to.equal('0.5rem');
     expect(token('--mb-dialog-width-md')).to.equal('32rem');
+  });
+
+  it('starts the body font stack with Aeonik, then Geist', () => {
+    expect(token('--mb-font-family-body')).to.match(/^['"]Aeonik['"], ['"]Geist['"], system-ui/);
   });
 
   it('turns every motion duration to 0ms under reduced motion, in themed subtrees too', async () => {

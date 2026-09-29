@@ -198,9 +198,9 @@ describe('mb-listbox', () => {
     }
   });
 
-  it('options are 2.25rem tall at md, and --mb-option-height wins', async () => {
+  it('options are 2.5rem tall at md, and --mb-option-height wins', async () => {
     const listbox = await mountListbox();
-    expect(part(option(listbox, 0), 'base').getBoundingClientRect().height).to.equal(36);
+    expect(part(option(listbox, 0), 'base').getBoundingClientRect().height).to.equal(40);
     listbox.style.setProperty('--mb-option-height', '50px');
     expect(getComputedStyle(part(option(listbox, 0), 'base')).minBlockSize).to.equal('50px');
   });

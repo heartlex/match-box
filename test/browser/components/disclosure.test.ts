@@ -81,7 +81,7 @@ describe('mb-disclosure', () => {
       expect(trigger.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
     });
     const md = disclosures[1] as Element;
-    expect(part(md, 'trigger').getBoundingClientRect().height).to.equal(36);
+    expect(part(md, 'trigger').getBoundingClientRect().height).to.equal(40);
     const content = part(md, 'panel').querySelector('.content') as HTMLElement;
     expect(getComputedStyle(content).paddingInlineStart).to.equal(resolveLength('--mb-size-md-padding-inline'));
   });

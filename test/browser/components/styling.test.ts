@@ -114,7 +114,7 @@ describe('styling contract', () => {
     document.documentElement.dataset['theme'] = 'dark';
     const { element } = await mount<MbButton>('<mb-button color="primary">Go</mb-button>');
     expect(getComputedStyle(part(element, 'base')).backgroundColor).to.equal(resolveColor('--mb-color-primary-solid'));
-    expect(resolveColor('--mb-color-primary-solid')).to.equal('rgb(91, 147, 245)');
+    expect(resolveColor('--mb-color-primary-solid')).to.equal('rgb(123, 123, 255)');
   });
 
   it('a component token set on an ancestor wins', async () => {

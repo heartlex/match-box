@@ -186,7 +186,7 @@ describe('mb-button', () => {
       expect(style.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
     }
     expect(container.querySelectorAll('mb-button')[1]?.hasAttribute('size'), 'not reflected').to.equal(false);
-    expect(md.minBlockSize).to.equal('36px');
+    expect(md.minBlockSize).to.equal('40px');
   });
 
   it('a component token beats the size scale', async () => {
