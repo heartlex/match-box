@@ -73,15 +73,39 @@ describe('styling contract', () => {
     );
   });
 
-  it('page CSS does not change the form controls', async () => {
-    const { container } = await mount('<mb-input aria-label="A"></mb-input><mb-checkbox>B</mb-checkbox>');
-    const input = container.querySelector('mb-input') as MbInput;
-    const box = container.querySelector('mb-checkbox') as MbCheckbox;
-    const before = [getComputedStyle(part(input, 'base')).backgroundColor, getComputedStyle(part(box, 'box')).borderTopColor];
+  it('page CSS does not leak inherited text properties into the form controls', async () => {
+    // A page-wide `*, input, label, span { … }` rule can never reach into another
+    // element's shadow tree, so it would only prove shadow DOM exists. The realistic
+    // leak path is INHERITED properties set on the host (or its ancestors, or `:root`
+    // and `body`, which `*` also matches): those cross into shadow DOM wherever a part
+    // does not pin its own value.
+    const { container } = await mount(
+      '<mb-input aria-label="A"></mb-input><mb-checkbox>B</mb-checkbox><mb-switch>C</mb-switch>' +
+        '<mb-field label="L"><mb-input></mb-input></mb-field>',
+    );
+    const targets = [
+      part(container.querySelector('mb-input') as MbInput, 'base'),
+      part(container.querySelector('mb-checkbox') as MbCheckbox, 'label'),
+      part(container.querySelector('mb-switch') as Element, 'label'),
+      part(container.querySelector('mb-field') as Element, 'label'),
+    ];
+    const properties = ['color', 'fontFamily', 'fontSize', 'lineHeight', 'letterSpacing'] as const;
+    const read = (): string[][] =>
+      targets.map((target) => properties.map((property) => getComputedStyle(target)[property]));
+    const before = read();
     const hostile = document.createElement('style');
-    hostile.textContent = '*, input, label, span { background: red !important; border-color: lime !important; }';
+    // font-size is forced on every element EXCEPT :root: every size token in the skin is `rem`,
+    // so forcing :root's own font-size would rescale the whole design system through the unit
+    // itself (confirmed against mb-button's identical `var(--_font-size)` chain, already
+    // reviewed sound) — a deliberate, accessibility-relevant characteristic (browsers/pages
+    // resizing root text, per WCAG 1.4.4), not a shadow-DOM containment leak. Every other
+    // property here has no such root-relative mechanism, so :root is still forced for them.
+    hostile.textContent = `
+      *, :root, body { color: rgb(0, 255, 0) !important; font-family: serif !important; line-height: 4 !important; letter-spacing: 3px !important; }
+      *:not(:root) { font-size: 30px !important; }
+    `;
     document.head.append(hostile);
-    const after = [getComputedStyle(part(input, 'base')).backgroundColor, getComputedStyle(part(box, 'box')).borderTopColor];
+    const after = read();
     hostile.remove();
     expect(after).to.deep.equal(before);
   });
@@ -121,9 +145,24 @@ describe('styling contract', () => {
     expect(getComputedStyle(part(button, 'base')).borderTopColor).not.to.equal(transparent);
     const option = listbox.querySelector('mb-option') as Element;
     expect(getComputedStyle(part(option, 'base')).backgroundColor).not.to.equal(transparent);
-    const box = getComputedStyle(part(container.querySelector('mb-checkbox') as Element, 'box'));
-    expect(box.backgroundColor).not.to.equal(transparent);
-    expect(parseFloat(box.borderTopWidth)).to.be.at.least(1);
+    // "not transparent, border >= 1px" holds in every mode, so it would still pass even if the
+    // checked-state forced-colors rule regressed. Compare against the actual system colors instead,
+    // read from probes evaluated in the same forced-colors mode.
+    const checkbox = container.querySelector('mb-checkbox') as Element;
+    const box = getComputedStyle(part(checkbox, 'box'));
+    const mark = part(checkbox, 'mark');
+    const highlightProbe = document.createElement('span');
+    highlightProbe.style.backgroundColor = 'Highlight';
+    document.body.append(highlightProbe);
+    expect(box.backgroundColor).to.equal(getComputedStyle(highlightProbe).backgroundColor);
+    highlightProbe.remove();
+    const highlightTextProbe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const highlightTextRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    highlightTextRect.style.stroke = 'HighlightText';
+    highlightTextProbe.append(highlightTextRect);
+    document.body.append(highlightTextProbe);
+    expect(getComputedStyle(mark).stroke).to.equal(getComputedStyle(highlightTextRect).stroke);
+    highlightTextProbe.remove();
   });
 
   for (const theme of ['light', 'dark']) {
