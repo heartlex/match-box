@@ -56,7 +56,7 @@
     "lint": "eslint .",
     "test:unit": "vitest run",
     "test:browser": "npm run build && web-test-runner",
-    "test": "npm run test:unit && npm run test:browser",
+    "test": "npm run build && npm run test:unit && web-test-runner",
     "size": "node scripts/check-size.js",
     "docs": "npm run build && eleventy && typedoc",
     "docs:prefix-check": "ELEVENTY_PATH_PREFIX=/match-box/ eleventy --output=_site-prefix-check && node scripts/check-site-prefix.js _site-prefix-check /match-box/",
