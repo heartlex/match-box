@@ -6,6 +6,13 @@ import { fieldControlProperties, linkField, type FieldControl } from './field-co
 import type { Size } from './size.ts';
 
 /**
+ * Internal: fired directly at the parent element (not bubbling, not composed) when a
+ * grouped control's `checked`, `disabled`, or `value` changes, so `mb-checkbox-group` can
+ * re-read it. Not part of the public API.
+ */
+export const groupSyncEvent = 'mb-checkbox-group-sync';
+
+/**
  * What `mb-checkbox` and `mb-switch` share: checked state with native
  * semantics (the `checked` attribute is the reset state), the form value,
  * `required` meaning checked, `change`, and the field protocol.
@@ -130,6 +137,11 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     const input = this.input;
     const own = this.renderRoot.querySelector('#own-label');
     if (input) linkField(input, this, this.renderRoot as ShadowRoot, { own: own ? [own] : [] });
+    // Tells mb-checkbox-group to re-read: it cannot see a checked/disabled/value change that
+    // did not come through a `change` event, a slotchange, its own `values`, or a reset.
+    if (this.grouped && (changed.has('checked') || changed.has('disabled') || changed.has('value'))) {
+      this.parentElement?.dispatchEvent(new CustomEvent(groupSyncEvent, { bubbles: false, composed: false }));
+    }
   }
 
   /** Toggles, like a native checkbox's `click()`. Does nothing when disabled. */

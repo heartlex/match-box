@@ -81,4 +81,54 @@ describe('mb-checkbox-group', () => {
     expect(group.validity.valueMissing).to.equal(true);
     expect(new FormData(form).getAll('topping')).to.deep.equal([]);
   });
+
+  // Fix round 1: state must not go stale on a change that is not a user `change`, a
+  // slotchange, `values`, or a reset.
+  it('a script-set child.checked updates FormData and validity', async () => {
+    const { form, group } = await mountGroup('required');
+    await settle(document.body);
+    expect(group.validity.valueMissing).to.equal(true);
+    const [nuts] = boxes(group);
+    nuts.checked = true;
+    await settle(document.body);
+    expect(new FormData(form).getAll('topping')).to.deep.equal(['nuts']);
+    expect(group.validity.valid).to.equal(true);
+  });
+
+  it('a child disabled after render keeps its checked state through select-all', async () => {
+    const { group } = await mountGroup('select-all');
+    const [nuts, honey] = boxes(group);
+    nuts.disabled = true;
+    await settle(document.body);
+    const selectAll = part<MbCheckbox>(group, 'select-all');
+    selectAll.click();
+    await settle(document.body);
+    expect(nuts.checked).to.equal(false);
+    expect(honey.checked).to.equal(true);
+  });
+
+  it('a group disabled then re-enabled shows select-all checked and resubmits', async () => {
+    const { form, group } = await mountGroup(
+      'select-all disabled',
+      '<mb-checkbox value="nuts" checked>Nuts</mb-checkbox><mb-checkbox value="honey" checked>Honey</mb-checkbox>',
+    );
+    await settle(document.body);
+    group.disabled = false;
+    await settle(document.body);
+    const selectAll = part<MbCheckbox>(group, 'select-all');
+    expect([selectAll.checked, selectAll.indeterminate]).to.deep.equal([true, false]);
+    expect(new FormData(form).getAll('topping')).to.deep.equal(['nuts', 'honey']);
+  });
+
+  it('changing a checked child value updates FormData', async () => {
+    const { form, group } = await mountGroup(
+      '',
+      '<mb-checkbox value="nuts" checked>Nuts</mb-checkbox><mb-checkbox value="honey">Honey</mb-checkbox>',
+    );
+    await settle(document.body);
+    const [nuts] = boxes(group);
+    nuts.value = 'almonds';
+    await settle(document.body);
+    expect(new FormData(form).getAll('topping')).to.deep.equal(['almonds']);
+  });
 });

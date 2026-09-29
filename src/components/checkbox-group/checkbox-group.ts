@@ -7,6 +7,7 @@ import { MbCheckbox } from '../checkbox/checkbox.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
 import { fieldControlProperties, fieldText, linkField, type FieldControl } from '../shared/field-control.ts';
 import { sizeName, type Size } from '../shared/size.ts';
+import { groupSyncEvent } from '../shared/toggle.ts';
 import { checkboxGroupStyles } from './checkbox-group.styles.ts';
 
 /**
@@ -68,6 +69,9 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
       this.markEdited();
       this.#read();
     });
+    // A child's checked/disabled/value can change without a `change` event, e.g. set from a
+    // script; toggle.ts notifies us directly so the state, FormData, and validity stay live.
+    this.addEventListener(groupSyncEvent, () => this.#read());
   }
 
   /**
@@ -115,6 +119,22 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
 
   protected override validationAnchor(): HTMLElement | undefined {
     return this.#children()[0];
+  }
+
+  override formDisabledCallback(disabled: boolean): void {
+    super.formDisabledCallback(disabled);
+    // Can run synchronously mid-render (browsers call it for our own reflected `disabled`
+    // attribute too, not just an ancestor fieldset): deferred so requestUpdate() inside
+    // #read() lands on a fresh cycle instead of folding into one whose render already ran.
+    queueMicrotask(() => this.#read());
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    super.willUpdate(changed);
+    // Every child becomes (or stops being) excluded from "at least one" and FormData.
+    // Deferred for the same reason: `this.matches(':disabled')`, which #read() also
+    // consults, still reflects the old attribute here, since reflection has not run yet.
+    if (changed.has('disabled')) queueMicrotask(() => this.#read());
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -168,6 +188,9 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
     );
     this.value = this.values[0] ?? '';
     this.requestUpdate();
+    // Guards "required" against a change `this.value` happens not to catch, such as a
+    // disabled child dropping out while another already unchecked one keeps values[0] at ''.
+    this.revalidate();
   }
 
   #apply(): void {
@@ -177,6 +200,7 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
     });
     this.value = this.values[0] ?? '';
     this.requestUpdate();
+    this.revalidate();
   }
 
   readonly #onSelectAll = (event: Event): void => {
