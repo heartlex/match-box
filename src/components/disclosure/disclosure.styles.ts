@@ -25,7 +25,7 @@ export const disclosureStyles = [
       min-block-size: var(--mb-disclosure-height, calc(var(--_height) + var(--mb-space-2)));
       margin: 0;
       padding-block: var(--mb-disclosure-padding-block, 0);
-      padding-inline: var(--mb-disclosure-padding-inline, var(--mb-space-4));
+      padding-inline: var(--mb-disclosure-padding-inline, var(--_padding-inline));
       border: 0;
       background: var(--mb-disclosure-trigger-bg, transparent);
       color: var(--mb-disclosure-trigger-fg, var(--_text));
@@ -82,7 +82,7 @@ export const disclosureStyles = [
 
     .content {
       padding-block: var(--mb-disclosure-panel-padding-block, var(--mb-space-2) var(--mb-space-4));
-      padding-inline: var(--mb-disclosure-padding-inline, var(--mb-space-4));
+      padding-inline: var(--mb-disclosure-padding-inline, var(--_padding-inline));
       transition-property: opacity, transform;
       transition-duration: var(--_duration);
       transition-timing-function: var(--mb-motion-easing-enter);

@@ -167,7 +167,7 @@ describe('mb-button', () => {
     expect(submits).to.have.length(0);
   });
 
-  it('size sets height, padding, and font size from the scale, md by default; the gap is 4px', async () => {
+  it('size sets height, padding, font size, and gap from the scale, md by default', async () => {
     const { container } = await mount(
       '<mb-button size="sm">A</mb-button><mb-button>B</mb-button><mb-button size="lg">C</mb-button><mb-button size="huge">D</mb-button>',
     );
@@ -183,7 +183,7 @@ describe('mb-button', () => {
       expect(style.minBlockSize, `${size} height`).to.equal(resolveLength(`--mb-size-${size}-height`));
       expect(style.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
       expect(style.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
-      expect(style.columnGap, `${size} gap`).to.equal(resolveLength('--mb-space-1'));
+      expect(style.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
     }
     expect(container.querySelectorAll('mb-button')[1]?.hasAttribute('size'), 'not reflected').to.equal(false);
     expect(md.minBlockSize).to.equal('40px');

@@ -68,7 +68,7 @@ describe('mb-disclosure', () => {
     expect(document.activeElement === link, 'focused').to.equal(false);
   });
 
-  it('size sets trigger height (one step taller than the control), font size, and gap from the scale, with fixed padding', async () => {
+  it('size sets trigger height (one step taller than the control), padding, font size, and gap from the scale', async () => {
     const { container } = await mount(
       ['sm', 'md', 'lg'].map((size) => `<mb-disclosure size="${size}" open><span slot="summary">S</span>Body</mb-disclosure>`).join(''),
     );
@@ -77,14 +77,14 @@ describe('mb-disclosure', () => {
       const trigger = getComputedStyle(part(disclosures[index] as Element, 'trigger'));
       const height = Number.parseFloat(resolveLength(`--mb-size-${size}-height`)) + Number.parseFloat(resolveLength('--mb-space-2'));
       expect(trigger.minBlockSize, `${size} height`).to.equal(`${height}px`);
-      expect(trigger.paddingInlineStart, `${size} padding`).to.equal(resolveLength('--mb-space-4'));
+      expect(trigger.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
       expect(trigger.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
       expect(trigger.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
     });
     const md = disclosures[1] as Element;
     expect(part(md, 'trigger').getBoundingClientRect().height).to.equal(48);
     const content = part(md, 'panel').querySelector('.content') as HTMLElement;
-    expect(getComputedStyle(content).paddingInlineStart).to.equal(resolveLength('--mb-space-4'));
+    expect(getComputedStyle(content).paddingInlineStart).to.equal(resolveLength('--mb-size-md-padding-inline'));
   });
 
   it('has 48px medium-weight trigger rows at md, one step taller than the control height', async () => {
@@ -95,7 +95,7 @@ describe('mb-disclosure', () => {
     expect(md?.getBoundingClientRect().height).to.equal(48);
     expect(sm?.getBoundingClientRect().height).to.equal(40);
     expect(getComputedStyle(md).fontWeight).to.equal('500');
-    expect(getComputedStyle(md).paddingInlineStart).to.equal('16px');
+    expect(getComputedStyle(md).paddingInlineStart).to.equal(resolveLength('--mb-size-md-padding-inline'));
   });
 
   it('a component token beats the size scale', async () => {

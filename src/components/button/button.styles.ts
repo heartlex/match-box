@@ -16,7 +16,7 @@ export const buttonStyles = [
       flex: 1;
       align-items: center;
       justify-content: center;
-      gap: var(--mb-button-gap, var(--mb-space-1));
+      gap: var(--mb-button-gap, var(--_gap));
       min-block-size: var(--mb-button-height, var(--_height));
       margin: 0;
       padding-block: 0;
