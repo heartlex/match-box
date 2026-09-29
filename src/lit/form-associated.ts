@@ -62,7 +62,6 @@ function setState(states: CustomStateSet, name: string, on: boolean): void {
   else states.delete(name);
 }
 
-
 /**
  * Makes a Lit element a form control through `ElementInternals`.
  *

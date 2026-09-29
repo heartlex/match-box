@@ -194,7 +194,7 @@ describe('FormAssociated', () => {
 
   it('markEdited lets a change that is not a value change set user-invalid', async () => {
     const form = document.createElement('form');
-    form.innerHTML = '<test-toggle required></test-toggle>';
+    form.innerHTML = '<test-toggle required></test-toggle><button>after</button>';
     document.body.append(form);
     const toggle = form.querySelector('test-toggle') as TestToggle;
     await toggle.updateComplete;
