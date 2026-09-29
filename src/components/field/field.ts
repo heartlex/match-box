@@ -7,6 +7,8 @@ const controlEvents = ['input', 'change', 'focusout', 'invalid'] as const;
 
 type TextSlot = 'label' | 'description' | 'error';
 
+const textSlots: readonly TextSlot[] = ['label', 'description', 'error'];
+
 /**
  * A label, a description, and an error around one control, connected to it.
  * The control's value and validity stay its own; the field shows the
@@ -48,6 +50,12 @@ export class MbField extends LitElement {
   #control: FieldControl | null = null;
   #form: HTMLFormElement | null = null;
   #slotText: Record<TextSlot, string> = { label: '', description: '', error: '' };
+  #slotElements: Partial<Record<TextSlot, HTMLSlotElement>> = {};
+  readonly #textObservers: Record<TextSlot, MutationObserver> = {
+    label: new MutationObserver(() => this.#syncTextSlot('label')),
+    description: new MutationObserver(() => this.#syncTextSlot('description')),
+    error: new MutationObserver(() => this.#syncTextSlot('error')),
+  };
 
   constructor() {
     super();
@@ -65,9 +73,27 @@ export class MbField extends LitElement {
     return control !== null && control.matches(':state(user-invalid)') ? control.validationMessage : '';
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // The control is usually already a light DOM child by the time this runs (parsed markup, or
+    // moved together with the field): bind it now so the first render is already final, instead
+    // of waiting for slotchange (a later, async render would shift layout, e.g. the required
+    // asterisk appearing).
+    if (this.#control === null) {
+      const control = [...this.children].find(isFieldControl) ?? null;
+      if (control !== null) this.#bind(control);
+    } else {
+      this.#attachListeners();
+    }
+    for (const name of textSlots) this.#observeTextSlot(name);
+  }
+
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.#bind(null);
+    // Keep #control and #form: a reconnect (e.g. moving the field in the DOM) must rebind to the
+    // same control, and slotchange will not fire again since the assignment did not change.
+    this.#detachListeners();
+    for (const name of textSlots) this.#textObservers[name].disconnect();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -95,19 +121,27 @@ export class MbField extends LitElement {
         <slot name="description" @slotchange=${this.#onTextSlot('description')}>${this.description}</slot>
       </div>
       <div part="control"><slot @slotchange=${this.#onControlSlot}></slot></div>
-      <div part="error" aria-live="polite">
+      <div part="error" aria-live="polite" class=${this.shownError !== '' ? 'has-error' : ''}>
         <slot name="error" @slotchange=${this.#onTextSlot('error')}>${this.#slotText.error ? '' : this.shownError}</slot>
       </div>
     </div>`;
   }
 
-  #bind(control: FieldControl | null): void {
+  #attachListeners(): void {
+    for (const type of controlEvents) this.#control?.addEventListener(type, this.#refresh);
+    this.#form?.addEventListener('reset', this.#onReset);
+  }
+
+  #detachListeners(): void {
     for (const type of controlEvents) this.#control?.removeEventListener(type, this.#refresh);
     this.#form?.removeEventListener('reset', this.#onReset);
+  }
+
+  #bind(control: FieldControl | null): void {
+    this.#detachListeners();
     this.#control = control;
     this.#form = control?.form ?? null;
-    for (const type of controlEvents) control?.addEventListener(type, this.#refresh);
-    this.#form?.addEventListener('reset', this.#onReset);
+    this.#attachListeners();
   }
 
   // Lit batches the update after every listener of the event has run, so the control's states are current.
@@ -127,21 +161,37 @@ export class MbField extends LitElement {
     this.requestUpdate();
   };
 
+  #onTextSlot(name: TextSlot) {
+    return (event: Event): void => {
+      this.#slotElements[name] = event.target as HTMLSlotElement;
+      this.#syncTextSlot(name);
+      this.#observeTextSlot(name);
+    };
+  }
+
   // Without `flatten`, an unassigned slot's own fallback content is never
   // returned: reading it back (as `flatten: true` would) turns the error
   // slot's fallback, which renders `shownError`, into a feedback loop.
-  #onTextSlot(name: TextSlot) {
-    return (event: Event): void => {
-      const slot = event.target as HTMLSlotElement;
-      const text = slot
-        .assignedNodes()
-        .map((node) => node.textContent ?? '')
-        .join('')
-        .trim();
-      if (text === this.#slotText[name]) return;
-      this.#slotText = { ...this.#slotText, [name]: text };
-      this.requestUpdate();
-    };
+  #syncTextSlot(name: TextSlot): void {
+    const slot = this.#slotElements[name];
+    const assigned = slot ? slot.assignedNodes() : [];
+    const text = assigned
+      .map((node) => node.textContent ?? '')
+      .join('')
+      .trim();
+    if (text === this.#slotText[name]) return;
+    this.#slotText = { ...this.#slotText, [name]: text };
+    this.requestUpdate();
+  }
+
+  // Watches the really assigned nodes (never the slot's own fallback, which would loop) for text
+  // edited in place, such as a slotted span whose content a framework updates without reslotting.
+  #observeTextSlot(name: TextSlot): void {
+    const observer = this.#textObservers[name];
+    observer.disconnect();
+    const slot = this.#slotElements[name];
+    const assigned = slot?.assignedNodes() ?? [];
+    for (const node of assigned) observer.observe(node, { characterData: true, childList: true, subtree: true });
   }
 
   readonly #focusControl = (): void => {

@@ -11,8 +11,15 @@ export const fieldStyles = [
 
     .base {
       display: grid;
-      gap: var(--mb-field-gap, var(--mb-space-2));
       font-family: var(--mb-font-family-body);
+    }
+
+    /* The gap lives on the rows before the control, not on .base: the error stays in the
+       tree even when empty (a live region), and a container-wide grid gap would always add
+       space below the control for it, whether or not it has anything to show. */
+    .heading,
+    [part='description'] {
+      margin-block-end: var(--mb-field-gap, var(--mb-space-2));
     }
 
     .heading {
@@ -42,6 +49,10 @@ export const fieldStyles = [
 
     [part='control'] {
       display: grid;
+    }
+
+    [part='error'].has-error {
+      margin-block-start: var(--mb-field-gap, var(--mb-space-2));
     }
   `,
 ];

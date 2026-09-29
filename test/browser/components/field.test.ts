@@ -100,4 +100,52 @@ describe('mb-field', () => {
     expect(part(element, 'label').textContent?.trim()).to.equal('Notes');
     expect(element.shownError).to.equal('');
   });
+
+  it('keeps its control bound after being moved elsewhere in the DOM', async () => {
+    const { field, inner } = await mountField();
+    const otherContainer = document.createElement('div');
+    const button = document.createElement('button');
+    document.body.append(otherContainer);
+    otherContainer.append(field, button);
+    await settle(document.body);
+    inner.focus();
+    await sendKeys({ type: 'x' });
+    await settle(document.body);
+    await sendKeys({ press: 'Tab' });
+    await settle(document.body);
+    expect(field.shownError).not.to.equal('');
+    expect(inner.getAttribute('aria-invalid')).to.equal('true');
+  });
+
+  it('reflects text edited in place inside a rich slot', async () => {
+    const { field, inner } = await mountField(
+      '',
+      '<span slot="error">Taken</span><mb-input type="email" required></mb-input>',
+    );
+    await settle(document.body);
+    expect(referencedText(inner, 'describedby')).to.contain('Taken');
+    const span = field.querySelector('span[slot="error"]') as HTMLSpanElement;
+    span.textContent = 'Still taken';
+    await settle(document.body);
+    expect(referencedText(inner, 'describedby')).to.contain('Still taken');
+    span.textContent = '';
+    await settle(document.body);
+    expect(field.shownError).to.equal('');
+    expect(inner.getAttribute('aria-invalid')).to.equal(null);
+  });
+
+  it('gives the error no space when empty, and space only once it is shown', async () => {
+    const { field } = await mountField();
+    await settle(document.body);
+    const emptyControlRect = part(field, 'control').getBoundingClientRect();
+    const emptyHostRect = field.getBoundingClientRect();
+    expect(Math.abs(emptyHostRect.bottom - emptyControlRect.bottom)).to.be.lessThanOrEqual(0.5);
+
+    field.error = 'That address is taken.';
+    await field.updateComplete;
+    await settle(document.body);
+    const filledControlRect = part(field, 'control').getBoundingClientRect();
+    const filledHostRect = field.getBoundingClientRect();
+    expect(filledHostRect.bottom - filledControlRect.bottom).to.be.greaterThan(0);
+  });
 });
