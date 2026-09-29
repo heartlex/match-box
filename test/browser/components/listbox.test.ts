@@ -1,7 +1,9 @@
 import { expect } from 'chai';
 import { sendMouse } from '@web/test-runner-commands';
+import '../../../src/components/define/field.ts';
 import '../../../src/components/define/listbox.ts';
 import type { MbListbox, MbOption } from '../../../src/components/index.ts';
+import { nameOf, referencedText } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
 import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
@@ -137,6 +139,22 @@ describe('mb-listbox', () => {
     const label = container.querySelector('label');
     expect(part(listbox, 'listbox').ariaLabelledByElements?.[0] === label, 'labelled by the <label>').to.equal(true);
     await expectNoAxeViolations(container);
+  });
+
+  it('inside mb-field, takes its name and description from the field', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      `<form><mb-field label="Fruit" description="Pick one."><mb-listbox label="Ignored" name="fruit" required>${fruit}</mb-listbox></mb-field></form>`,
+    );
+    const listbox = form.querySelector('mb-listbox') as MbListbox;
+    form.addEventListener('submit', (event) => event.preventDefault());
+    await settle(document.body);
+    expect(part(listbox, 'label').hidden).to.equal(true);
+    expect(nameOf(part(listbox, 'listbox'))).to.equal('Fruit');
+    expect(referencedText(part(listbox, 'listbox'), 'describedby')).to.equal('Pick one.');
+    form.requestSubmit();
+    await settle(document.body);
+    expect(part(listbox, 'listbox').getAttribute('aria-invalid')).to.equal('true');
+    await expectNoAxeViolations(form);
   });
 
   it('drops a removed option from the value, the form, and validity', async () => {
