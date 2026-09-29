@@ -118,6 +118,16 @@ describe('mb-input', () => {
     expect(inner(input).validity.badInput, 'badInput after reset').to.equal(false);
   });
 
+  it('is valid again after a reset clears a malformed value', async () => {
+    const { form, input } = await inForm('<mb-input type="number" aria-label="N"></mb-input>');
+    await typeInto(input, '-');
+    expect(input.validity.badInput, 'badInput before reset').to.equal(true);
+    form.reset();
+    await settle(document.body);
+    expect(input.validity.valid, 'host valid').to.equal(true);
+    expect(form.checkValidity(), 'form valid').to.equal(true);
+  });
+
   it('does not submit on Enter when the form default button is disabled', async () => {
     const { form, input } = await inForm(
       '<mb-input name="q" aria-label="Search"></mb-input><button disabled>Send</button>',
