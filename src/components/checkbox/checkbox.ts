@@ -20,6 +20,7 @@ import { checkboxStyles } from './checkbox.styles.ts';
  * @cssprop --mb-checkbox-size - Box size. Defaults to the size scale's icon size.
  * @cssprop --mb-checkbox-bg - Box background.
  * @cssprop --mb-checkbox-border-color - Box border color.
+ * @cssprop --mb-checkbox-border-color-hover - Box border color on hover.
  * @cssprop --mb-checkbox-bg-checked - Box background when checked or indeterminate.
  * @cssprop --mb-checkbox-mark-color - Check and dash color.
  * @cssprop --mb-checkbox-radius - Box corner radius.

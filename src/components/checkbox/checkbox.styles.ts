@@ -1,10 +1,11 @@
 import { css } from 'lit';
 import { visuallyHidden } from '../shared/field-control.ts';
-import { colorRoleStyles, focusRing, hostStyles, sizeStyles } from '../shared/styles.ts';
+import { colorRoleStyles, focusRing, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
 
 export const checkboxStyles = [
   hostStyles,
   colorRoleStyles,
+  neutralAccent,
   sizeStyles,
   visuallyHidden,
   css`
@@ -25,13 +26,22 @@ export const checkboxStyles = [
       line-height: 1.25;
       letter-spacing: normal;
       cursor: pointer;
+      --_box: var(--mb-checkbox-size, 1.125rem);
+    }
+
+    [part='base'].size-sm {
+      --_box: var(--mb-checkbox-size, 1rem);
+    }
+
+    [part='base'].size-lg {
+      --_box: var(--mb-checkbox-size, 1.25rem);
     }
 
     input {
       position: absolute;
       inset-inline-start: 0;
-      inline-size: var(--mb-checkbox-size, var(--_icon));
-      block-size: var(--mb-checkbox-size, var(--_icon));
+      inline-size: var(--_box);
+      block-size: var(--_box);
       margin: 0;
       opacity: 0;
       cursor: inherit;
@@ -41,14 +51,18 @@ export const checkboxStyles = [
       display: inline-grid;
       flex: none;
       place-items: center;
-      inline-size: var(--mb-checkbox-size, var(--_icon));
-      block-size: var(--mb-checkbox-size, var(--_icon));
-      border: 1px solid var(--mb-checkbox-border-color, var(--mb-color-border-strong));
+      inline-size: var(--_box);
+      block-size: var(--_box);
+      border: var(--mb-border-width-control) solid var(--mb-checkbox-border-color, var(--mb-color-border-strong));
       border-radius: var(--mb-checkbox-radius, var(--mb-radius-2));
       background: var(--mb-checkbox-bg, var(--mb-color-bg-surface));
       transition-property: background-color, border-color;
       transition-duration: var(--mb-checkbox-duration, var(--mb-motion-duration-fast));
       transition-timing-function: var(--mb-motion-easing-standard);
+    }
+
+    [part='base']:hover input:not(:disabled) + [part='box'] {
+      border-color: var(--mb-checkbox-border-color-hover, var(--_border));
     }
 
     [part='mark'] {
@@ -91,10 +105,14 @@ export const checkboxStyles = [
       background: var(--mb-color-bg-disabled);
     }
 
-    /* Checked/indeterminate keep the solid color role's background, which
-       --_on-solid would be nearly invisible against once disabled. */
+    input:disabled:checked + [part='box'],
+    input:disabled:indeterminate + [part='box'] {
+      border-color: var(--_subtle-active);
+      background: var(--_subtle-active);
+    }
+
     input:disabled + [part='box'] [part='mark'] {
-      stroke: var(--mb-color-fg-disabled);
+      stroke: var(--mb-color-bg-surface);
     }
 
     @media (forced-colors: active) {

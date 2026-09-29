@@ -58,7 +58,10 @@ describe('styling contract', () => {
       );
       const box = getComputedStyle(part(container.querySelector('mb-checkbox') as Element, 'box'));
       const track = getComputedStyle(part(container.querySelector('mb-switch') as Element, 'track'));
-      expect(box.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
+      // mb-checkbox borrows primary's accent for the neutral role (neutralAccent, Task 1/6); mb-switch
+      // has not been restyled to do the same, so it still shows the literal neutral role token.
+      const checkboxRole = role === 'neutral' ? 'primary' : role;
+      expect(box.backgroundColor).to.equal(resolveColor(`--mb-color-${checkboxRole}-solid`));
       expect(track.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
     });
   }
