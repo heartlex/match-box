@@ -26,6 +26,8 @@ export const inputStyles = [
       color: var(--mb-color-fg-default);
       font-family: var(--mb-font-family-body);
       font-size: var(--mb-input-font-size, var(--_font-size));
+      line-height: 1.25;
+      letter-spacing: normal;
       cursor: text;
       transition-property: border-color;
       transition-duration: var(--mb-input-duration, var(--mb-motion-duration-fast));
