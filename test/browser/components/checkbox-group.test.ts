@@ -46,6 +46,14 @@ describe('mb-checkbox-group', () => {
     expect(group.validity.valid).to.equal(true);
   });
 
+  it('a checked child whose value is empty satisfies required', async () => {
+    const { form, group } = await mountGroup('required', '<mb-checkbox value="" checked>None</mb-checkbox>');
+    await settle(document.body);
+    expect(group.values).to.deep.equal(['']);
+    expect(group.validity.valid).to.equal(true);
+    expect(form.checkValidity()).to.equal(true);
+  });
+
   it('checkboxes added later join the group', async () => {
     const { form, group } = await mountGroup('select-all disabled');
     const late = document.createElement('mb-checkbox');

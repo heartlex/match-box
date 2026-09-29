@@ -113,6 +113,11 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
     }
   }
 
+  // Not `value`: a checked child may submit ''.
+  protected override isEmpty(): boolean {
+    return this.values.length === 0;
+  }
+
   protected override requiredMessage(): string {
     return 'Select at least one option.';
   }
@@ -192,10 +197,8 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
         disabled: disabled || child.disabled,
       })),
     );
-    this.value = this.values[0] ?? '';
     this.requestUpdate();
-    // Guards "required" against a change `this.value` happens not to catch, such as a
-    // disabled child dropping out while another already unchecked one keeps values[0] at ''.
+    // `required` depends on the children, which the mixin cannot see.
     this.revalidate();
   }
 
@@ -204,7 +207,6 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
       const item = this.state.items[index];
       if (item !== undefined && child.checked !== item.checked) child.checked = item.checked;
     });
-    this.value = this.values[0] ?? '';
     this.requestUpdate();
     this.revalidate();
   }
