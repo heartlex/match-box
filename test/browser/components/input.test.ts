@@ -86,6 +86,65 @@ describe('mb-input', () => {
     });
   }
 
+  it('is not validated while readonly, like a native input', async () => {
+    const { input: a } = await inForm('<mb-input required readonly aria-label="R"></mb-input>');
+    expect(a.validity.valid, 'required readonly, empty').to.equal(true);
+    expect(a.checkValidity()).to.equal(true);
+    const { input: b } = await inForm('<mb-input type="email" readonly value="x" aria-label="R"></mb-input>');
+    expect(b.validity.valid, 'type mismatch, readonly').to.equal(true);
+    a.readonly = false;
+    await settle(document.body);
+    expect(a.validity.valueMissing, 'valueMissing once writable again').to.equal(true);
+  });
+
+  it('keeps badInput, like a native input, when typing leaves the value unchanged', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><input type="number" aria-label="N" /><mb-input type="number" aria-label="M"></mb-input></form>',
+    );
+    const native = form.querySelector('input') as HTMLInputElement;
+    const input = form.querySelector('mb-input') as MbInput;
+    await typeInto(native, '-');
+    await typeInto(input, '-');
+    expect(input.validity.badInput, 'badInput').to.equal(native.validity.badInput);
+    expect(input.validity.badInput, 'badInput set').to.equal(true);
+  });
+
+  it('clears a malformed value on reset', async () => {
+    const { form, input } = await inForm('<mb-input type="number" aria-label="N"></mb-input>');
+    await typeInto(input, '-');
+    form.reset();
+    await settle(document.body);
+    expect(inner(input).value).to.equal('');
+  });
+
+  it('does not submit on Enter when the form default button is disabled', async () => {
+    const { form, input } = await inForm(
+      '<mb-input name="q" aria-label="Search"></mb-input><button disabled>Send</button>',
+    );
+    let submitted = 0;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitted += 1;
+    });
+    await typeInto(input, 'lit');
+    await sendKeys({ press: 'Enter' });
+    expect(submitted).to.equal(0);
+  });
+
+  it('activates the form default button on Enter, as the submitter', async () => {
+    const { form, input } = await inForm(
+      '<mb-input name="q" aria-label="Search"></mb-input><button name="action" value="save">Save</button>',
+    );
+    let submitter: EventTarget | null = null;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitter = event.submitter;
+    });
+    await typeInto(input, 'lit');
+    await sendKeys({ press: 'Enter' });
+    expect(submitter).to.equal(form.querySelector('button'));
+  });
+
   it('runs custom validators after the native checks', async () => {
     const { input } = await inForm('<mb-input type="email" aria-label="Email"></mb-input>');
     input.validators = [(element) => (element.value.endsWith('.test') ? { flags: { customError: true }, message: 'No .test.' } : null)];

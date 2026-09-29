@@ -25,10 +25,24 @@ const validityFlags = [
   'badInput',
 ] as const;
 
-const constraints = ['type', 'pattern', 'min', 'max', 'step', 'minlength', 'maxlength'] as const;
+const constraints = ['type', 'pattern', 'min', 'max', 'step', 'minlength', 'maxlength', 'readonly'] as const;
 
 function inputType(value: string): InputType {
   return inputTypes.find((type) => type === value) ?? 'text';
+}
+
+function isSubmitButton(element: Element): boolean {
+  if (element instanceof HTMLButtonElement) return element.type === 'submit';
+  if (element instanceof HTMLInputElement) return element.type === 'submit' || element.type === 'image';
+  return element.localName === 'mb-button' && (element as unknown as { type?: string }).type === 'submit';
+}
+
+/** The form's default button: the first submit button among its elements, in tree order. */
+function defaultButton(form: HTMLFormElement): HTMLElement | null {
+  for (const element of form.elements) {
+    if (isSubmitButton(element)) return element as HTMLElement;
+  }
+  return null;
 }
 
 /**
@@ -135,7 +149,13 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
     this.#input?.select();
   }
 
+  // A native readonly input is barred from constraint validation.
+  protected override isEmpty(): boolean {
+    return this.readonly ? false : super.isEmpty();
+  }
+
   protected override intrinsicValidity(): ValidationResult | null {
+    if (this.readonly) return null;
     const input = this.#input;
     if (input === null || input.validity.valid) return null;
     const flags: ValidityStateFlags = {};
@@ -145,6 +165,13 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
 
   protected override validationAnchor(): HTMLElement | undefined {
     return this.#input ?? undefined;
+  }
+
+  // formResetCallback() may set `value` to what it already is (e.g. '' to ''), which
+  // Lit treats as a no-op; force a render so live() writes a malformed value away.
+  override formResetCallback(): void {
+    super.formResetCallback();
+    this.requestUpdate();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -189,7 +216,15 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
   }
 
   readonly #onInput = (event: Event): void => {
-    this.value = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement).value;
+    // badInput (e.g. a lone "-" in a number field) can leave the value unchanged at
+    // '': Lit then sees no property change, so validity and :user-invalid would go stale.
+    if (value === this.value) {
+      this.revalidate();
+      this.markEdited();
+    } else {
+      this.value = value;
+    }
   };
 
   // change does not cross the shadow boundary; input does.
@@ -198,8 +233,14 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
   };
 
   // The inner input is not in the host's form, so Enter would not submit it natively.
+  // Native implicit submission goes through the form's default button, if any.
   readonly #onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Enter' && !event.isComposing) this.form?.requestSubmit();
+    if (event.key !== 'Enter' || event.isComposing) return;
+    const form = this.form;
+    if (form === null) return;
+    const button = defaultButton(form);
+    if (button === null) form.requestSubmit();
+    else if (!button.matches(':disabled')) button.click();
   };
 
   readonly #onPrefixChange = (event: Event): void => {
