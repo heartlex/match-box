@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { sendKeys, sendMouse } from '@web/test-runner-commands';
+import { emulateMedia, sendKeys, sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/all.ts';
 import type { MbField, MbInput } from '../../../src/components/index.ts';
 import { nameOf, referencedText } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, settle } from '../../support/components.ts';
 
 const later = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -22,8 +22,11 @@ async function mountField(attributes = '', control = '<mb-input type="email" req
 describe('mb-field', () => {
   before(loadTokens);
 
-  afterEach(() => {
+  afterEach(async () => {
     document.body.replaceChildren();
+    // Forced colors are emulated page-wide: reset it here so a failing assertion above can't
+    // leak the mode into later tests.
+    await emulateMedia({ forcedColors: 'none' });
   });
 
   it('names and describes its control', async () => {
@@ -174,15 +177,52 @@ describe('mb-field', () => {
   it('gives the error no space when empty, and space only once it is shown', async () => {
     const { field } = await mountField();
     await settle(document.body);
-    const emptyControlRect = part(field, 'control').getBoundingClientRect();
+    // The description is the row right before the error (the render order is control,
+    // description, error), so it is the anchor for "nothing after this takes space".
+    const emptyDescriptionRect = part(field, 'description').getBoundingClientRect();
     const emptyHostRect = field.getBoundingClientRect();
-    expect(Math.abs(emptyHostRect.bottom - emptyControlRect.bottom)).to.be.lessThanOrEqual(0.5);
+    expect(Math.abs(emptyHostRect.bottom - emptyDescriptionRect.bottom)).to.be.lessThanOrEqual(0.5);
 
     field.error = 'That address is taken.';
     await field.updateComplete;
     await settle(document.body);
-    const filledControlRect = part(field, 'control').getBoundingClientRect();
+    const filledDescriptionRect = part(field, 'description').getBoundingClientRect();
     const filledHostRect = field.getBoundingClientRect();
-    expect(filledHostRect.bottom - filledControlRect.bottom).to.be.greaterThan(0);
+    expect(filledHostRect.bottom - filledDescriptionRect.bottom).to.be.greaterThan(0);
+  });
+
+  describe('matchbox look', () => {
+    it('renders the description below the control', async () => {
+      const { field } = await mountField();
+      const position = part(field, 'control').compareDocumentPosition(part(field, 'description'));
+      expect(position & Node.DOCUMENT_POSITION_FOLLOWING).to.not.equal(0);
+    });
+
+    it('uses a 12px medium label and a danger-text required marker', async () => {
+      const { field } = await mountField();
+      const label = getComputedStyle(part(field, 'label'));
+      expect([label.fontSize, label.fontWeight]).to.deep.equal(['12px', '500']);
+      expect(getComputedStyle(part(field, 'required')).color).to.equal(resolveColor('--mb-color-danger-text'));
+    });
+
+    it('shows the error as a banner with an icon, and nothing when there is no error', async () => {
+      const { field } = await mountField();
+      expect(part(field, 'error').getBoundingClientRect().height).to.equal(0);
+      expect(field.shadowRoot?.querySelector('[part~=error-icon]')).to.equal(null);
+      field.error = 'Bad';
+      await settle(document.body);
+      const banner = getComputedStyle(part(field, 'error'));
+      expect(banner.backgroundColor).to.equal(resolveColor('--mb-color-bg-danger'));
+      expect(banner.color).to.equal(resolveColor('--mb-color-fg-danger'));
+      const icon = part(field, 'error-icon');
+      expect(icon.getAttribute('aria-hidden')).to.equal('true');
+      expect(part(field, 'error').textContent?.trim()).to.equal('Bad');
+    });
+
+    it('keeps a visible boundary on the banner in forced colors', async () => {
+      await emulateMedia({ forcedColors: 'active' });
+      const { field } = await mountField('error="Bad"');
+      expect(getComputedStyle(part(field, 'error')).borderTopStyle).to.equal('solid');
+    });
   });
 });
