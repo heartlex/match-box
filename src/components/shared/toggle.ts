@@ -33,7 +33,10 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
   declare color: ColorRole;
   /** Box or track, label, and font size, from the size scale. Unknown values render as `md`. */
   declare size: Size;
-  /** Set by `mb-checkbox-group` while it is disabled. */
+  /**
+   * Set by `mb-checkbox-group` while it is disabled.
+   * @internal
+   */
   declare groupDisabled: boolean;
   /** Set by `mb-field`. */
   declare fieldLabel: string;
