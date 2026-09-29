@@ -31,11 +31,35 @@ export interface FormAssociatedElement {
   formStateRestoreCallback(state: string | File | FormData | null): void;
 }
 
-/** Fails with `valueMissing` when `required` is set and `value` is empty. */
+/**
+ * Fails with `valueMissing` when `required` is set and `value` is `''`. {@link FormAssociated}
+ * does not use this: its own required check calls `isEmpty()`/`requiredMessage()`, which
+ * controls override (e.g. a checkbox is empty when unchecked); this remains for `validators`.
+ */
 export const requiredValidator: Validator = (element) =>
   element.required && element.value === ''
     ? { flags: { valueMissing: true }, message: 'Please fill out this field.' }
     : null;
+
+/**
+ * Protected hooks added by {@link FormAssociated}, for controls built on it
+ * whose value is not the whole story: a checkbox is empty when unchecked, an
+ * input wraps a native control with its own validity.
+ */
+export declare class FormAssociatedHooks {
+  /** Whether `required` fails. Defaults to `value === ''`. */
+  protected isEmpty(): boolean;
+  /** The message when `required` fails. */
+  protected requiredMessage(): string;
+  /** Checks from an inner native control, run before `required` and `validators`. */
+  protected intrinsicValidity(): ValidationResult | null;
+  /** Where the browser shows the validation message. Defaults to the host. */
+  protected validationAnchor(): HTMLElement | undefined;
+  /** Validates again, for changes the mixin cannot see. */
+  protected revalidate(): void;
+  /** Records a user change that is not a `value` change, such as a toggle, for `:state(user-invalid)`. */
+  protected markEdited(): void;
+}
 
 function setState(states: CustomStateSet, name: string, on: boolean): void {
   if (on) states.add(name);
@@ -52,7 +76,7 @@ function setState(states: CustomStateSet, name: string, on: boolean): void {
  */
 export function FormAssociated<T extends Constructor<LitElement>>(
   Base: T,
-): T & Constructor<FormAssociatedElement> & { readonly formAssociated: true } {
+): T & Constructor<FormAssociatedElement & FormAssociatedHooks> & { readonly formAssociated: true } {
   class FormAssociatedElementClass extends Base implements FormAssociatedElement {
     static readonly formAssociated = true as const;
 
@@ -117,6 +141,30 @@ export function FormAssociated<T extends Constructor<LitElement>>(
       return this.internals.reportValidity();
     }
 
+    protected isEmpty(): boolean {
+      return this.value === '';
+    }
+
+    protected requiredMessage(): string {
+      return 'Please fill out this field.';
+    }
+
+    protected intrinsicValidity(): ValidationResult | null {
+      return null;
+    }
+
+    protected validationAnchor(): HTMLElement | undefined {
+      return undefined;
+    }
+
+    protected revalidate(): void {
+      this.#validate();
+    }
+
+    protected markEdited(): void {
+      this.#edited = true;
+    }
+
     protected override updated(changed: PropertyValues): void {
       super.updated(changed);
       if (changed.has('value')) {
@@ -145,12 +193,16 @@ export function FormAssociated<T extends Constructor<LitElement>>(
     }
 
     #validate(): void {
-      const failures = [requiredValidator, ...this.validators]
-        .map((validator) => validator(this))
-        .filter((result): result is ValidationResult => result !== null);
+      const required: ValidationResult | null =
+        this.required && this.isEmpty()
+          ? { flags: { valueMissing: true }, message: this.requiredMessage() }
+          : null;
+      const failures = [this.intrinsicValidity(), required, ...this.validators.map((validator) => validator(this))].filter(
+        (result): result is ValidationResult => result !== null,
+      );
       const flags = failures.reduce<ValidityStateFlags>((all, failure) => ({ ...all, ...failure.flags }), {});
       const message = failures.length === 0 ? '' : failures[0]?.message || 'Invalid value.';
-      this.internals.setValidity(flags, message);
+      this.internals.setValidity(flags, message, failures.length === 0 ? undefined : this.validationAnchor());
       this.#syncStates();
     }
 
@@ -165,5 +217,7 @@ export function FormAssociated<T extends Constructor<LitElement>>(
       setState(this.internals.states, 'user-invalid', invalid && this.#interacted);
     }
   }
-  return FormAssociatedElementClass;
+  // The declared hooks are protected, which a structural return type cannot express.
+  return FormAssociatedElementClass as unknown as T &
+    Constructor<FormAssociatedElement & FormAssociatedHooks> & { readonly formAssociated: true };
 }

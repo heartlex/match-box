@@ -1,7 +1,8 @@
 # Styling contract for the match-box skin
 
-Status: 0.3.0. `match-box/components` implements this contract for
-button, disclosure, accordion, dialog, and listbox.
+Status: 0.5.0. `match-box/components` implements this contract for button,
+disclosure, accordion, dialog, listbox, field, input, checkbox, checkbox
+group, and switch.
 
 ## Customization surfaces
 
@@ -79,6 +80,10 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   and the `close` event.
 - No `margin` on the host element. Layout belongs to the consumer.
 - Icons come through a slot. No icon set is bundled.
+- Form controls wrap native inputs in shadow DOM. `mb-field` renders the
+  label, description, and error in its own shadow root; controls name and
+  describe their input from hidden copies of that text in theirs, so page
+  CSS reaches neither.
 
 ## Attributes the core writes
 

@@ -62,6 +62,21 @@ describe('mb-button', () => {
     expect((form.elements.namedItem('city') as HTMLInputElement).value).to.equal('Oslo');
   });
 
+  it('click() activates the button like a native button, once, and submits', async () => {
+    const { button, submits } = await formWith('<mb-button type="submit">Send</mb-button>');
+    let clicks = 0;
+    button.addEventListener('click', () => (clicks += 1));
+    button.click();
+    expect(submits).to.have.length(1);
+    expect(clicks).to.equal(1);
+  });
+
+  it('click() on a disabled button does not submit', async () => {
+    const { button, submits } = await formWith('<mb-button type="submit" disabled>Send</mb-button>');
+    button.click();
+    expect(submits).to.have.length(0);
+  });
+
   it('disabled disables the native button and does not submit', async () => {
     const { button, submits } = await formWith('<mb-button type="submit" disabled>Send</mb-button>');
     expect(part<HTMLButtonElement>(button, 'base').disabled).to.equal(true);

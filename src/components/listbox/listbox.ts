@@ -3,6 +3,7 @@ import type { ListboxItem } from '../../core/state/listbox.ts';
 import { ListboxController } from '../../lit/controllers.ts';
 import { FormAssociated } from '../../lit/form-associated.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
+import { fieldControlProperties, fieldText, linkField, type FieldControl } from '../shared/field-control.ts';
 import { sizeName, type Size } from '../shared/size.ts';
 import { listboxStyles } from './listbox.styles.ts';
 import { MbOption } from './option.ts';
@@ -26,13 +27,14 @@ import { MbOption } from './option.ts';
  * @fires input - After the user changes the selection.
  * @fires change - After the user changes the selection.
  */
-export class MbListbox extends FormAssociated(LitElement) {
+export class MbListbox extends FormAssociated(LitElement) implements FieldControl {
   static override styles = listboxStyles;
   static override properties = {
     label: {},
     multiple: { type: Boolean, reflect: true },
     color: {},
     size: {},
+    ...fieldControlProperties,
   };
 
   /** Visible label; also the listbox's accessible name. */
@@ -42,16 +44,24 @@ export class MbListbox extends FormAssociated(LitElement) {
   declare color: ColorRole;
   /** Option height, padding, and font size, from the size scale. Unknown values render as `md`. */
   declare size: Size;
+  /** Set by `mb-field`. */
+  declare fieldLabel: string;
+  /** Set by `mb-field`. */
+  declare fieldDescription: string;
+  /** Set by `mb-field`. */
+  declare fieldError: string;
 
   readonly listbox = new ListboxController(
     this,
     () => ({
       root: this.renderRoot.querySelector<HTMLElement>('[part=listbox]'),
-      // The label attribute, else the first <label> associated with the host.
+      // The field's label, else the label attribute, else the first <label> associated with the host.
       label:
-        this.label === ''
-          ? ((this.internals.labels[0] ?? null) as HTMLElement | null)
-          : this.renderRoot.querySelector<HTMLElement>('[part=label]'),
+        this.fieldLabel !== ''
+          ? this.renderRoot.querySelector<HTMLElement>('#field-label')
+          : this.label === ''
+            ? ((this.internals.labels[0] ?? null) as HTMLElement | null)
+            : this.renderRoot.querySelector<HTMLElement>('[part=label]'),
       items: () => this.#options(),
     }),
     { describeItem: (element) => this.#describe(element as MbOption) },
@@ -69,6 +79,9 @@ export class MbListbox extends FormAssociated(LitElement) {
     this.multiple = false;
     this.color = 'neutral';
     this.size = 'md';
+    this.fieldLabel = '';
+    this.fieldDescription = '';
+    this.fieldError = '';
     this.listbox.state.subscribe(() => {
       const first = this.values[0] ?? '';
       if (this.value !== first) this.value = first;
@@ -161,10 +174,14 @@ export class MbListbox extends FormAssociated(LitElement) {
     const data = new FormData();
     for (const value of this.values) data.append(this.name, value);
     this.internals.setFormValue(this.name === '' ? null : data);
+    const root = this.renderRoot.querySelector<HTMLElement>('[part=listbox]');
+    // The listbox behavior owns the name; the field adds description and error.
+    if (root) linkField(root, this, this.renderRoot as ShadowRoot, { name: false });
   }
 
   override render() {
-    return html`<span part="label" ?hidden=${this.label === ''}>${this.label}</span>
+    return html`${fieldText(this)}
+      <span part="label" ?hidden=${this.label === '' || this.fieldLabel !== ''}>${this.label}</span>
       <div part="listbox" class="color-${colorRole(this.color)} size-${sizeName(this.size)} ${this.multiple ? 'multiple' : ''}">
         <slot @slotchange=${this.#onSlotChange}></slot>
       </div>`;

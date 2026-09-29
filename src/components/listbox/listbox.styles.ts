@@ -1,10 +1,12 @@
 import { css } from 'lit';
+import { visuallyHidden } from '../shared/field-control.ts';
 import { colorRoleStyles, hostStyles, sizeStyles } from '../shared/styles.ts';
 
 export const listboxStyles = [
   hostStyles,
   colorRoleStyles,
   sizeStyles,
+  visuallyHidden,
   css`
     :host {
       display: block;

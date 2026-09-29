@@ -1,12 +1,12 @@
 {
-  "match-box/core": 4200,
-  "match-box/core/state": 1600,
-  "match-box/core/dom": 3500,
+  "match-box/core": 4900,
+  "match-box/core/state": 1700,
+  "match-box/core/dom": 4300,
   "match-box/core/a11y": 1000,
-  "match-box/core/testing": 2700,
-  "match-box/lit": 4600,
-  "match-box/components": 10400,
-  "match-box/components/define/all.js": 10400,
+  "match-box/core/testing": 3600,
+  "match-box/lit": 4300,
+  "match-box/components": 15900,
+  "match-box/components/define/all.js": 15900,
   "match-box/motion": 2300,
   "match-box/tokens.css": 1700
 }

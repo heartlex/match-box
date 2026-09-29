@@ -1,6 +1,6 @@
 // Plain HTML demos. Each mount function returns the elements a conformance
 // suite needs, so test/browser/demos.test.ts runs the suites against them.
-import { attachDialog, attachDisclosure, attachListbox } from 'match-box/core';
+import { attachCheckboxGroup, attachDialog, attachDisclosure, attachField, attachListbox } from 'match-box/core';
 
 export function mountDisclosure(container) {
   container.innerHTML = `
@@ -66,6 +66,64 @@ export function mountListbox(container, spec) {
     options,
     teardown() {
       behavior.dispose();
+      container.replaceChildren();
+    },
+  };
+}
+
+export function mountCheckboxGroup(container) {
+  container.innerHTML = `
+    <form>
+      <fieldset>
+        <legend>Toppings</legend>
+        <label><input type="checkbox" data-parent /> Select all</label>
+        <label><input type="checkbox" name="topping" value="nuts" /> Nuts</label>
+        <label><input type="checkbox" name="topping" value="honey" /> Honey</label>
+        <label><input type="checkbox" name="topping" value="yogurt" disabled /> Yogurt</label>
+        <label><input type="checkbox" name="topping" value="seeds" /> Seeds</label>
+      </fieldset>
+    </form>`;
+  const form = container.querySelector('form');
+  const root = form.querySelector('fieldset');
+  const parent = root.querySelector('[data-parent]');
+  const items = [...root.querySelectorAll('input[name=topping]')];
+  const behavior = attachCheckboxGroup({ root, parent, items: () => items }, { required: true });
+  return {
+    form,
+    group: root,
+    parent,
+    items,
+    validationMessage: () => items[0].validationMessage,
+    teardown() {
+      behavior.dispose();
+      container.replaceChildren();
+    },
+  };
+}
+
+export function mountField(container) {
+  container.innerHTML = `
+    <form>
+      <label>Email</label>
+      <input type="email" name="email" required />
+      <p>We never share it.</p>
+      <p></p>
+      <button>Send</button>
+    </form>`;
+  const form = container.querySelector('form');
+  const [label, control, description, error, submit] = form.children;
+  form.addEventListener('submit', (event) => event.preventDefault());
+  const field = attachField({ control, label, description, error });
+  return {
+    control,
+    form,
+    submit,
+    errorText: () => (error.hidden ? '' : error.textContent.trim()),
+    async setError(message) {
+      field.setError(message);
+    },
+    teardown() {
+      field.dispose();
       container.replaceChildren();
     },
   };

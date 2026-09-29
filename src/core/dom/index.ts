@@ -20,3 +20,10 @@ export {
   type ListboxElements,
   type ListboxFocusStrategy,
 } from './listbox.ts';
+export {
+  attachCheckboxGroup,
+  checkboxGroupRequiredMessage,
+  type AttachCheckboxGroupOptions,
+  type CheckboxGroupElements,
+} from './checkbox-group.ts';
+export { attachField, type FieldBehavior, type FieldElements } from './field.ts';
