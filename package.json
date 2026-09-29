@@ -6,8 +6,7 @@
   "type": "module",
   "sideEffects": [
     "**/*.css",
-    "./dist/components/define/*.js",
-    "./src/components/define/*.ts"
+    "./dist/components/define/*.js"
   ],
   "exports": {
     "./core": {

@@ -3,7 +3,9 @@ import { setCustomElementsManifest, type Preview } from '@storybook/web-componen
 import manifest from '../dist/custom-elements.json' with { type: 'json' };
 import { publicManifest } from './manifest.ts';
 import '../src/tokens/tokens.css';
-import '../src/components/define/all.ts';
+// The built package, as users import it; package.json marks these files as side effects.
+// Run `npm run build` to see component changes in the dev server.
+import '../dist/components/define/all.js';
 
 // The same manifest as the Eleventy API tables: attributes, slots, parts, events, and CSS properties.
 setCustomElementsManifest(publicManifest(manifest));
