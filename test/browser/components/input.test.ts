@@ -5,7 +5,7 @@ import '../../../src/components/define/input.ts';
 import type { MbInput } from '../../../src/components/index.ts';
 import { nameOf } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, resolveLength, settle } from '../../support/components.ts';
 
 const inner = (element: MbInput): HTMLInputElement => part<HTMLInputElement>(element, 'input');
 
@@ -298,5 +298,54 @@ describe('mb-input', () => {
     const box = part(element, 'base').getBoundingClientRect();
     await sendMouse({ type: 'click', position: [Math.round(box.left + 2), Math.round(box.top + box.height / 2)] });
     expect(element.shadowRoot?.activeElement).to.equal(inner(element));
+  });
+
+  describe('matchbox look', () => {
+    it('is 40px tall at md with a 1.5px border-strong border and 16px padding', async () => {
+      // The token itself is 1.5px (checked via `width`, which browsers report at full
+      // precision). `border-top-width` is snapped to a whole device pixel by every engine
+      // at the test runner's 1x device scale, so the input's rendered border is compared
+      // against that same snapped resolution of the token rather than the un-snapped
+      // '1.5px' literal.
+      expect(resolveLength('--mb-border-width-control'), 'token is 1.5px').to.equal('1.5px');
+      const probe = document.createElement('div');
+      probe.style.borderTopWidth = 'var(--mb-border-width-control)';
+      probe.style.borderTopStyle = 'solid';
+      document.body.append(probe);
+      const snappedWidth = getComputedStyle(probe).borderTopWidth;
+      probe.remove();
+
+      const { element } = await mount<MbInput>('<mb-input aria-label="A"></mb-input>');
+      const base = part(element, 'base');
+      const style = getComputedStyle(base);
+      expect(base.getBoundingClientRect().height).to.equal(40);
+      expect(style.borderTopWidth).to.equal(snappedWidth);
+      expect(style.borderTopColor).to.equal(resolveColor('--mb-color-border-strong'));
+      expect(style.paddingInlineStart).to.equal('16px');
+    });
+
+    it('uses 12px padding at sm', async () => {
+      const { element } = await mount<MbInput>('<mb-input size="sm" aria-label="A"></mb-input>');
+      expect(getComputedStyle(part(element, 'base')).paddingInlineStart).to.equal('12px');
+    });
+
+    it('turns the border indigo on hover without a color, and the role border with one', async () => {
+      const { container } = await mount('<mb-input aria-label="A"></mb-input><mb-input color="danger" aria-label="B"></mb-input>');
+      const [plain, danger] = [...container.querySelectorAll('mb-input')].map((input) => part(input, 'base'));
+      for (const [base, token] of [
+        [plain, '--mb-color-primary-border'],
+        [danger, '--mb-color-danger-border'],
+      ] as const) {
+        const box = base.getBoundingClientRect();
+        await sendMouse({ type: 'move', position: [Math.round(box.left + 8), Math.round(box.top + box.height / 2)] });
+        expect(getComputedStyle(base).borderTopColor, token).to.equal(resolveColor(token));
+      }
+      await sendMouse({ type: 'move', position: [0, 0] });
+    });
+
+    it('uses the body size at md', async () => {
+      const { element } = await mount<MbInput>('<mb-input aria-label="A"></mb-input>');
+      expect(getComputedStyle(part(element, 'base')).fontSize).to.equal('14px');
+    });
   });
 });
