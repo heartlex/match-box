@@ -1,7 +1,15 @@
 import { expect } from 'chai';
 import { emulateMedia } from '@web/test-runner-commands';
 import '../../../src/components/define/all.ts';
-import { colorRoles, MbButton, sizes, type MbDialog, type MbListbox } from '../../../src/components/index.ts';
+import {
+  colorRoles,
+  MbButton,
+  sizes,
+  type MbCheckbox,
+  type MbDialog,
+  type MbInput,
+  type MbListbox,
+} from '../../../src/components/index.ts';
 import { define } from '../../../src/components/shared/define.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
 import { loadTokens, mount, part, resolveColor, setMotion, settle } from '../../support/components.ts';
@@ -43,7 +51,40 @@ describe('styling contract', () => {
       expect(base.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-subtle`));
       expect(base.color).to.equal(resolveColor(`--mb-color-${role}-text`));
     });
+
+    it(`mb-checkbox and mb-switch fill with the ${role} role when checked`, async () => {
+      const { container } = await mount(
+        `<mb-checkbox color="${role}" checked>A</mb-checkbox><mb-switch color="${role}" checked>B</mb-switch>`,
+      );
+      const box = getComputedStyle(part(container.querySelector('mb-checkbox') as Element, 'box'));
+      const track = getComputedStyle(part(container.querySelector('mb-switch') as Element, 'track'));
+      expect(box.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
+      expect(track.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
+    });
   }
+
+  it('form control tokens set on an ancestor win', async () => {
+    const { container } = await mount(
+      '<div style="--mb-input-bg: rgb(1, 2, 3); --mb-checkbox-bg: rgb(4, 5, 6)"><mb-input aria-label="A"></mb-input><mb-checkbox>B</mb-checkbox></div>',
+    );
+    expect(getComputedStyle(part(container.querySelector('mb-input') as MbInput, 'base')).backgroundColor).to.equal('rgb(1, 2, 3)');
+    expect(getComputedStyle(part(container.querySelector('mb-checkbox') as MbCheckbox, 'box')).backgroundColor).to.equal(
+      'rgb(4, 5, 6)',
+    );
+  });
+
+  it('page CSS does not change the form controls', async () => {
+    const { container } = await mount('<mb-input aria-label="A"></mb-input><mb-checkbox>B</mb-checkbox>');
+    const input = container.querySelector('mb-input') as MbInput;
+    const box = container.querySelector('mb-checkbox') as MbCheckbox;
+    const before = [getComputedStyle(part(input, 'base')).backgroundColor, getComputedStyle(part(box, 'box')).borderTopColor];
+    const hostile = document.createElement('style');
+    hostile.textContent = '*, input, label, span { background: red !important; border-color: lime !important; }';
+    document.head.append(hostile);
+    const after = [getComputedStyle(part(input, 'base')).backgroundColor, getComputedStyle(part(box, 'box')).borderTopColor];
+    hostile.remove();
+    expect(after).to.deep.equal(before);
+  });
 
   it('follows the dark theme', async () => {
     document.documentElement.dataset['theme'] = 'dark';
@@ -70,7 +111,8 @@ describe('styling contract', () => {
   it('keeps borders and selection visible in forced colors', async () => {
     await emulateMedia({ forcedColors: 'active' });
     const { container } = await mount(
-      '<mb-button variant="ghost">Go</mb-button><mb-listbox label="Fruit"><mb-option selected>Apple</mb-option></mb-listbox>',
+      '<mb-button variant="ghost">Go</mb-button><mb-listbox label="Fruit"><mb-option selected>Apple</mb-option></mb-listbox>' +
+        '<mb-checkbox checked>Check</mb-checkbox>',
     );
     await settle(container);
     const button = container.querySelector('mb-button') as MbButton;
@@ -79,6 +121,9 @@ describe('styling contract', () => {
     expect(getComputedStyle(part(button, 'base')).borderTopColor).not.to.equal(transparent);
     const option = listbox.querySelector('mb-option') as Element;
     expect(getComputedStyle(part(option, 'base')).backgroundColor).not.to.equal(transparent);
+    const box = getComputedStyle(part(container.querySelector('mb-checkbox') as Element, 'box'));
+    expect(box.backgroundColor).not.to.equal(transparent);
+    expect(parseFloat(box.borderTopWidth)).to.be.at.least(1);
   });
 
   for (const theme of ['light', 'dark']) {
@@ -110,6 +155,10 @@ describe('styling contract', () => {
         `<mb-button size="${size}" href="#docs" variant="outline">Docs ${size}</mb-button>`,
         `<mb-disclosure size="${size}" open><span slot="summary">${size}</span>Body</mb-disclosure>`,
         `<mb-listbox size="${size}" label="List ${size}" multiple><mb-option selected>A</mb-option><mb-option>B</mb-option></mb-listbox>`,
+        `<mb-field size="${size}" label="Email ${size}" description="Hint"><mb-input type="email"></mb-input></mb-field>`,
+        `<mb-checkbox size="${size}" checked>Check ${size}</mb-checkbox>`,
+        `<mb-switch size="${size}" checked>Switch ${size}</mb-switch>`,
+        `<mb-field label="Group ${size}"><mb-checkbox-group size="${size}" select-all><mb-checkbox>A</mb-checkbox><mb-checkbox checked>B</mb-checkbox></mb-checkbox-group></mb-field>`,
       ]);
       const surface = 'background: var(--mb-color-bg-surface); color: var(--mb-color-fg-default)';
       const { container } = await mount(`<main style="${surface}">${markup.join('')}</main>`);
@@ -120,12 +169,16 @@ describe('styling contract', () => {
   it('small controls are at least 24 by 24 pixels (WCAG 2.5.8)', async () => {
     const { container } = await mount(
       '<mb-button size="sm">A</mb-button><mb-disclosure size="sm"><span slot="summary">A</span>B</mb-disclosure>' +
-        '<mb-listbox size="sm" label="L"><mb-option>A</mb-option></mb-listbox>',
+        '<mb-listbox size="sm" label="L"><mb-option>A</mb-option></mb-listbox>' +
+        '<mb-input size="sm" aria-label="I"></mb-input><mb-checkbox size="sm">C</mb-checkbox><mb-switch size="sm">S</mb-switch>',
     );
     const targets = [
       part(container.querySelector('mb-button') as Element, 'base'),
       part(container.querySelector('mb-disclosure') as Element, 'trigger'),
       part(container.querySelector('mb-option') as Element, 'base'),
+      part(container.querySelector('mb-input') as Element, 'base'),
+      part(container.querySelector('mb-checkbox') as Element, 'base'),
+      part(container.querySelector('mb-switch') as Element, 'base'),
     ];
     for (const target of targets) {
       const box = target.getBoundingClientRect();
@@ -138,7 +191,8 @@ describe('styling contract', () => {
     await emulateMedia({ reducedMotion: 'reduce' });
     const { container } = await mount(
       '<mb-button>A</mb-button><mb-disclosure><span slot="summary">A</span>B</mb-disclosure>' +
-        '<mb-listbox label="L"><mb-option>A</mb-option></mb-listbox><mb-dialog label="D">Body</mb-dialog>',
+        '<mb-listbox label="L"><mb-option>A</mb-option></mb-listbox><mb-dialog label="D">Body</mb-dialog>' +
+        '<mb-input aria-label="I"></mb-input><mb-checkbox>C</mb-checkbox><mb-switch>S</mb-switch>',
     );
     const parts = [
       part(container.querySelector('mb-button') as Element, 'base'),
@@ -146,6 +200,10 @@ describe('styling contract', () => {
       part(container.querySelector('mb-disclosure') as Element, 'icon'),
       part(container.querySelector('mb-option') as Element, 'base'),
       part(container.querySelector('mb-dialog') as MbDialog, 'dialog'),
+      part(container.querySelector('mb-input') as Element, 'base'),
+      part(container.querySelector('mb-checkbox') as Element, 'box'),
+      part(container.querySelector('mb-switch') as Element, 'track'),
+      part(container.querySelector('mb-switch') as Element, 'thumb'),
     ];
     const durations = parts.flatMap((element) => getComputedStyle(element).transitionDuration.split(', '));
     setMotion(false);
