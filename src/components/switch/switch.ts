@@ -23,6 +23,8 @@ import { switchStyles } from './switch.styles.ts';
  * @cssprop --mb-switch-track-bg - Track background when off.
  * @cssprop --mb-switch-track-bg-checked - Track background when on.
  * @cssprop --mb-switch-thumb-bg - Thumb background.
+ * @cssprop --mb-switch-border-color - Track border color when off.
+ * @cssprop --mb-switch-thumb-bg-checked - Thumb color when on.
  * @cssprop --mb-switch-duration - Duration of the thumb and track transitions.
  * @fires input - When the user toggles it.
  * @fires change - When the user toggles it.
