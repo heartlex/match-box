@@ -31,7 +31,11 @@ export interface FormAssociatedElement {
   formStateRestoreCallback(state: string | File | FormData | null): void;
 }
 
-/** Fails with `valueMissing` when `required` is set and `value` is empty. */
+/**
+ * Fails with `valueMissing` when `required` is set and `value` is `''`. {@link FormAssociated}
+ * does not use this: its own required check calls `isEmpty()`/`requiredMessage()`, which
+ * controls override (e.g. a checkbox is empty when unchecked); this remains for `validators`.
+ */
 export const requiredValidator: Validator = (element) =>
   element.required && element.value === ''
     ? { flags: { valueMissing: true }, message: 'Please fill out this field.' }
