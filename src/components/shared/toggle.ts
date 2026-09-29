@@ -84,8 +84,9 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     return this.disabled || this.groupDisabled || this.matches(':disabled');
   }
 
+  // A grouped checkbox does not validate on its own: mb-checkbox-group validates the group.
   protected override isEmpty(): boolean {
-    return !this.checked;
+    return !this.grouped && !this.checked;
   }
 
   protected override requiredMessage(): string {
@@ -143,6 +144,10 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     // A reconnect (e.g. moving the control in the DOM) must resume observing the same
     // assigned nodes: slotchange will not fire again since the assignment did not change.
     this.#observeLabelSlot();
+    // `grouped` depends on parentElement, read in updated()/render(); moving into or out of
+    // a group changes it without a reactive property change, so force both to catch up.
+    this.requestUpdate();
+    this.revalidate();
   }
 
   override disconnectedCallback(): void {

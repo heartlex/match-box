@@ -192,4 +192,26 @@ describe('mb-checkbox', () => {
     expect(mark.stroke).to.equal(resolveColor('--mb-color-fg-disabled'));
     expect(mark.stroke).to.not.equal(square.backgroundColor);
   });
+
+  // Controller ruling: a grouped checkbox must not validate on its own.
+  it('a required checkbox inside a group is valid on its own', async () => {
+    const { element } = await mount<HTMLElement>(
+      '<mb-checkbox-group name="topping"><mb-checkbox value="nuts" required>Nuts</mb-checkbox></mb-checkbox-group>',
+    );
+    const box = element.querySelector('mb-checkbox') as MbCheckbox;
+    await settle(document.body);
+    expect(box.validity.valueMissing).to.equal(false);
+    expect(box.validity.valid).to.equal(true);
+  });
+
+  it('a checked checkbox with a name moved out of a group into a form submits its value', async () => {
+    const { element: group } = await mount<HTMLElement>(
+      '<mb-checkbox-group name="topping"><mb-checkbox value="nuts" name="nuts" checked>Nuts</mb-checkbox></mb-checkbox-group>',
+    );
+    const box = group.querySelector('mb-checkbox') as MbCheckbox;
+    const { element: form } = await mount<HTMLFormElement>('<form></form>');
+    form.append(box);
+    await settle(document.body);
+    expect(new FormData(form).get('nuts')).to.equal('nuts');
+  });
 });
