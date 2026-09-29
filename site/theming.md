@@ -103,8 +103,9 @@ WCAG AA contrast in both themes.
 
 `size` is `sm`, `md` (default), or `lg` on buttons, disclosures,
 accordions, and listboxes. Each size is five tokens; retune a size once and
-every component follows. `mb-input`, `mb-checkbox`, and `mb-switch` have
-their own geometry and follow only the height and font-size of the scale.
+every component follows. `mb-input`, `mb-checkbox`, and `mb-switch` follow
+only the height, font-size, and gap of the scale, with their own padding
+and box/track sizes.
 
 | Token | `sm` | `md` | `lg` |
 |---|---|---|---|

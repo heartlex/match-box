@@ -73,8 +73,9 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   `--mb-size-<s>-height`, `-padding-inline`, `-font-size`, `-gap`, and
   `-icon`; a shared class maps them to private properties, as with color
   roles. `mb-dialog`'s `size` is its width, from `--mb-dialog-width-<s>`.
-  `mb-input`, `mb-checkbox`, and `mb-switch` have their own geometry and
-  follow only the height and font-size of the scale.
+  `mb-input`, `mb-checkbox`, and `mb-switch` follow only the height,
+  font-size, and gap of the scale, with their own padding and box/track
+  sizes.
 - Motion reads `--mb-motion-duration-*` and `--mb-motion-easing-*`, through
   a component token where one exists. Every duration is `0ms` under
   `prefers-reduced-motion: reduce`. Applications that drive their own
