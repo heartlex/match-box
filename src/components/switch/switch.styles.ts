@@ -22,6 +22,8 @@ export const switchStyles = [
       color: var(--mb-color-fg-default);
       font-family: var(--mb-font-family-body);
       font-size: var(--_font-size);
+      line-height: 1.25;
+      letter-spacing: normal;
       cursor: pointer;
       --_track-width: var(--mb-switch-track-width, calc(var(--_icon) * 2));
       --_track-height: var(--mb-switch-track-height, calc(var(--_icon) + 0.25rem));
