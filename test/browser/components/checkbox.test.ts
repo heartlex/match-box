@@ -4,7 +4,7 @@ import '../../../src/components/define/all.ts';
 import type { MbCheckbox } from '../../../src/components/index.ts';
 import { nameOf, referencedText } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, settle } from '../../support/components.ts';
 
 const inner = (element: Element): HTMLInputElement =>
   element.shadowRoot?.querySelector('input') as HTMLInputElement;
@@ -104,5 +104,92 @@ describe('mb-checkbox', () => {
     await settle(document.body);
     expect(nameOf(inner(box))).to.equal('Terms Accept');
     expect(referencedText(inner(box), 'describedby')).to.equal('Required to continue.');
+  });
+
+  // Fix round 1
+
+  it('keeps a checked property set before the first update', async () => {
+    const box = document.createElement('mb-checkbox');
+    box.checked = true;
+    document.body.append(box);
+    await settle(document.body);
+    expect(box.checked).to.equal(true);
+    expect(inner(box).checked).to.equal(true);
+  });
+
+  it('ignores a later checked attribute change once the user has toggled the box', async () => {
+    const { box } = await inForm('<mb-checkbox>Accept</mb-checkbox>');
+    await clickLabel(box);
+    await clickLabel(box);
+    expect(box.checked).to.equal(false);
+    box.setAttribute('checked', '');
+    await settle(document.body);
+    expect(box.checked).to.equal(false);
+  });
+
+  it('reapplies the checked attribute after a reset clears dirtiness', async () => {
+    const { form, box } = await inForm('<mb-checkbox>Accept</mb-checkbox>');
+    await clickLabel(box);
+    form.reset();
+    await settle(document.body);
+    expect(box.checked).to.equal(false);
+    box.setAttribute('checked', '');
+    await settle(document.body);
+    expect(box.checked).to.equal(true);
+  });
+
+  it('treats a reset-matching checked assignment as dirty', async () => {
+    const { form, box } = await inForm('<mb-checkbox checked>Accept</mb-checkbox>');
+    form.reset();
+    await settle(document.body);
+    expect(box.checked).to.equal(true);
+    box.checked = true;
+    await settle(document.body);
+    box.removeAttribute('checked');
+    await settle(document.body);
+    expect(box.checked).to.equal(true);
+  });
+
+  it('keeps a property-set value across a reset', async () => {
+    const { form, box } = await inForm('<mb-checkbox name="terms" checked>Accept</mb-checkbox>');
+    box.value = 'yes';
+    box.checked = true;
+    await settle(document.body);
+    form.reset();
+    await settle(document.body);
+    expect(new FormData(form).get('terms')).to.equal('yes');
+  });
+
+  it('updates the hidden label copy when slotted text changes in place', async () => {
+    const { box } = await inForm('<mb-checkbox><span>Accept</span></mb-checkbox>');
+    const span = box.querySelector('span') as HTMLSpanElement;
+    span.textContent = 'Agree';
+    await settle(document.body);
+    expect(nameOf(inner(box))).to.equal('Agree');
+  });
+
+  it('toggles and fires one change on click(), like a native checkbox', async () => {
+    const { box } = await inForm('<mb-checkbox>Accept</mb-checkbox>');
+    let changes = 0;
+    box.addEventListener('change', () => (changes += 1));
+    box.click();
+    await settle(document.body);
+    expect(box.checked).to.equal(true);
+    expect(changes).to.equal(1);
+  });
+
+  it('does nothing on click() when disabled', async () => {
+    const { box } = await inForm('<mb-checkbox disabled>Accept</mb-checkbox>');
+    box.click();
+    await settle(document.body);
+    expect(box.checked).to.equal(false);
+  });
+
+  it('keeps the mark visible on a disabled checked box', async () => {
+    const { box } = await inForm('<mb-checkbox color="primary" checked disabled>Accept</mb-checkbox>');
+    const mark = getComputedStyle(part(box, 'mark'));
+    const square = getComputedStyle(part(box, 'box'));
+    expect(mark.stroke).to.equal(resolveColor('--mb-color-fg-disabled'));
+    expect(mark.stroke).to.not.equal(square.backgroundColor);
   });
 });

@@ -89,6 +89,12 @@ export const checkboxStyles = [
       background: var(--mb-color-bg-disabled);
     }
 
+    /* Checked/indeterminate keep the solid color role's background, which
+       --_on-solid would be nearly invisible against once disabled. */
+    input:disabled + [part='box'] [part='mark'] {
+      stroke: var(--mb-color-fg-disabled);
+    }
+
     @media (forced-colors: active) {
       [part='box'] {
         border-color: CanvasText;

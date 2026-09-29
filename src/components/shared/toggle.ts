@@ -12,7 +12,7 @@ import type { Size } from './size.ts';
  */
 export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) implements FieldControl {
   static override properties: PropertyDeclarations = {
-    checked: { type: Boolean, attribute: false },
+    checked: { type: Boolean, attribute: false, noAccessor: true },
     defaultChecked: { type: Boolean, attribute: 'checked' },
     color: {},
     size: {},
@@ -20,8 +20,6 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     ...fieldControlProperties,
   };
 
-  /** Current state. The `checked` attribute sets the initial and reset state. */
-  declare checked: boolean;
   /** The `checked` attribute. */
   declare defaultChecked: boolean;
   /** The color role of the checked state. */
@@ -37,14 +35,16 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
   /** Set by `mb-field`. */
   declare fieldError: string;
 
+  #checked = false;
   #dirty = false;
   #syncing = false;
   #labelText = '';
+  #labelSlot: HTMLSlotElement | null = null;
+  readonly #labelObserver = new MutationObserver(() => this.#syncLabelText());
 
   constructor() {
     super();
     this.value = 'on';
-    this.checked = false;
     this.defaultChecked = false;
     this.color = 'neutral';
     this.size = 'md';
@@ -52,6 +52,23 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     this.fieldLabel = '';
     this.fieldDescription = '';
     this.fieldError = '';
+  }
+
+  /**
+   * Current state. The `checked` attribute sets the initial and reset
+   * state. Setting this property directly, like a native checkbox's,
+   * marks the control dirty: later attribute or `defaultChecked` changes
+   * no longer apply, until the next reset.
+   */
+  get checked(): boolean {
+    return this.#checked;
+  }
+
+  set checked(value: boolean) {
+    const old = this.#checked;
+    this.#checked = value;
+    if (!this.#syncing) this.#dirty = true;
+    this.requestUpdate('checked', old);
   }
 
   protected get input(): HTMLInputElement | null {
@@ -79,25 +96,30 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     return this.input ?? undefined;
   }
 
+  // A native checkbox's value never changes on reset (only its checkedness does): undo the
+  // mixin's value reset, which is right for mb-input but wrong here.
   override formResetCallback(): void {
+    const value = this.value;
     super.formResetCallback();
-    this.value = this.getAttribute('value') ?? 'on';
+    this.value = value;
     this.#dirty = false;
     this.#syncing = true;
     this.checked = this.defaultChecked;
+    this.#syncing = false;
   }
 
   override formStateRestoreCallback(state: string | File | FormData | null): void {
     if (typeof state !== 'string') return;
-    this.#dirty = true;
     this.checked = state === 'checked';
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
-    if (changed.has('checked') && this.hasUpdated && !this.#syncing) this.#dirty = true;
-    this.#syncing = false;
-    if (changed.has('defaultChecked') && !this.#dirty) this.checked = this.defaultChecked;
+    if (changed.has('defaultChecked') && !this.#dirty) {
+      this.#syncing = true;
+      this.checked = this.defaultChecked;
+      this.#syncing = false;
+    }
   }
 
   protected override updated(changed: PropertyValues<this>): void {
@@ -109,9 +131,27 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
     if (input) linkField(input, this, this.renderRoot as ShadowRoot, { own: own ? [own] : [] });
   }
 
+  /** Toggles, like a native checkbox's `click()`. Does nothing when disabled. */
+  override click(): void {
+    const input = this.input;
+    if (input) input.click();
+    else super.click();
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // A reconnect (e.g. moving the control in the DOM) must resume observing the same
+    // assigned nodes: slotchange will not fire again since the assignment did not change.
+    this.#observeLabelSlot();
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#labelObserver.disconnect();
+  }
+
   /** Call from the inner input's `change`. */
   protected toggleFromInput(event: Event): void {
-    this.#dirty = true;
     this.checked = (event.target as HTMLInputElement).checked;
     this.markEdited();
     // change does not cross the shadow boundary.
@@ -120,16 +160,31 @@ export class ToggleBase extends DelegatesFocus(FormAssociated(LitElement)) imple
 
   /** Keeps the hidden copy of the slotted label text current. */
   protected readonly onLabelSlotChange = (event: Event): void => {
-    this.#labelText = (event.target as HTMLSlotElement)
-      .assignedNodes({ flatten: true })
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim();
-    this.requestUpdate();
+    this.#labelSlot = event.target as HTMLSlotElement;
+    this.#syncLabelText();
+    this.#observeLabelSlot();
   };
 
   /** The hidden copy of the slotted label text, which names the input in every engine. */
   protected ownLabel(): TemplateResult {
     return html`<span id="own-label" class="visually-hidden">${this.#labelText}</span>`;
+  }
+
+  #syncLabelText(): void {
+    const text = (this.#labelSlot?.assignedNodes({ flatten: true }) ?? [])
+      .map((node) => node.textContent ?? '')
+      .join('')
+      .trim();
+    if (text === this.#labelText) return;
+    this.#labelText = text;
+    this.requestUpdate();
+  }
+
+  // Watches the assigned nodes for text edited in place, such as a slotted span whose
+  // content a framework updates without reslotting.
+  #observeLabelSlot(): void {
+    this.#labelObserver.disconnect();
+    const assigned = this.#labelSlot?.assignedNodes({ flatten: true }) ?? [];
+    for (const node of assigned) this.#labelObserver.observe(node, { characterData: true, childList: true, subtree: true });
   }
 }
