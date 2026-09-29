@@ -17,7 +17,7 @@ import { checkboxStyles } from './checkbox.styles.ts';
  * @csspart label - The wrapper of the label slot.
  * @cssstate invalid - `required` and unchecked.
  * @cssstate user-invalid - Invalid after the user toggled it and left, or a submit was attempted.
- * @cssprop --mb-checkbox-size - Box size. Defaults to the size scale's icon size.
+ * @cssprop --mb-checkbox-size - Box size. Defaults to 16, 18, or 20px, by size.
  * @cssprop --mb-checkbox-bg - Box background.
  * @cssprop --mb-checkbox-border-color - Box border color.
  * @cssprop --mb-checkbox-border-color-hover - Box border color on hover.

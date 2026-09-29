@@ -19,6 +19,7 @@ include breaking changes; they are listed under **Breaking**.
   | Heights sm / md / lg | 28 / 36 / 44 px | 32 / 40 / 48 px |
   | Control radius / surface radius | 4 / 8 px | 8 / 16 px |
   | Body text | 16 px | 14 px |
+  | Small text (field description and error) | 14 px | 12 px |
   | Font | system-ui | Aeonik, then Geist, then system-ui |
 
 - A pressed button darkens (`solid-active`) instead of scaling;
@@ -32,6 +33,15 @@ include breaking changes; they are listed under **Breaking**.
   banner with an icon (new part `error-icon`).
 - `mb-input`, `mb-checkbox`, `mb-switch`, and `mb-listbox` use the primary
   accent when no `color` is set.
+- `mb-input`, `mb-checkbox`, and `mb-switch` follow only the height,
+  font-size, and gap of the size scale; `mb-input`'s padding and
+  `mb-checkbox`/`mb-switch`'s box and track sizes no longer follow
+  `--mb-size-<s>-padding-inline` and `--mb-size-<s>-icon`, and have their
+  own size-scoped defaults instead. See `site/theming.md` and
+  `docs/styling-contract.md`.
+- `--mb-switch-thumb-bg` now colors the thumb only when the switch is off.
+  The checked thumb reads `--mb-switch-thumb-bg-checked` instead (falls
+  back to `--_on-solid`).
 
 ### Added
 

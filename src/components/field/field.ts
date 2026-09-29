@@ -33,7 +33,7 @@ const errorIcon = html`<svg part="error-icon" viewBox="0 0 12 12" aria-hidden="t
  * @csspart control - The wrapper of the control.
  * @cssprop --mb-field-gap - Space between label, description, control, and error.
  * @cssprop --mb-field-label-color - Label color.
- * @cssprop --mb-field-label-font-size - Label font size. Defaults to the size scale.
+ * @cssprop --mb-field-label-font-size - Label font size. Defaults to 12px, regardless of size.
  * @cssprop --mb-field-description-color - Description color.
  * @cssprop --mb-field-error-color - Error and asterisk color.
  * @cssprop --mb-field-error-bg - Background of the error banner.
