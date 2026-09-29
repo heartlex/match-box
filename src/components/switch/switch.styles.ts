@@ -11,9 +11,6 @@ export const switchStyles = [
     :host {
       display: inline-flex;
       vertical-align: middle;
-      --_track-width: var(--mb-switch-track-width, calc(var(--_icon) * 2));
-      --_track-height: var(--mb-switch-track-height, calc(var(--_icon) + 0.25rem));
-      --_thumb: var(--mb-switch-thumb-size, var(--_icon));
     }
 
     [part='base'] {
@@ -26,6 +23,9 @@ export const switchStyles = [
       font-family: var(--mb-font-family-body);
       font-size: var(--_font-size);
       cursor: pointer;
+      --_track-width: var(--mb-switch-track-width, calc(var(--_icon) * 2));
+      --_track-height: var(--mb-switch-track-height, calc(var(--_icon) + 0.25rem));
+      --_thumb: var(--mb-switch-thumb-size, var(--_icon));
     }
 
     input {
@@ -78,6 +78,10 @@ export const switchStyles = [
       ${focusRing}
     }
 
+    :host(:state(user-invalid)) [part='track'] {
+      box-shadow: 0 0 0 1px var(--mb-color-danger-border);
+    }
+
     [part='base']:has(input:disabled) {
       cursor: not-allowed;
       color: var(--mb-color-fg-disabled);
@@ -98,6 +102,10 @@ export const switchStyles = [
 
       [part='thumb'] {
         background: CanvasText;
+      }
+
+      :host(:state(user-invalid)) [part='track'] {
+        border-color: Mark;
       }
     }
   `,
