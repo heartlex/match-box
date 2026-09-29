@@ -22,6 +22,8 @@ export const checkboxStyles = [
       color: var(--mb-color-fg-default);
       font-family: var(--mb-font-family-body);
       font-size: var(--_font-size);
+      line-height: 1.25;
+      letter-spacing: normal;
       cursor: pointer;
     }
 
