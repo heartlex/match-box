@@ -1,7 +1,16 @@
 import '../../../src/components/define/all.ts';
-import type { MbAccordion, MbDialog, MbDisclosure, MbField, MbInput, MbListbox } from '../../../src/components/index.ts';
+import type {
+  MbAccordion,
+  MbCheckboxGroup,
+  MbDialog,
+  MbDisclosure,
+  MbField,
+  MbInput,
+  MbListbox,
+} from '../../../src/components/index.ts';
 import {
   accordionConformance,
+  checkboxGroupConformance,
   dialogConformance,
   disclosureConformance,
   fieldConformance,
@@ -111,6 +120,33 @@ accordionConformance({
         trigger: part(disclosure, 'trigger'),
         panel: part(disclosure, 'panel'),
       })),
+      teardown: () => container.remove(),
+    };
+  },
+});
+
+checkboxGroupConformance({
+  name: 'mb-checkbox-group',
+  driver,
+  audit,
+  async mount() {
+    const { element: form, container } = await mount<HTMLFormElement>(`<form>
+      <mb-field label="Toppings">
+        <mb-checkbox-group name="topping" required select-all>
+          <mb-checkbox value="nuts">Nuts</mb-checkbox>
+          <mb-checkbox value="honey">Honey</mb-checkbox>
+          <mb-checkbox value="yogurt" disabled>Yogurt</mb-checkbox>
+          <mb-checkbox value="seeds">Seeds</mb-checkbox>
+        </mb-checkbox-group>
+      </mb-field></form>`);
+    const group = form.querySelector('mb-checkbox-group') as MbCheckboxGroup;
+    const inner = (element: Element): HTMLInputElement => element.shadowRoot?.querySelector('input') as HTMLInputElement;
+    return {
+      form,
+      group: part(group, 'group'),
+      parent: inner(part(group, 'select-all')),
+      items: [...group.querySelectorAll('mb-checkbox')].map(inner),
+      validationMessage: () => group.validationMessage,
       teardown: () => container.remove(),
     };
   },
