@@ -30,10 +30,10 @@ global style injection.
 Two independent attributes:
 
 - **`color`** picks a color role: `neutral` (default), `primary`,
-  `secondary`, `tertiary`, or `danger`. Each role is six semantic tokens,
-  `--mb-color-<role>-solid`, `-solid-hover`, `-on-solid`, `-text`,
-  `-subtle`, and `-border`. A theme defines each role once; every
-  component and variant follows.
+  `secondary`, `tertiary`, or `danger`. Each role is eight semantic tokens,
+  `--mb-color-<role>-solid`, `-solid-hover`, `-solid-active`, `-on-solid`,
+  `-text`, `-subtle`, `-subtle-active`, and `-border`. A theme defines each
+  role once; every component and variant follows.
 - **`variant`** picks a structure, only on components whose structure
   varies. `mb-button`: `default` (filled), `outline`, `ghost`.
 
@@ -73,6 +73,8 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   `--mb-size-<s>-height`, `-padding-inline`, `-font-size`, `-gap`, and
   `-icon`; a shared class maps them to private properties, as with color
   roles. `mb-dialog`'s `size` is its width, from `--mb-dialog-width-<s>`.
+  `mb-input`, `mb-checkbox`, and `mb-switch` have their own geometry and
+  follow only the height and font-size of the scale.
 - Motion reads `--mb-motion-duration-*` and `--mb-motion-easing-*`, through
   a component token where one exists. Every duration is `0ms` under
   `prefers-reduced-motion: reduce`. Applications that drive their own
@@ -84,6 +86,12 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   label, description, and error in its own shadow root; controls name and
   describe their input from hidden copies of that text in theirs, so page
   CSS reaches neither.
+- Form controls (`mb-input`, `mb-checkbox`, `mb-switch`, `mb-listbox`)
+  include `neutralAccent`: with no `color`, they take primary's accent.
+- Every text/background pair a component draws meets 4.5:1 and every
+  border or mark 3:1, in both themes (`test/browser/tokens.test.ts`).
+- The skin's font comes from `--mb-font-family-body`; `match-box/fonts.css`
+  is optional and only declares `@font-face`.
 
 ## Attributes the core writes
 

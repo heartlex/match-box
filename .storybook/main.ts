@@ -11,6 +11,7 @@ const config: StorybookConfig = {
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
   stories: [
     '../stories/*.mdx',
+    '../stories/foundations/*.stories.ts',
     '../stories/components/*.stories.ts',
     '../stories/patterns/*.stories.ts',
     '../stories/motion/*.stories.ts',
