@@ -20,6 +20,12 @@ export {
 } from './disclosure.ts';
 export { dialogConformance, type DialogFixture, type DialogSuiteOptions } from './dialog.ts';
 export {
+  checkboxGroupConformance,
+  type CheckboxGroupFixture,
+  type CheckboxGroupSuiteOptions,
+} from './checkbox-group.ts';
+export { nameOf, referencedText } from './names.ts';
+export {
   listboxConformance,
   listboxSuiteOptions,
   type ListboxFixture,
