@@ -93,6 +93,9 @@ export class MbButton extends DelegatesFocus(LitElement) {
   #hasPrefix = false;
   #hasSuffix = false;
   #hasLabel = false;
+  // slotchange only fires when the set of assigned nodes changes, not when an existing text
+  // node's data changes in place (how Lit, React, and Vue update a child text binding).
+  readonly #labelObserver = new MutationObserver(() => this.#syncLabel());
 
   constructor() {
     super();
@@ -108,6 +111,16 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.download = undefined;
     this.disabled = false;
     this.#internals = this.attachInternals();
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#labelObserver.observe(this, { childList: true, characterData: true, subtree: true });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#labelObserver.disconnect();
   }
 
   /** The form this button submits or resets, if any. */
@@ -181,8 +194,19 @@ export class MbButton extends DelegatesFocus(LitElement) {
   }
 
   #onLabelChange(event: Event): void {
-    this.#hasLabel = hasText(event);
+    this.#hasLabel = hasText(event.target as HTMLSlotElement);
     this.requestUpdate();
+  }
+
+  // Catches a label text node's data changing in place, which slotchange misses.
+  #syncLabel(): void {
+    const slot = this.renderRoot.querySelector<HTMLSlotElement>('[part=label] slot');
+    if (slot === null) return;
+    const hasLabel = hasText(slot);
+    if (hasLabel !== this.#hasLabel) {
+      this.#hasLabel = hasLabel;
+      this.requestUpdate();
+    }
   }
 
   readonly #onFormKeydown = (event: KeyboardEvent): void => {
@@ -228,8 +252,8 @@ function hasContent(event: Event): boolean {
 }
 
 /** Whether a slot holds an element or non-whitespace text. */
-function hasText(event: Event): boolean {
-  return (event.target as HTMLSlotElement)
+function hasText(slot: HTMLSlotElement): boolean {
+  return slot
     .assignedNodes({ flatten: true })
     .some((node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '');
 }

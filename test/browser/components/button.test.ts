@@ -292,6 +292,23 @@ describe('mb-button', () => {
     expect(part(element, 'base').classList.contains('icon-only')).to.equal(false);
   });
 
+  it("stops being square when an existing label text node's data changes in place, not just when nodes are added", async () => {
+    // slotchange fires when the set of assigned nodes changes, not when an existing text
+    // node's `.data` is mutated in place, which is how Lit, React, and Vue update a child
+    // text binding (they create the text node once, even for '', then set `.data` later).
+    const svg = '<svg slot="prefix" viewBox="0 0 16 16"></svg>';
+    const { element } = await mount<MbButton>(`<mb-button aria-label="Add">${svg}</mb-button>`);
+    const label = document.createTextNode('');
+    element.append(label);
+    await settle(document.body);
+    const base = part(element, 'base');
+    expect(base.classList.contains('icon-only')).to.equal(true);
+    label.data = 'Add item';
+    await settle(document.body);
+    expect(base.classList.contains('icon-only')).to.equal(false);
+    expect(base.getBoundingClientRect().width).to.be.greaterThan(40);
+  });
+
   it('reads dark tokens under the system dark preference', async () => {
     try {
       await emulateMedia({ colorScheme: 'dark' });
