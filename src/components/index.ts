@@ -7,6 +7,7 @@ export { MbField } from './field/field.ts';
 export { MbInput, inputTypes, type InputType } from './input/input.ts';
 export { MbListbox } from './listbox/listbox.ts';
 export { MbOption } from './listbox/option.ts';
+export { MbSwitch } from './switch/switch.ts';
 export { colorRoles, type ColorRole } from './shared/color.ts';
 export { isFieldControl, type FieldControl } from './shared/field-control.ts';
 export { sizes, type Size } from './shared/size.ts';

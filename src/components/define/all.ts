@@ -6,3 +6,4 @@ import './disclosure.ts';
 import './field.ts';
 import './input.ts';
 import './listbox.ts';
+import './switch.ts';
