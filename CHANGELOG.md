@@ -14,9 +14,10 @@ include breaking changes; they are listed under **Breaking**.
 - `mb-input`: text, email, password, search, tel, url, and number inputs
   with `prefix` and `suffix` slots; validity and messages match `<input>`.
   A `readonly` field is not validated, like `<input readonly>`; a number
-  field reports `badInput`; Enter submits through the form's default
-  submit button, if any (a disabled default button blocks it, and its
-  `name`/`value` are submitted).
+  field reports `badInput`; Enter follows native implicit submission:
+  through the form's default submit button when there is one (a disabled
+  default button blocks it, and its `name`/`value` are submitted), and
+  otherwise only when the form has a single field.
 - `mb-checkbox` (with `indeterminate`), `mb-switch`, and
   `mb-checkbox-group` (submits the checked values; `required` means at
   least one; optional "select all"). `mb-checkbox` and `mb-switch` keep a

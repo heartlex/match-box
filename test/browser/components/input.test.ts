@@ -207,6 +207,59 @@ describe('mb-input', () => {
     expect(submitted).to.equal(1);
   });
 
+  it('does not submit on Enter with two fields and no submit button, like native inputs', async () => {
+    const { element: container } = await mount<HTMLDivElement>(
+      `<div><form id="native"><input name="a" aria-label="A"><input name="b" aria-label="B"><button type="button">X</button></form>
+      <form id="custom"><mb-input name="a" aria-label="A"></mb-input><mb-input name="b" aria-label="B"></mb-input
+      ><mb-button type="button">X</mb-button></form></div>`,
+    );
+    const submitted: string[] = [];
+    for (const form of container.querySelectorAll('form')) {
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitted.push(form.id);
+      });
+    }
+    await typeInto(container.querySelector('#native input') as HTMLInputElement, 'x');
+    await sendKeys({ press: 'Enter' });
+    await typeInto(container.querySelector('#custom mb-input') as MbInput, 'x');
+    await sendKeys({ press: 'Enter' });
+    await settle(document.body);
+    expect(submitted).to.deep.equal([]);
+  });
+
+  it('does not treat a submit mb-button with href as the default button', async () => {
+    const { form, input } = await inForm(
+      '<mb-input name="q" aria-label="Search"></mb-input><mb-button type="submit" href="#linked">Go</mb-button>',
+    );
+    const submitters: (EventTarget | null)[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitters.push(event.submitter);
+    });
+    await typeInto(input, 'lit');
+    await sendKeys({ press: 'Enter' });
+    expect(submitters, 'one field: submits without a submitter').to.deep.equal([null]);
+    form.insertAdjacentHTML('afterbegin', '<mb-input name="r" aria-label="Other"></mb-input>');
+    await settle(document.body);
+    input.focus();
+    await sendKeys({ press: 'Enter' });
+    expect(submitters, 'two fields: no submit').to.deep.equal([null]);
+    expect(location.hash).not.to.equal('#linked');
+  });
+
+  it('does not submit on Enter while an IME is composing (Safari keyCode 229)', async () => {
+    const { form, input } = await inForm('<mb-input name="q" aria-label="Search"></mb-input>');
+    let submitted = 0;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitted += 1;
+    });
+    inner(input).dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, bubbles: true, composed: true }));
+    await settle(document.body);
+    expect(submitted).to.equal(0);
+  });
+
   it('re-dispatches change from the host', async () => {
     const { input } = await inForm('<mb-input aria-label="City"></mb-input><button>b</button>');
     let changes = 0;

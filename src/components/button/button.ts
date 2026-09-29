@@ -2,32 +2,11 @@ import { LitElement, html, nothing } from 'lit';
 import { DelegatesFocus } from '../../lit/delegates-focus.ts';
 import { colorRole, type ColorRole } from '../shared/color.ts';
 import { sizeName, type Size } from '../shared/size.ts';
+import { isImplicitSubmitField, isNativeSubmit, isSubmitMbButton } from '../shared/submit.ts';
 import { buttonStyles } from './button.styles.ts';
 
 export type ButtonVariant = 'default' | 'outline' | 'ghost';
 
-// Input types in which Enter submits the form (implicit submission).
-const implicitSubmitTypes = new Set([
-  'text',
-  'search',
-  'url',
-  'tel',
-  'email',
-  'password',
-  'date',
-  'month',
-  'week',
-  'time',
-  'datetime-local',
-  'number',
-]);
-
-function isNativeSubmit(element: Element): boolean {
-  return (
-    (element instanceof HTMLButtonElement && element.type === 'submit') ||
-    (element instanceof HTMLInputElement && (element.type === 'submit' || element.type === 'image'))
-  );
-}
 export type ButtonType = 'button' | 'submit' | 'reset';
 
 /**
@@ -203,14 +182,11 @@ export class MbButton extends DelegatesFocus(LitElement) {
     if (form === null || this.type !== 'submit' || this.href != null) return;
     if (event.key !== 'Enter' || event.defaultPrevented || event.isComposing) return;
     const target = event.composedPath()[0];
-    if (!(target instanceof HTMLInputElement) || !implicitSubmitTypes.has(target.type) || target.form !== form) return;
+    if (!isImplicitSubmitField(target) || target.form !== form) return;
     const elements = [...form.elements];
     // A native submit button is the form's default button; the platform handles Enter.
     if (elements.some(isNativeSubmit)) return;
-    const first = elements.find(
-      (element) => element instanceof MbButton && element.type === 'submit' && element.href == null,
-    );
-    if (first !== this) return;
+    if (elements.find(isSubmitMbButton) !== this) return;
     event.preventDefault();
     if (!this.disabled && !this.#formDisabled) this.#submit(form);
   };

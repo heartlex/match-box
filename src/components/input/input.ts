@@ -6,6 +6,7 @@ import { FormAssociated, type ValidationResult } from '../../lit/form-associated
 import { colorRole, type ColorRole } from '../shared/color.ts';
 import { fieldControlProperties, fieldText, linkField, type FieldControl } from '../shared/field-control.ts';
 import { sizeName, type Size } from '../shared/size.ts';
+import { isImplicitSubmitField, isNativeSubmit, isSubmitMbButton } from '../shared/submit.ts';
 import { inputStyles } from './input.styles.ts';
 
 /** The input types `mb-input` renders. */
@@ -29,20 +30,6 @@ const constraints = ['type', 'pattern', 'min', 'max', 'step', 'minlength', 'maxl
 
 function inputType(value: string): InputType {
   return inputTypes.find((type) => type === value) ?? 'text';
-}
-
-function isSubmitButton(element: Element): boolean {
-  if (element instanceof HTMLButtonElement) return element.type === 'submit';
-  if (element instanceof HTMLInputElement) return element.type === 'submit' || element.type === 'image';
-  return element.localName === 'mb-button' && (element as unknown as { type?: string }).type === 'submit';
-}
-
-/** The form's default button: the first submit button among its elements, in tree order. */
-function defaultButton(form: HTMLFormElement): HTMLElement | null {
-  for (const element of form.elements) {
-    if (isSubmitButton(element)) return element as HTMLElement;
-  }
-  return null;
 }
 
 /**
@@ -239,14 +226,21 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
   };
 
   // The inner input is not in the host's form, so Enter would not submit it natively.
-  // Native implicit submission goes through the form's default button, if any.
+  // Native implicit submission goes through the form's default button; without one, it
+  // submits only when the form has a single field that blocks implicit submission.
+  // keyCode 229: Safari reports an IME's committing Enter with isComposing false.
   readonly #onKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== 'Enter' || event.isComposing) return;
+    if (event.key !== 'Enter' || event.isComposing || event.keyCode === 229) return;
     const form = this.form;
     if (form === null) return;
-    const button = defaultButton(form);
-    if (button === null) form.requestSubmit();
-    else if (!button.matches(':disabled')) button.click();
+    const elements = [...form.elements];
+    // The default button: the first submit button, in tree order.
+    const button = elements.find((element) => isNativeSubmit(element) || isSubmitMbButton(element));
+    if (button) {
+      if (!button.matches(':disabled')) (button as HTMLElement).click();
+    } else if (elements.filter((element) => element instanceof MbInput || isImplicitSubmitField(element)).length < 2) {
+      form.requestSubmit();
+    }
   };
 
   readonly #onPrefixChange = (event: Event): void => {
