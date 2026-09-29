@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { sendKeys, sendMouse } from '@web/test-runner-commands';
 import { LitElement, html } from 'lit';
-import { DelegatesFocus, FormAssociated } from '../../src/lit/index.ts';
+import { DelegatesFocus, FormAssociated, type ValidationResult } from '../../src/lit/index.ts';
 import { TestField } from '../skin/lit-field.ts';
 import { expectNoAxeViolations } from '../support/axe.ts';
 
@@ -19,6 +19,53 @@ async function typeInto(field: TestField, text: string): Promise<void> {
   await sendKeys({ type: text });
   await field.updateComplete;
 }
+
+/** A checkbox-like control: required means checked; `native` fakes a failing inner check. */
+class TestToggle extends FormAssociated(LitElement) {
+  static override properties = { on: { type: Boolean }, native: { type: Boolean } };
+  declare on: boolean;
+  declare native: boolean;
+
+  constructor() {
+    super();
+    this.on = false;
+    this.native = false;
+  }
+
+  protected override isEmpty(): boolean {
+    return !this.on;
+  }
+
+  protected override requiredMessage(): string {
+    return 'Check it.';
+  }
+
+  protected override intrinsicValidity(): ValidationResult | null {
+    return this.native ? { flags: { patternMismatch: true }, message: 'Native first.' } : null;
+  }
+
+  protected override validationAnchor(): HTMLElement | undefined {
+    return this.renderRoot.querySelector('input') ?? undefined;
+  }
+
+  protected override updated(changed: Map<PropertyKey, unknown>): void {
+    super.updated(changed);
+    if (changed.has('on') || changed.has('native')) this.revalidate();
+  }
+
+  override render() {
+    return html`<input
+      type="checkbox"
+      aria-label="Toggle"
+      .checked=${this.on}
+      @change=${(event: Event) => {
+        this.on = (event.target as HTMLInputElement).checked;
+        this.markEdited();
+      }}
+    />`;
+  }
+}
+customElements.define('test-toggle', TestToggle);
 
 describe('FormAssociated', () => {
   afterEach(() => {
@@ -119,6 +166,45 @@ describe('FormAssociated', () => {
     expect(document.activeElement).to.equal(field);
     expect(field.shadowRoot?.activeElement?.localName).to.equal('input');
     await expectNoAxeViolations(field);
+  });
+
+  it('uses isEmpty and requiredMessage for required', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = '<test-toggle required></test-toggle>';
+    document.body.append(form);
+    const toggle = form.querySelector('test-toggle') as TestToggle;
+    await toggle.updateComplete;
+    expect([toggle.validity.valueMissing, toggle.validationMessage]).to.deep.equal([true, 'Check it.']);
+    toggle.on = true;
+    await toggle.updateComplete;
+    expect(toggle.validity.valid).to.equal(true);
+  });
+
+  it('runs intrinsicValidity before required and validators', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = '<test-toggle required></test-toggle>';
+    document.body.append(form);
+    const toggle = form.querySelector('test-toggle') as TestToggle;
+    toggle.native = true;
+    await toggle.updateComplete;
+    expect([toggle.validity.patternMismatch, toggle.validity.valueMissing]).to.deep.equal([true, true]);
+    expect(toggle.validationMessage).to.equal('Native first.');
+    expect(() => toggle.reportValidity()).not.to.throw();
+  });
+
+  it('markEdited lets a change that is not a value change set user-invalid', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = '<test-toggle required></test-toggle>';
+    document.body.append(form);
+    const toggle = form.querySelector('test-toggle') as TestToggle;
+    await toggle.updateComplete;
+    (toggle.shadowRoot?.querySelector('input') as HTMLInputElement).focus();
+    await sendKeys({ press: 'Space' });
+    await sendKeys({ press: 'Space' });
+    await toggle.updateComplete;
+    expect(toggle.matches(':state(user-invalid)'), 'before leaving').to.equal(false);
+    await sendKeys({ press: 'Tab' });
+    expect(toggle.matches(':state(user-invalid)'), 'after leaving').to.equal(true);
   });
 });
 

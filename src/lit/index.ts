@@ -10,6 +10,7 @@ export {
   FormAssociated,
   requiredValidator,
   type FormAssociatedElement,
+  type FormAssociatedHooks,
   type ValidationResult,
   type Validator,
 } from './form-associated.ts';
