@@ -43,6 +43,11 @@ export function fieldConformance({ name, mount, driver, audit }: FieldSuiteOptio
       });
 
       afterEach(() => {
+        // Leave the control before it goes away, as a user would. Firefox hides its validation
+        // bubble when the invalid control blurs, but not when the control is removed while
+        // focused: a bubble left by a submit attempt stays over the page and takes the next
+        // test's clicks that land under it.
+        fixture.control.blur();
         fixture.teardown();
       });
 
