@@ -66,8 +66,9 @@ export const optionStyles = [
     :host([aria-selected='true']) [part='check']::after {
       content: '';
       position: absolute;
-      inset-block-start: 1px;
-      inset-inline-start: 4.5px;
+      /* Auto margins keep it centered at every size the box follows. */
+      inset: 0;
+      margin: auto;
       inline-size: 4px;
       block-size: 9px;
       border-inline-end: 2px solid var(--_on-solid, var(--mb-color-primary-on-solid));

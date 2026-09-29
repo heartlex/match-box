@@ -191,9 +191,22 @@ describe('mb-listbox', () => {
       expect(base.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
       expect(base.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
       expect(base.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
-      expect(getComputedStyle(part(option(listbox, 0), 'check')).width, `${size} check`).to.equal(
-        resolveLength(`--mb-size-${size}-icon`),
-      );
+      const check = part(option(listbox, 0), 'check');
+      expect(getComputedStyle(check).width, `${size} check`).to.equal(resolveLength(`--mb-size-${size}-icon`));
+
+      // The check mark's centre must track the box's centre at every size, not just sm
+      // (the offsets it used to have were tuned for the smallest box).
+      option(listbox, 0).click();
+      await settle(document.body);
+      const checkRect = check.getBoundingClientRect();
+      const mark = getComputedStyle(check, '::after');
+      const markLeft = checkRect.left + Number.parseFloat(mark.left) + Number.parseFloat(mark.marginLeft);
+      const markTop = checkRect.top + Number.parseFloat(mark.top) + Number.parseFloat(mark.marginTop);
+      const markCenterX = markLeft + Number.parseFloat(mark.width) / 2;
+      const markCenterY = markTop + Number.parseFloat(mark.height) / 2;
+      expect(markCenterX, `${size} mark center x`).to.be.closeTo(checkRect.left + checkRect.width / 2, 1);
+      expect(markCenterY, `${size} mark center y`).to.be.closeTo(checkRect.top + checkRect.height / 2, 1);
+
       document.body.replaceChildren();
     }
   });
