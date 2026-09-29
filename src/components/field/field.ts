@@ -139,6 +139,14 @@ export class MbField extends LitElement {
 
   #bind(control: FieldControl | null): void {
     this.#detachListeners();
+    const old = this.#control;
+    // A control that leaves the field must not keep its text. A field that is only moved
+    // keeps its control: disconnectedCallback does not unbind.
+    if (old !== null && old !== control) {
+      old.fieldLabel = '';
+      old.fieldDescription = '';
+      old.fieldError = '';
+    }
     this.#control = control;
     this.#form = control?.form ?? null;
     this.#attachListeners();

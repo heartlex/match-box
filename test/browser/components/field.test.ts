@@ -117,6 +117,43 @@ describe('mb-field', () => {
     expect(inner.getAttribute('aria-invalid')).to.equal('true');
   });
 
+  it('clears its text from a control moved out of it', async () => {
+    const { form, input, inner } = await mountField('error="Bad"');
+    expect([nameOf(inner), inner.getAttribute('aria-invalid')]).to.deep.equal(['Email', 'true']);
+    const plain = document.createElement('div');
+    form.append(plain);
+    plain.append(input);
+    await settle(document.body);
+    await later();
+    await settle(document.body);
+    expect(nameOf(inner)).not.to.equal('Email');
+    expect(inner.hasAttribute('aria-invalid')).to.equal(false);
+    expect(referencedText(inner, 'describedby')).to.equal('');
+  });
+
+  it('clears its text from a control it rebinds away from', async () => {
+    const { field, input, inner } = await mountField('error="Bad"');
+    field.append(document.createElement('mb-input'));
+    input.remove();
+    document.body.append(input);
+    await settle(document.body);
+    await later();
+    await settle(document.body);
+    expect(nameOf(inner)).not.to.equal('Email');
+    expect(inner.hasAttribute('aria-invalid')).to.equal(false);
+  });
+
+  it('a control moved into another field takes the new field text', async () => {
+    const { form, input, inner } = await mountField();
+    form.insertAdjacentHTML('beforeend', '<mb-field label="Work email"></mb-field>');
+    const other = form.querySelectorAll('mb-field')[1] as MbField;
+    other.append(input);
+    await settle(document.body);
+    await later();
+    await settle(document.body);
+    expect(nameOf(inner)).to.equal('Work email');
+  });
+
   it('reflects text edited in place inside a rich slot', async () => {
     const { field, inner } = await mountField(
       '',
