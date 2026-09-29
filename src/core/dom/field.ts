@@ -89,6 +89,8 @@ export function attachField(elements: FieldElements): FieldBehavior {
     () => {
       // The reset event fires before the controls are reset.
       setTimeout(() => {
+        // dispose() may already have run by the time this fires.
+        if (signal.aborted) return;
         edited = false;
         interacted = false;
         render();
