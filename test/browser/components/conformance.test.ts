@@ -1,9 +1,10 @@
 import '../../../src/components/define/all.ts';
-import type { MbAccordion, MbDialog, MbDisclosure, MbListbox } from '../../../src/components/index.ts';
+import type { MbAccordion, MbDialog, MbDisclosure, MbField, MbInput, MbListbox } from '../../../src/components/index.ts';
 import {
   accordionConformance,
   dialogConformance,
   disclosureConformance,
+  fieldConformance,
   listboxConformance,
 } from '../../../src/core/testing/index.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
@@ -63,6 +64,32 @@ listboxConformance({
     return {
       root: part(element, 'listbox'),
       options: [...element.querySelectorAll<HTMLElement>('mb-option')],
+      teardown: () => container.remove(),
+    };
+  },
+});
+
+fieldConformance({
+  name: 'mb-field + mb-input',
+  driver,
+  audit,
+  async mount() {
+    const { element: form, container } = await mount<HTMLFormElement>(
+      '<form><mb-field label="Email" description="We never share it."><mb-input type="email" name="email" required></mb-input></mb-field><button>Send</button></form>',
+    );
+    form.addEventListener('submit', (event) => event.preventDefault());
+    const field = form.querySelector('mb-field') as MbField;
+    const input = form.querySelector('mb-input') as MbInput;
+    return {
+      control: part(input, 'input'),
+      form,
+      submit: form.querySelector('button') as HTMLElement,
+      errorText: () => field.shownError,
+      async setError(message) {
+        field.error = message;
+        await field.updateComplete;
+        await input.updateComplete;
+      },
       teardown: () => container.remove(),
     };
   },
