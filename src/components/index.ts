@@ -1,5 +1,6 @@
 export { MbAccordion } from './accordion/accordion.ts';
 export { MbButton, type ButtonType, type ButtonVariant } from './button/button.ts';
+export { MbCheckbox } from './checkbox/checkbox.ts';
 export { MbDialog } from './dialog/dialog.ts';
 export { MbDisclosure } from './disclosure/disclosure.ts';
 export { MbField } from './field/field.ts';
