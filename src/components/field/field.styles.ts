@@ -12,6 +12,8 @@ export const fieldStyles = [
     .base {
       display: grid;
       font-family: var(--mb-font-family-body);
+      line-height: var(--mb-line-height-body);
+      letter-spacing: normal;
     }
 
     /* The gap lives on the rows before the control, not on .base: the error stays in the
