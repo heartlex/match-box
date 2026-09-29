@@ -48,7 +48,11 @@ describe('styling contract', () => {
         `<mb-listbox label="Fruit" color="${role}"><mb-option selected>Apple</mb-option></mb-listbox>`,
       );
       const base = getComputedStyle(part(element.querySelector('mb-option') as Element, 'base'));
-      expect(base.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-subtle`));
+      // mb-listbox borrows primary's accent for the neutral role (neutralAccent, Task 1/8), so a
+      // listbox without a `color` tints its selection with the brand color; the text stays the
+      // role's own (unaccented) text token, matching mb-checkbox and mb-switch below.
+      const accentRole = role === 'neutral' ? 'primary' : role;
+      expect(base.backgroundColor).to.equal(resolveColor(`--mb-color-${accentRole}-subtle`));
       expect(base.color).to.equal(resolveColor(`--mb-color-${role}-text`));
     });
 

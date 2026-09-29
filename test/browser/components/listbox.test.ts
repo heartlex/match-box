@@ -5,7 +5,7 @@ import '../../../src/components/define/listbox.ts';
 import type { MbListbox, MbOption } from '../../../src/components/index.ts';
 import { nameOf, referencedText } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, resolveLength, setMotion, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, resolveLength, setMotion, settle } from '../../support/components.ts';
 import { driver } from '../../support/driver.ts';
 
 const fruit = '<mb-option>Apple</mb-option><mb-option value="b">Banana</mb-option><mb-option>Cherry</mb-option>';
@@ -203,6 +203,46 @@ describe('mb-listbox', () => {
     expect(part(option(listbox, 0), 'base').getBoundingClientRect().height).to.equal(40);
     listbox.style.setProperty('--mb-option-height', '50px');
     expect(getComputedStyle(part(option(listbox, 0), 'base')).minBlockSize).to.equal('50px');
+  });
+
+  describe('matchbox look', () => {
+    it('is a raised panel: 8px radius, overlay shadow, 4px padding', async () => {
+      const listbox = await mountListbox();
+      const style = getComputedStyle(part(listbox, 'listbox'));
+      expect(style.borderTopLeftRadius).to.equal('8px');
+      expect(style.boxShadow).to.not.equal('none');
+      expect(style.paddingTop).to.equal('4px');
+    });
+
+    it('tints the selected option with primary subtle and keeps default text', async () => {
+      const listbox = await mountListbox();
+      listbox.value = option(listbox, 1).value;
+      await settle(document.body);
+      const style = getComputedStyle(part(option(listbox, 1), 'base'));
+      expect(style.backgroundColor).to.equal(resolveColor('--mb-color-primary-subtle'));
+      expect(style.color).to.equal(resolveColor('--mb-color-fg-default'));
+    });
+
+    it('draws the multiple-mode check as a filled primary box when selected', async () => {
+      // The token is 1.5px; every engine snaps a border-top-width to a whole
+      // device pixel at the test runner's 1x scale, so the check's rendered
+      // border is compared against that same snapped resolution rather than
+      // the un-snapped '1.5px' literal (see button.test.ts).
+      expect(resolveLength('--mb-border-width-control'), 'token is 1.5px').to.equal('1.5px');
+      const probe = document.createElement('div');
+      probe.style.borderTopWidth = 'var(--mb-border-width-control)';
+      probe.style.borderTopStyle = 'solid';
+      document.body.append(probe);
+      const snappedWidth = getComputedStyle(probe).borderTopWidth;
+      probe.remove();
+
+      const listbox = await mountListbox('multiple');
+      option(listbox, 0).click();
+      await settle(document.body);
+      const check = getComputedStyle(part(option(listbox, 0), 'check'));
+      expect(check.backgroundColor).to.equal(resolveColor('--mb-color-primary-solid'));
+      expect(check.borderTopWidth).to.equal(snappedWidth);
+    });
   });
 
   describe('motion', () => {
