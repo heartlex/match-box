@@ -25,3 +25,7 @@ export const AxeViolation: StoryObj = {
 export const Empty: StoryObj = {
   render: () => html``,
 };
+
+export const UndefinedElement: StoryObj = {
+  render: () => html`<mb-nonexistent>Never registered</mb-nonexistent>`,
+};

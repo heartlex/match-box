@@ -1,6 +1,7 @@
-/* global window, document, requestAnimationFrame */
+/* global window, document, requestAnimationFrame, customElements */
 // Opens every story of a static Storybook build in Chromium, in both themes with motion off,
-// and fails on page errors, console errors, an errored or empty render, or axe violations.
+// and fails on page errors, console errors, an errored or empty render, unregistered custom
+// elements, or axe violations.
 // Usage: node scripts/storybook-smoke.js <dir> [--expect-fail <id>[,<id>...]]
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -100,6 +101,15 @@ async function check(id, theme) {
     }
     // Let Lit elements finish their first update before auditing.
     await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    // An unregistered custom element still renders its text and passes axe, so check registration.
+    const unregistered = await page.evaluate(() => [
+      ...new Set(
+        [...document.querySelectorAll('#storybook-root *')]
+          .map((element) => element.localName)
+          .filter((name) => name.includes('-') && customElements.get(name) === undefined),
+      ),
+    ]);
+    if (unregistered.length > 0) return `undefined element: ${unregistered.join(', ')}`;
     await page.addScriptTag({ path: axePath });
     const violations = await page.evaluate(async (values) => {
       const results = await window.axe.run('#storybook-root', { runOnly: { type: 'tag', values } });
