@@ -8,5 +8,6 @@
   "match-box/components": 15900,
   "match-box/components/define/all.js": 15900,
   "match-box/motion": 2300,
-  "match-box/tokens.css": 1700
+  "match-box/tokens.css": 1700,
+  "match-box/fonts.css": 300
 }

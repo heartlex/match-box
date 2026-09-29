@@ -45,7 +45,8 @@
       "types": "./dist/motion/index.d.ts",
       "default": "./dist/motion/index.js"
     },
-    "./tokens.css": "./dist/tokens/tokens.css"
+    "./tokens.css": "./dist/tokens/tokens.css",
+    "./fonts.css": "./dist/tokens/fonts.css"
   },
   "files": [
     "dist"

@@ -1,7 +1,7 @@
 // Bundles each public subpath from dist, gzips it, and compares it with size-budget.json.
 // `--write` records current sizes plus 10% headroom as the new budget.
 import { build } from 'esbuild';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 const entries = {
@@ -15,6 +15,7 @@ const entries = {
   'match-box/components/define/all.js': 'dist/components/define/all.js',
   'match-box/motion': 'dist/motion/index.js',
   'match-box/tokens.css': 'dist/tokens/tokens.css',
+  'match-box/fonts.css': 'dist/tokens/fonts.css',
 };
 
 const budgetFile = new URL('../size-budget.json', import.meta.url);
@@ -30,7 +31,7 @@ for (const [name, file] of Object.entries(entries)) {
     format: 'esm',
     write: false,
     outdir: 'size-check',
-    external: ['lit', 'chai'],
+    external: ['lit', 'chai', '*.woff2'],
     logLevel: 'silent',
   });
   const bytes = gzipSync(result.outputFiles[0].contents).length;
@@ -40,6 +41,13 @@ for (const [name, file] of Object.entries(entries)) {
   if (!ok) failed = true;
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}: ${bytes} B gzip (budget ${budget ?? 'none'})`);
 }
+
+// The font file itself is not gzip-budgeted (woff2 is already compressed); it has a ceiling.
+const fontFile = 'dist/tokens/fonts/geist-latin-wght-normal.woff2';
+const fontBytes = statSync(fontFile).size;
+const fontOk = fontBytes <= 80 * 1024;
+if (!fontOk) failed = true;
+console.log(`${fontOk ? 'ok  ' : 'FAIL'} ${fontFile}: ${fontBytes} B (ceiling 81920)`);
 
 if (process.argv.includes('--write')) {
   const next = Object.fromEntries(
