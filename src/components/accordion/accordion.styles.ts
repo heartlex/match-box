@@ -9,6 +9,8 @@ export const accordionStyles = [
     }
 
     [part='base'] {
+      /* Keeps the trigger's focus ring inside the clip. */
+      --_focus-offset: calc(-1 * var(--mb-focus-ring-width));
       overflow: hidden;
       border: 1px solid var(--mb-accordion-border-color, var(--mb-color-border-default));
       border-radius: var(--mb-accordion-radius, var(--mb-radius-surface));

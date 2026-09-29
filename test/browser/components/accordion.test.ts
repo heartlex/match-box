@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import '../../../src/components/define/accordion.ts';
+import '../../../src/components/define/disclosure.ts';
 import type { MbAccordion, MbDisclosure } from '../../../src/components/index.ts';
 import { loadTokens, mount, part, settle } from '../../support/components.ts';
 
@@ -73,5 +74,21 @@ describe('mb-accordion', () => {
     expect(base.borderBottomWidth).to.equal('1px');
     const last = disclosures(element)[1] as Element;
     expect(getComputedStyle(last).borderBottomColor).to.equal('rgba(0, 0, 0, 0)');
+  });
+
+  it("insets a focused trigger's ring so the card's clip does not cut it off, unlike a standalone disclosure", async () => {
+    const { element } = await mount<MbAccordion>(`<mb-accordion>${item('A')}${item('B')}</mb-accordion>`);
+    const { element: standalone } = await mount<MbDisclosure>(item('C'));
+
+    const first = disclosures(element)[0] as Element;
+    part(first, 'trigger').focus();
+    await settle(document.body);
+    expect(first.shadowRoot?.activeElement).to.equal(part(first, 'trigger'));
+    expect(getComputedStyle(part(first, 'trigger')).outlineOffset).to.equal('-2px');
+
+    part(standalone, 'trigger').focus();
+    await settle(document.body);
+    expect(standalone.shadowRoot?.activeElement).to.equal(part(standalone, 'trigger'));
+    expect(getComputedStyle(part(standalone, 'trigger')).outlineOffset).to.equal('2px');
   });
 });

@@ -45,6 +45,8 @@ export const disclosureStyles = [
 
     [part='trigger']:focus-visible {
       ${focusRing}
+      /* --_focus-offset insets the ring inside an accordion; unset elsewhere. */
+      outline-offset: var(--_focus-offset, 2px);
     }
 
     [part='icon'] {
