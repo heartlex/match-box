@@ -146,7 +146,7 @@ describe('mb-field', () => {
   it('a control moved into another field takes the new field text', async () => {
     const { form, input, inner } = await mountField();
     form.insertAdjacentHTML('beforeend', '<mb-field label="Work email"></mb-field>');
-    const other = form.querySelectorAll('mb-field')[1] as MbField;
+    const other = form.querySelectorAll('mb-field')[1];
     other.append(input);
     await settle(document.body);
     await later();
