@@ -123,6 +123,17 @@ describe('mb-dialog', () => {
     dialog.close();
   });
 
+  it('has a 16px radius, a 24px title, and a navy backdrop', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const dialogPart = part<HTMLDialogElement>(dialog, 'dialog');
+    expect(getComputedStyle(dialogPart).borderBottomLeftRadius).to.equal('16px');
+    expect(getComputedStyle(part(dialog, 'title')).fontSize).to.equal('24px');
+    expect(getComputedStyle(dialogPart, '::backdrop').backgroundColor).to.equal('rgba(14, 14, 48, 0.4)');
+    dialog.close();
+  });
+
   it('size sets the width from the dialog widths, and --mb-dialog-width wins', async () => {
     const widths: number[] = [];
     for (const attributes of ['size="sm"', '', 'size="lg"', 'size="sm" style="--mb-dialog-width: 20rem"']) {

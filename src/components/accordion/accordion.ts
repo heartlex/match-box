@@ -10,7 +10,8 @@ import { accordionStyles } from './accordion.styles.ts';
  * @tag mb-accordion
  * @slot - `mb-disclosure` elements.
  * @csspart base - The wrapper around the disclosures.
- * @cssprop --mb-accordion-border-color - Divider above the first disclosure.
+ * @cssprop --mb-accordion-border-color - Border color of the container.
+ * @cssprop --mb-accordion-radius - Corner radius of the container.
  */
 export class MbAccordion extends LitElement {
   static override styles = accordionStyles;

@@ -68,22 +68,34 @@ describe('mb-disclosure', () => {
     expect(document.activeElement === link, 'focused').to.equal(false);
   });
 
-  it('size sets trigger height, padding, font size, and gap, and panel padding, from the scale', async () => {
+  it('size sets trigger height (one step taller than the control), font size, and gap from the scale, with fixed padding', async () => {
     const { container } = await mount(
       ['sm', 'md', 'lg'].map((size) => `<mb-disclosure size="${size}" open><span slot="summary">S</span>Body</mb-disclosure>`).join(''),
     );
     const disclosures = [...container.querySelectorAll('mb-disclosure')];
     ['sm', 'md', 'lg'].forEach((size, index) => {
       const trigger = getComputedStyle(part(disclosures[index] as Element, 'trigger'));
-      expect(trigger.minBlockSize, `${size} height`).to.equal(resolveLength(`--mb-size-${size}-height`));
-      expect(trigger.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
+      const height = Number.parseFloat(resolveLength(`--mb-size-${size}-height`)) + Number.parseFloat(resolveLength('--mb-space-2'));
+      expect(trigger.minBlockSize, `${size} height`).to.equal(`${height}px`);
+      expect(trigger.paddingInlineStart, `${size} padding`).to.equal(resolveLength('--mb-space-4'));
       expect(trigger.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
       expect(trigger.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
     });
     const md = disclosures[1] as Element;
-    expect(part(md, 'trigger').getBoundingClientRect().height).to.equal(40);
+    expect(part(md, 'trigger').getBoundingClientRect().height).to.equal(48);
     const content = part(md, 'panel').querySelector('.content') as HTMLElement;
-    expect(getComputedStyle(content).paddingInlineStart).to.equal(resolveLength('--mb-size-md-padding-inline'));
+    expect(getComputedStyle(content).paddingInlineStart).to.equal(resolveLength('--mb-space-4'));
+  });
+
+  it('has 48px medium-weight trigger rows at md, one step taller than the control height', async () => {
+    const { container } = await mount(
+      '<mb-disclosure size="sm"><span slot="summary">A</span>x</mb-disclosure><mb-disclosure><span slot="summary">B</span>y</mb-disclosure>',
+    );
+    const [sm, md] = [...container.querySelectorAll('mb-disclosure')].map((element) => part(element, 'trigger'));
+    expect(md?.getBoundingClientRect().height).to.equal(48);
+    expect(sm?.getBoundingClientRect().height).to.equal(40);
+    expect(getComputedStyle(md).fontWeight).to.equal('500');
+    expect(getComputedStyle(md).paddingInlineStart).to.equal('16px');
   });
 
   it('a component token beats the size scale', async () => {

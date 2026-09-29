@@ -72,7 +72,7 @@ export const dialogStyles = [
     }
 
     [part='dialog'][open]::backdrop {
-      background: var(--mb-dialog-backdrop, rgb(0 0 0 / 0.4));
+      background: var(--mb-dialog-backdrop, rgb(14 14 48 / 0.4));
       backdrop-filter: blur(var(--mb-dialog-backdrop-blur, 2px));
     }
 
@@ -88,24 +88,27 @@ export const dialogStyles = [
       align-items: center;
       justify-content: space-between;
       gap: var(--mb-space-inline-md);
-      padding: var(--mb-space-stack-lg) var(--mb-space-inline-lg) 0;
+      padding: var(--mb-space-6) var(--mb-space-6) 0;
     }
 
     [part='title'] {
       margin: 0;
-      font-size: var(--mb-dialog-title-font-size, 1.25rem);
+      font-size: var(--mb-dialog-title-font-size, var(--mb-font-size-subtitle));
       font-weight: var(--mb-font-weight-strong);
+      line-height: var(--mb-line-height-heading);
+      letter-spacing: normal;
     }
 
     [part='body'] {
-      padding: var(--mb-space-stack-md) var(--mb-space-inline-lg);
+      padding: var(--mb-space-2) var(--mb-space-6);
+      color: var(--mb-color-fg-muted);
     }
 
     [part='footer'] {
       display: flex;
       justify-content: flex-end;
       gap: var(--mb-space-inline-sm);
-      padding: 0 var(--mb-space-inline-lg) var(--mb-space-stack-lg);
+      padding: var(--mb-space-4) var(--mb-space-6) var(--mb-space-6);
     }
 
     [part='close-button'] {

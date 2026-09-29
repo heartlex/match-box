@@ -65,4 +65,13 @@ describe('mb-accordion', () => {
     );
     expect(sizes).to.deep.equal(['sm', 'lg', 'sm']);
   });
+
+  it('is a bordered card with a 16px radius and no double border under the last item', async () => {
+    const { element } = await mount<MbAccordion>(`<mb-accordion>${item('A')}${item('B')}</mb-accordion>`);
+    const base = getComputedStyle(part(element, 'base'));
+    expect(base.borderTopLeftRadius).to.equal('16px');
+    expect(base.borderBottomWidth).to.equal('1px');
+    const last = disclosures(element)[1] as Element;
+    expect(getComputedStyle(last).borderBottomColor).to.equal('rgba(0, 0, 0, 0)');
+  });
 });
