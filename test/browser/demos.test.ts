@@ -4,9 +4,10 @@ import {
   checkboxGroupConformance,
   dialogConformance,
   disclosureConformance,
+  fieldConformance,
   listboxConformance,
 } from '../../src/core/testing/index.ts';
-import { mountCheckboxGroup, mountDialog, mountDisclosure, mountListbox } from '../../site/demos/demos.js';
+import { mountCheckboxGroup, mountDialog, mountDisclosure, mountField, mountListbox } from '../../site/demos/demos.js';
 import { expectNoAxeViolations } from '../support/axe.ts';
 import { driver } from '../support/driver.ts';
 
@@ -22,3 +23,4 @@ disclosureConformance({ name: 'demo', driver, audit, mount: () => mountDisclosur
 dialogConformance({ name: 'demo', driver, audit, mount: () => mountDialog(container()) });
 listboxConformance({ name: 'demo', driver, audit, mount: (spec) => mountListbox(container(), spec) });
 checkboxGroupConformance({ name: 'demo', driver, audit, mount: () => mountCheckboxGroup(container()) });
+fieldConformance({ name: 'demo', driver, audit, mount: () => mountField(container()) });

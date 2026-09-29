@@ -1,6 +1,6 @@
 // Plain HTML demos. Each mount function returns the elements a conformance
 // suite needs, so test/browser/demos.test.ts runs the suites against them.
-import { attachCheckboxGroup, attachDialog, attachDisclosure, attachListbox } from 'match-box/core';
+import { attachCheckboxGroup, attachDialog, attachDisclosure, attachField, attachListbox } from 'match-box/core';
 
 export function mountDisclosure(container) {
   container.innerHTML = `
@@ -96,6 +96,34 @@ export function mountCheckboxGroup(container) {
     validationMessage: () => items[0].validationMessage,
     teardown() {
       behavior.dispose();
+      container.replaceChildren();
+    },
+  };
+}
+
+export function mountField(container) {
+  container.innerHTML = `
+    <form>
+      <label>Email</label>
+      <input type="email" name="email" required />
+      <p>We never share it.</p>
+      <p></p>
+      <button>Send</button>
+    </form>`;
+  const form = container.querySelector('form');
+  const [label, control, description, error, submit] = form.children;
+  form.addEventListener('submit', (event) => event.preventDefault());
+  const field = attachField({ control, label, description, error });
+  return {
+    control,
+    form,
+    submit,
+    errorText: () => (error.hidden ? '' : error.textContent.trim()),
+    async setError(message) {
+      field.setError(message);
+    },
+    teardown() {
+      field.dispose();
       container.replaceChildren();
     },
   };

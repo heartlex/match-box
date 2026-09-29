@@ -26,3 +26,4 @@ export {
   type AttachCheckboxGroupOptions,
   type CheckboxGroupElements,
 } from './checkbox-group.ts';
+export { attachField, type FieldBehavior, type FieldElements } from './field.ts';

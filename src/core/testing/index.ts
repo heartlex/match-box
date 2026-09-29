@@ -25,6 +25,7 @@ export {
   type CheckboxGroupSuiteOptions,
 } from './checkbox-group.ts';
 export { nameOf, referencedText } from './names.ts';
+export { fieldConformance, type FieldFixture, type FieldSuiteOptions } from './field.ts';
 export {
   listboxConformance,
   listboxSuiteOptions,
