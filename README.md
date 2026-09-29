@@ -62,7 +62,7 @@ npm run lint
 npm run typecheck
 npm run size      # bundle size per subpath against size-budget.json
 npm run docs      # builds the site into _site
-npm run storybook # Storybook on http://localhost:6006
+npm run storybook # Storybook on http://localhost:6006 (run `npm run build` to see component changes)
 npm run storybook:build && npm run storybook:smoke  # static build, every story checked with axe
 ```
 

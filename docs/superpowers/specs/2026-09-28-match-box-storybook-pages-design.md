@@ -54,14 +54,15 @@ and `axe-core`, already dev dependencies.
 | File | Responsibility |
 |---|---|
 | `.storybook/main.ts` | Framework `@storybook/web-components-vite`; addons docs and a11y; stories `stories/**/*.mdx` and `stories/**/*.stories.ts`, plus `stories/__smoke__/**` only when `STORYBOOK_SMOKE_FIXTURE=1` |
-| `.storybook/preview.ts` | Loads `src/tokens/tokens.css`; registers every element via `src/components/define/all.ts`; passes `dist/custom-elements.json` to `setCustomElementsManifest`; declares the Theme and Motion toolbar globals and the decorator that applies them |
+| `.storybook/preview.ts` | Loads `src/tokens/tokens.css`; registers every element via `dist/components/define/all.js`, the built package as users import it; passes `dist/custom-elements.json` to `setCustomElementsManifest`; declares the Theme and Motion toolbar globals and the decorator that applies them |
 | `stories/` | Stories and MDX pages (section 3) |
 
 - Stories live outside `src/`, so they never reach `dist`, the element
   manifest, or TypeDoc. `tsconfig.json`'s `include` and ESLint cover
   `stories` and `.storybook`, so they are typechecked and linted.
-- Stories import from `src/` (as the tests do), so the dev server reloads
-  on source changes. `demos.js` is imported from `site/demos/`.
+- The elements come from the built package, so component changes appear in
+  the dev server after `npm run build`. Motion stories import the helpers
+  from `src/`. `demos.js` is imported from `site/demos/`.
 - `storybook-static/` is added to `.gitignore` and to ESLint's ignores.
 
 ### Scripts

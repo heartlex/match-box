@@ -63,7 +63,7 @@
     "storybook": "npm run build && storybook dev -p 6006",
     "storybook:build": "npm run build && storybook build -o storybook-static",
     "storybook:smoke": "node scripts/storybook-smoke.js storybook-static",
-    "storybook:smoke:self-test": "npm run build && STORYBOOK_SMOKE_FIXTURE=1 storybook build -o storybook-smoke-fixture && node scripts/storybook-smoke.js storybook-smoke-fixture --expect-fail smoke-fixture--throws,smoke-fixture--logs-error,smoke-fixture--axe-violation,smoke-fixture--empty"
+    "storybook:smoke:self-test": "npm run build && STORYBOOK_SMOKE_FIXTURE=1 storybook build -o storybook-smoke-fixture && node scripts/storybook-smoke.js storybook-smoke-fixture --expect-fail smoke-fixture--throws,smoke-fixture--logs-error,smoke-fixture--axe-violation,smoke-fixture--empty,smoke-fixture--undefined-element"
   },
   "peerDependencies": {
     "chai": "^6.0.0",
