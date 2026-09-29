@@ -25,7 +25,8 @@ export interface AttachCheckboxGroupOptions {
  * Checkbox group behavior for native checkboxes: keeps the parent's
  * `checked` and `indeterminate` in sync with the items, checks or unchecks
  * every enabled item when the parent is activated, and, when required,
- * reports "at least one" through `setCustomValidity` on the first item.
+ * reports "at least one" through `setCustomValidity` on the first item. It
+ * re-reads the items after their form resets.
  */
 export function attachCheckboxGroup(
   elements: CheckboxGroupElements,
@@ -73,6 +74,19 @@ export function attachCheckboxGroup(
       state.toggleAll();
       // The parent toggled natively; draw it from the state even when nothing changed.
       render();
+    },
+    { signal },
+  );
+
+  // The reset event fires before the controls are reset: read them after.
+  (items()[0]?.form ?? root.closest('form'))?.addEventListener(
+    'reset',
+    () => {
+      setTimeout(() => {
+        if (signal.aborted) return;
+        read();
+        render();
+      });
     },
     { signal },
   );

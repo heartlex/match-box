@@ -45,9 +45,9 @@ export class CheckboxGroupState extends Store {
     return checked === enabled.length ? 'checked' : 'mixed';
   }
 
-  /** Required and nothing checked. */
+  /** Required and no enabled item checked: a form does not submit a disabled one. */
   get valueMissing(): boolean {
-    return this.#required && !this.#items.some((item) => item.checked);
+    return this.#required && !this.#items.some((item) => item.checked && !item.disabled);
   }
 
   setRequired(required: boolean): void {

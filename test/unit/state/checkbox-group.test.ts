@@ -48,6 +48,14 @@ describe('CheckboxGroupState', () => {
     expect(state.valueMissing).toBe(false);
   });
 
+  it('does not count a checked but disabled item toward required, as a form would not submit it', () => {
+    const state = new CheckboxGroupState({ required: true });
+    state.setItems(items([true, false], [0]));
+    expect(state.valueMissing).toBe(true);
+    state.setItems(items([true, true], [0]));
+    expect(state.valueMissing).toBe(false);
+  });
+
   it('notifies only on change', () => {
     const state = new CheckboxGroupState();
     const listener = vi.fn();

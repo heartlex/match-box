@@ -95,6 +95,16 @@ export function checkboxGroupConformance({ name, mount, driver, audit }: Checkbo
         expect(fixture.form.checkValidity()).to.equal(true);
         expect(fixture.validationMessage()).to.equal('');
       });
+
+      it('resets with its form', async () => {
+        await toggle(fixture.items[0]);
+        fixture.form.reset();
+        // The reset event fires before the controls reset: wait a task.
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(checked()).to.deep.equal([false, false, false, false]);
+        expect(parentState()).to.equal('unchecked');
+        expect(fixture.form.checkValidity()).to.equal(false);
+      });
     });
   }
 }
