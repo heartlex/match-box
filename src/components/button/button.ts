@@ -45,7 +45,8 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * @cssprop --mb-button-font-weight - Font weight.
  * @cssprop --mb-button-icon-size - Size of slotted prefix and suffix icons.
  * @cssprop --mb-button-duration - Duration of color and press transitions.
- * @cssprop --mb-button-press-scale - Scale while pressed.
+ * @cssprop --mb-button-bg-active - Background while pressed.
+ * @cssprop --mb-button-press-scale - Scale while pressed (default 1: no scaling).
  */
 export class MbButton extends DelegatesFocus(LitElement) {
   static formAssociated = true;
@@ -91,6 +92,7 @@ export class MbButton extends DelegatesFocus(LitElement) {
   #formDisabled = false;
   #hasPrefix = false;
   #hasSuffix = false;
+  #hasLabel = false;
 
   constructor() {
     super();
@@ -134,11 +136,12 @@ export class MbButton extends DelegatesFocus(LitElement) {
   }
 
   override render() {
-    const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}`;
+    const iconOnly = !this.#hasLabel && (this.#hasPrefix || this.#hasSuffix);
+    const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}${iconOnly ? ' icon-only' : ''}`;
     const content = html`<span part="prefix" ?hidden=${!this.#hasPrefix}
         ><slot name="prefix" @slotchange=${this.#onPrefixChange}></slot
       ></span>
-      <span part="label"><slot></slot></span>
+      <span part="label"><slot @slotchange=${this.#onLabelChange}></slot></span>
       <span part="suffix" ?hidden=${!this.#hasSuffix}
         ><slot name="suffix" @slotchange=${this.#onSuffixChange}></slot
       ></span>`;
@@ -174,6 +177,11 @@ export class MbButton extends DelegatesFocus(LitElement) {
 
   #onSuffixChange(event: Event): void {
     this.#hasSuffix = hasContent(event);
+    this.requestUpdate();
+  }
+
+  #onLabelChange(event: Event): void {
+    this.#hasLabel = hasText(event);
     this.requestUpdate();
   }
 
@@ -217,4 +225,11 @@ export class MbButton extends DelegatesFocus(LitElement) {
 
 function hasContent(event: Event): boolean {
   return (event.target as HTMLSlotElement).assignedNodes({ flatten: true }).length > 0;
+}
+
+/** Whether a slot holds an element or non-whitespace text. */
+function hasText(event: Event): boolean {
+  return (event.target as HTMLSlotElement)
+    .assignedNodes({ flatten: true })
+    .some((node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '');
 }

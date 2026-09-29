@@ -167,7 +167,7 @@ describe('mb-button', () => {
     expect(submits).to.have.length(0);
   });
 
-  it('size sets height, padding, font size, and gap from the scale, md by default', async () => {
+  it('size sets height, padding, and font size from the scale, md by default; the gap is 4px', async () => {
     const { container } = await mount(
       '<mb-button size="sm">A</mb-button><mb-button>B</mb-button><mb-button size="lg">C</mb-button><mb-button size="huge">D</mb-button>',
     );
@@ -183,7 +183,7 @@ describe('mb-button', () => {
       expect(style.minBlockSize, `${size} height`).to.equal(resolveLength(`--mb-size-${size}-height`));
       expect(style.paddingInlineStart, `${size} padding`).to.equal(resolveLength(`--mb-size-${size}-padding-inline`));
       expect(style.fontSize, `${size} font size`).to.equal(resolveLength(`--mb-size-${size}-font-size`));
-      expect(style.columnGap, `${size} gap`).to.equal(resolveLength(`--mb-size-${size}-gap`));
+      expect(style.columnGap, `${size} gap`).to.equal(resolveLength('--mb-space-1'));
     }
     expect(container.querySelectorAll('mb-button')[1]?.hasAttribute('size'), 'not reflected').to.equal(false);
     expect(md.minBlockSize).to.equal('40px');
@@ -234,6 +234,72 @@ describe('mb-button', () => {
     const pressed = getComputedStyle(base).transform;
     await sendMouse({ type: 'up' });
     expect(pressed).to.equal('matrix(0.5, 0, 0, 0.5, 0, 0)');
+  });
+
+  it('darkens to solid-active while pressed, without scaling by default', async () => {
+    const { element } = await mount<MbButton>('<mb-button color="primary">Go</mb-button>');
+    const base = part(element, 'base');
+    const box = base.getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(box.left + box.width / 2), Math.round(box.top + box.height / 2)] });
+    await sendMouse({ type: 'down' });
+    const pressed = getComputedStyle(base);
+    const [background, transform] = [pressed.backgroundColor, pressed.transform];
+    await sendMouse({ type: 'up' });
+    expect(background).to.equal(resolveColor('--mb-color-primary-solid-active'));
+    expect(transform).to.equal('none');
+  });
+
+  it('outline has a 1.5px border in the role border color', async () => {
+    // The token itself is 1.5px (checked via `width`, which browsers report
+    // at full precision). `border-top-width` is snapped to a whole device
+    // pixel by every engine at the test runner's 1x device scale, so the
+    // button's rendered border is compared against that same snapped
+    // resolution of the token rather than the un-snapped '1.5px' literal.
+    expect(resolveLength('--mb-border-width-control'), 'token is 1.5px').to.equal('1.5px');
+    const probe = document.createElement('div');
+    probe.style.borderTopWidth = 'var(--mb-border-width-control)';
+    probe.style.borderTopStyle = 'solid';
+    document.body.append(probe);
+    const snappedWidth = getComputedStyle(probe).borderTopWidth;
+    probe.remove();
+
+    const { element } = await mount<MbButton>('<mb-button variant="outline" color="primary">Go</mb-button>');
+    const style = getComputedStyle(part(element, 'base'));
+    expect(style.borderTopWidth).to.equal(snappedWidth);
+    expect(style.borderTopColor).to.equal(resolveColor('--mb-color-primary-border'));
+  });
+
+  it('uses the medium weight', async () => {
+    const { element } = await mount<MbButton>('<mb-button>Go</mb-button>');
+    expect(getComputedStyle(part(element, 'base')).fontWeight).to.equal('500');
+  });
+
+  it('is square with only an icon, and stops being square when text arrives', async () => {
+    const svg = '<svg slot="prefix" viewBox="0 0 16 16"></svg>';
+    const { element } = await mount<MbButton>(`<mb-button aria-label="Add">${svg}</mb-button>`);
+    const base = part(element, 'base');
+    expect(base.classList.contains('icon-only')).to.equal(true);
+    const square = base.getBoundingClientRect();
+    expect([square.width, square.height]).to.deep.equal([40, 40]);
+    element.append('Add item');
+    await settle(document.body);
+    expect(base.classList.contains('icon-only')).to.equal(false);
+    expect(base.getBoundingClientRect().width).to.be.greaterThan(40);
+  });
+
+  it('is not square with whitespace-only default content and no icon', async () => {
+    const { element } = await mount<MbButton>('<mb-button> </mb-button>');
+    expect(part(element, 'base').classList.contains('icon-only')).to.equal(false);
+  });
+
+  it('reads dark tokens under the system dark preference', async () => {
+    try {
+      await emulateMedia({ colorScheme: 'dark' });
+      const { element } = await mount<MbButton>('<mb-button color="primary">Go</mb-button>');
+      expect(getComputedStyle(part(element, 'base')).backgroundColor).to.equal('rgb(123, 123, 255)');
+    } finally {
+      await emulateMedia({ colorScheme: 'light' });
+    }
   });
 
   describe('with href', () => {
