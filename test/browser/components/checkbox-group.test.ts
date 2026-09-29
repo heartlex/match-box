@@ -152,6 +152,45 @@ describe('mb-checkbox-group', () => {
     expect([input.checked, input.indeterminate]).to.deep.equal([true, false]);
   });
 
+  // Fix round 3: the group's own `disabled` and an ancestor fieldset combine; re-enabling
+  // one while the other still disables must not flip the state or select-all.
+  it('keeps select-all disabled and unchanged after one updateComplete when the group re-enables under a still-disabled fieldset', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><fieldset disabled><mb-checkbox-group name="topping" aria-label="Toppings" select-all disabled>' +
+        '<mb-checkbox value="nuts" checked>Nuts</mb-checkbox><mb-checkbox value="honey" checked>Honey</mb-checkbox>' +
+        '</mb-checkbox-group></fieldset></form>',
+    );
+    const group = form.querySelector('mb-checkbox-group') as MbCheckboxGroup;
+    await settle(document.body);
+    const selectAll = part<MbCheckbox>(group, 'select-all');
+    const input = selectAll.shadowRoot?.querySelector('input') as HTMLInputElement;
+    const before = { disabled: input.disabled, checked: input.checked, indeterminate: input.indeterminate };
+    group.disabled = false;
+    await group.updateComplete;
+    expect({ disabled: input.disabled, checked: input.checked, indeterminate: input.indeterminate }).to.deep.equal(before);
+    expect(input.disabled).to.equal(true);
+    expect(group.values).to.deep.equal([]);
+  });
+
+  it('shows select-all checked after one more updateComplete once the fieldset re-enables too', async () => {
+    const { element: form } = await mount<HTMLFormElement>(
+      '<form><fieldset disabled><mb-checkbox-group name="topping" aria-label="Toppings" select-all disabled>' +
+        '<mb-checkbox value="nuts" checked>Nuts</mb-checkbox><mb-checkbox value="honey" checked>Honey</mb-checkbox>' +
+        '</mb-checkbox-group></fieldset></form>',
+    );
+    const group = form.querySelector('mb-checkbox-group') as MbCheckboxGroup;
+    await settle(document.body);
+    group.disabled = false;
+    await group.updateComplete;
+    const fieldset = form.querySelector('fieldset') as HTMLFieldSetElement;
+    fieldset.disabled = false;
+    await group.updateComplete;
+    const selectAll = part<MbCheckbox>(group, 'select-all');
+    const input = selectAll.shadowRoot?.querySelector('input') as HTMLInputElement;
+    expect([input.checked, input.indeterminate]).to.deep.equal([true, false]);
+    expect(group.values).to.deep.equal(['nuts', 'honey']);
+  });
+
   it('changing a checked child value updates FormData', async () => {
     const { form, group } = await mountGroup(
       '',

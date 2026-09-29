@@ -53,11 +53,6 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
   /** The checked state of the children, keyed by index. */
   readonly state = new CheckboxGroupState();
 
-  // The last disabled state the browser reported via formDisabledCallback (an ancestor
-  // fieldset, since our own `disabled` property is read directly): `this.matches(':disabled')`
-  // still reflects the old attribute at the point willUpdate()/#read() need a current answer.
-  #formDisabled = false;
-
   constructor() {
     super();
     this.selectAll = false;
@@ -86,7 +81,7 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
    * satisfy "at least one" either.
    */
   get values(): string[] {
-    if (this.disabled || this.#formDisabled) return [];
+    if (this.#groupDisabled()) return [];
     return this.#children()
       .filter((child) => child.checked && !child.disabled)
       .map((child) => child.value);
@@ -128,26 +123,24 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
 
   override formDisabledCallback(disabled: boolean): void {
     super.formDisabledCallback(disabled);
-    // The argument is current immediately, unlike `this.matches(':disabled')` here.
-    this.#formDisabled = disabled;
+    // Fires only when the combined disabled state (own `disabled` OR an ancestor fieldset)
+    // actually transitions, with `disabled` as that combined value; #groupDisabled() below
+    // recomputes the same thing synchronously, so re-reading here just picks it up.
     this.#read();
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
     // Every child becomes (or stops being) excluded from "at least one" and FormData.
-    // `this.disabled` is already current here (unlike `this.matches(':disabled')`); read
-    // synchronously, passing it explicitly, so render() right after sees it in this same
-    // cycle. `#formDisabled` is deliberately left out: the browser also calls
-    // formDisabledCallback for our own reflected `disabled` attribute, always after
-    // willUpdate within the same cycle, so `#formDisabled` here would still be the echo of
-    // this attribute's *previous* value, reintroducing the staleness this avoids.
-    if (changed.has('disabled')) this.#read(this.disabled);
+    // Read synchronously so render() right after sees it in this same cycle, not a cycle
+    // later: #groupDisabled() is current here too (both `this.disabled` and the fieldset
+    // attribute it checks are plain, unreflected reads, unlike `this.matches(':disabled')`).
+    if (changed.has('disabled')) this.#read();
   }
 
   protected override updated(changed: PropertyValues<this>): void {
     super.updated(changed);
-    const disabled = this.disabled || this.#formDisabled;
+    const disabled = this.#groupDisabled();
     for (const child of this.#children()) {
       child.groupDisabled = disabled;
       if (!child.hasAttribute('size')) child.size = this.size;
@@ -162,7 +155,7 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
 
   override render() {
     const parent = this.state.parentState;
-    const disabled = this.disabled || this.#formDisabled;
+    const disabled = this.#groupDisabled();
     return html`${fieldText(this)}
       <div part="group" role="group" aria-label=${this.hostLabel ?? nothing}>
         ${this.selectAll
@@ -185,9 +178,13 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
     return [...this.children].filter((child): child is MbCheckbox => child instanceof MbCheckbox);
   }
 
-  // `disabled` defaults to the combined state, but willUpdate() passes `this.disabled`
-  // alone: see the comment there.
-  #read(disabled: boolean = this.disabled || this.#formDisabled): void {
+  /** Own `disabled`, or an ancestor `<fieldset disabled>`: both current synchronously. */
+  #groupDisabled(): boolean {
+    return this.disabled || this.parentElement?.closest('fieldset:disabled') != null;
+  }
+
+  #read(): void {
+    const disabled = this.#groupDisabled();
     this.state.setItems(
       this.#children().map((child, index) => ({
         key: String(index),
