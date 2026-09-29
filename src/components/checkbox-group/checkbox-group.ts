@@ -53,6 +53,11 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
   /** The checked state of the children, keyed by index. */
   readonly state = new CheckboxGroupState();
 
+  // The last disabled state the browser reported via formDisabledCallback (an ancestor
+  // fieldset, since our own `disabled` property is read directly): `this.matches(':disabled')`
+  // still reflects the old attribute at the point willUpdate()/#read() need a current answer.
+  #formDisabled = false;
+
   constructor() {
     super();
     this.selectAll = false;
@@ -81,7 +86,7 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
    * satisfy "at least one" either.
    */
   get values(): string[] {
-    if (this.disabled || this.matches(':disabled')) return [];
+    if (this.disabled || this.#formDisabled) return [];
     return this.#children()
       .filter((child) => child.checked && !child.disabled)
       .map((child) => child.value);
@@ -123,23 +128,26 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
 
   override formDisabledCallback(disabled: boolean): void {
     super.formDisabledCallback(disabled);
-    // Can run synchronously mid-render (browsers call it for our own reflected `disabled`
-    // attribute too, not just an ancestor fieldset): deferred so requestUpdate() inside
-    // #read() lands on a fresh cycle instead of folding into one whose render already ran.
-    queueMicrotask(() => this.#read());
+    // The argument is current immediately, unlike `this.matches(':disabled')` here.
+    this.#formDisabled = disabled;
+    this.#read();
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
     // Every child becomes (or stops being) excluded from "at least one" and FormData.
-    // Deferred for the same reason: `this.matches(':disabled')`, which #read() also
-    // consults, still reflects the old attribute here, since reflection has not run yet.
-    if (changed.has('disabled')) queueMicrotask(() => this.#read());
+    // `this.disabled` is already current here (unlike `this.matches(':disabled')`); read
+    // synchronously, passing it explicitly, so render() right after sees it in this same
+    // cycle. `#formDisabled` is deliberately left out: the browser also calls
+    // formDisabledCallback for our own reflected `disabled` attribute, always after
+    // willUpdate within the same cycle, so `#formDisabled` here would still be the echo of
+    // this attribute's *previous* value, reintroducing the staleness this avoids.
+    if (changed.has('disabled')) this.#read(this.disabled);
   }
 
   protected override updated(changed: PropertyValues<this>): void {
     super.updated(changed);
-    const disabled = this.disabled || this.matches(':disabled');
+    const disabled = this.disabled || this.#formDisabled;
     for (const child of this.#children()) {
       child.groupDisabled = disabled;
       if (!child.hasAttribute('size')) child.size = this.size;
@@ -154,7 +162,7 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
 
   override render() {
     const parent = this.state.parentState;
-    const disabled = this.disabled || this.matches(':disabled');
+    const disabled = this.disabled || this.#formDisabled;
     return html`${fieldText(this)}
       <div part="group" role="group" aria-label=${this.hostLabel ?? nothing}>
         ${this.selectAll
@@ -177,8 +185,9 @@ export class MbCheckboxGroup extends DelegatesFocus(FormAssociated(LitElement)) 
     return [...this.children].filter((child): child is MbCheckbox => child instanceof MbCheckbox);
   }
 
-  #read(): void {
-    const disabled = this.disabled || this.matches(':disabled');
+  // `disabled` defaults to the combined state, but willUpdate() passes `this.disabled`
+  // alone: see the comment there.
+  #read(disabled: boolean = this.disabled || this.#formDisabled): void {
     this.state.setItems(
       this.#children().map((child, index) => ({
         key: String(index),
