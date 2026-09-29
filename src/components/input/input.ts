@@ -167,10 +167,14 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
     return this.#input ?? undefined;
   }
 
-  // formResetCallback() may set `value` to what it already is (e.g. '' to ''), which
-  // Lit treats as a no-op; force a render so live() writes a malformed value away.
+  // formResetCallback() may set `value` to what it already is (e.g. '' to ''), which Lit
+  // treats as a no-op: no render, and live() would skip the write anyway, since a
+  // malformed value (e.g. a lone "-") already reads back as '' from the native getter.
+  // Write the input directly so a malformed value is actually cleared.
   override formResetCallback(): void {
     super.formResetCallback();
+    const input = this.#input;
+    if (input) input.value = this.value;
     this.requestUpdate();
   }
 

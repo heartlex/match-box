@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { sendKeys, sendMouse } from '@web/test-runner-commands';
+import '../../../src/components/define/button.ts';
 import '../../../src/components/define/input.ts';
 import type { MbInput } from '../../../src/components/index.ts';
 import { nameOf } from '../../../src/core/testing/names.ts';
@@ -114,7 +115,7 @@ describe('mb-input', () => {
     await typeInto(input, '-');
     form.reset();
     await settle(document.body);
-    expect(inner(input).value).to.equal('');
+    expect(inner(input).validity.badInput, 'badInput after reset').to.equal(false);
   });
 
   it('does not submit on Enter when the form default button is disabled', async () => {
@@ -143,6 +144,34 @@ describe('mb-input', () => {
     await typeInto(input, 'lit');
     await sendKeys({ press: 'Enter' });
     expect(submitter).to.equal(form.querySelector('button'));
+  });
+
+  it('activates a submit mb-button as the default button on Enter', async () => {
+    const { form, input } = await inForm(
+      '<mb-input name="q" aria-label="Search"></mb-input><mb-button type="submit">Send</mb-button>',
+    );
+    let submitted = 0;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitted += 1;
+    });
+    await typeInto(input, 'lit');
+    await sendKeys({ press: 'Enter' });
+    expect(submitted).to.equal(1);
+  });
+
+  it('does not submit on Enter when the default mb-button is disabled', async () => {
+    const { form, input } = await inForm(
+      '<mb-input name="q" aria-label="Search"></mb-input><mb-button type="submit" disabled>Send</mb-button>',
+    );
+    let submitted = 0;
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitted += 1;
+    });
+    await typeInto(input, 'lit');
+    await sendKeys({ press: 'Enter' });
+    expect(submitted).to.equal(0);
   });
 
   it('runs custom validators after the native checks', async () => {

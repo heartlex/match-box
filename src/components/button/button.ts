@@ -147,6 +147,13 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.requestUpdate();
   }
 
+  /** Activates the button, like a native button's click(). */
+  override click(): void {
+    const base = this.renderRoot.querySelector<HTMLElement>('[part=base]');
+    if (base) base.click();
+    else super.click();
+  }
+
   override render() {
     const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}`;
     const content = html`<span part="prefix" ?hidden=${!this.#hasPrefix}
