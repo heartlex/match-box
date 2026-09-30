@@ -188,10 +188,18 @@ describe('tokens.css', () => {
 
   it('sets the md size to the matchbox metrics', () => {
     expect(token('--mb-size-md-height')).to.equal('2.5rem');
-    expect(token('--mb-size-md-padding-inline')).to.equal('1.5rem');
+    expect(token('--mb-size-md-padding-inline')).to.equal('1rem');
     expect(token('--mb-size-md-font-size')).to.equal('0.875rem');
     expect(token('--mb-size-md-gap')).to.equal('0.5rem');
     expect(token('--mb-dialog-width-md')).to.equal('32rem');
+  });
+
+  it('pads sm / md / lg by the spacing scale: 12 / 16 / 24px', () => {
+    expect(['sm', 'md', 'lg'].map((size) => token(`--mb-size-${size}-padding-inline`))).to.deep.equal([
+      '0.75rem',
+      '1rem',
+      '1.5rem',
+    ]);
   });
 
   it('starts the body font stack with Aeonik, then Geist', () => {

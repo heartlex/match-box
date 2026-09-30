@@ -110,7 +110,7 @@ and box/track sizes.
 | Token | `sm` | `md` | `lg` |
 |---|---|---|---|
 | `--mb-size-<s>-height` | 2rem | 2.5rem | 3rem |
-| `--mb-size-<s>-padding-inline` | 0.75rem | 1.5rem | 1.875rem |
+| `--mb-size-<s>-padding-inline` | 0.75rem | 1rem | 1.5rem |
 | `--mb-size-<s>-font-size` | 0.75rem | 0.875rem | 1rem |
 | `--mb-size-<s>-gap` | 0.5rem | 0.5rem | 0.5rem |
 | `--mb-size-<s>-icon` | 1rem | 1.25rem | 1.5rem |

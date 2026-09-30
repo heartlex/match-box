@@ -17,6 +17,7 @@ include breaking changes; they are listed under **Breaking**.
   | Secondary | violet | navy `#0e0e30` |
   | Tertiary | teal | indigo tint `#eeeeff` |
   | Heights sm / md / lg | 28 / 36 / 44 px | 32 / 40 / 48 px |
+  | Inline padding sm / md / lg (buttons, disclosures, listbox options) | 8 / 12 / 16 px | 12 / 16 / 24 px |
   | Control radius / surface radius | 4 / 8 px | 8 / 16 px |
   | Body text | 16 px | 14 px |
   | Small text (field description and error) | 14 px | 12 px |
