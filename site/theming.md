@@ -117,6 +117,18 @@ and box/track sizes.
 
 `mb-dialog` sizes its width from `--mb-dialog-width-sm`, `-md`, and `-lg`.
 
+## Corners
+
+| Token | Value | Used by |
+|---|---|---|
+| `--mb-radius-control` | 0.75rem (12px) | Buttons, inputs, listbox options |
+| `--mb-radius-surface` | 1rem (16px) | Listbox panels, accordions, dialogs |
+
+Checkbox boxes, the check in multi-select listbox options, and the
+`mb-field` error banner use a smaller 6px corner. Each component also has
+its own radius variable, such as `--mb-checkbox-radius` or
+`--mb-listbox-radius`.
+
 ## Motion
 
 Every animation reads these tokens. Under `prefers-reduced-motion: reduce`

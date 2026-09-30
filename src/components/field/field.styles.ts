@@ -58,7 +58,7 @@ export const fieldStyles = [
       gap: var(--mb-space-1);
       margin-block-start: var(--mb-field-gap, var(--mb-space-1));
       padding: var(--mb-space-1) var(--mb-space-2);
-      border-radius: var(--mb-radius-control);
+      border-radius: var(--mb-radius-2);
       background: var(--mb-field-error-bg, var(--mb-color-bg-danger));
       color: var(--mb-field-error-color, var(--mb-color-fg-danger));
     }

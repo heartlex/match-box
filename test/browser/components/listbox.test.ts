@@ -219,10 +219,10 @@ describe('mb-listbox', () => {
   });
 
   describe('matchbox look', () => {
-    it('is a raised panel: 8px radius, overlay shadow, 4px padding', async () => {
+    it('is a raised panel: 16px radius, overlay shadow, 4px padding', async () => {
       const listbox = await mountListbox();
       const style = getComputedStyle(part(listbox, 'listbox'));
-      expect(style.borderTopLeftRadius).to.equal('8px');
+      expect(style.borderTopLeftRadius).to.equal('16px');
       expect(style.boxShadow).to.not.equal('none');
       expect(style.paddingTop).to.equal('4px');
     });

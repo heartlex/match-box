@@ -256,6 +256,29 @@ describe('styling contract', () => {
     expect([...new Set(durations)]).to.deep.equal(['0s']);
   });
 
+  it('rounds controls 12px, checkbox boxes and the field error 6px, and the listbox panel like the accordion', async () => {
+    const { container } = await mount(`
+      <mb-button>Go</mb-button>
+      <mb-input aria-label="A"></mb-input>
+      <mb-checkbox>C</mb-checkbox>
+      <mb-field label="F" error="Bad"><mb-input></mb-input></mb-field>
+      <mb-listbox label="L" multiple><mb-option value="a" selected>A</mb-option></mb-listbox>
+      <mb-accordion><mb-disclosure><span slot="summary">S</span>x</mb-disclosure></mb-accordion>
+    `);
+    const radius = (element: Element): string => getComputedStyle(element).borderTopLeftRadius;
+    const one = <T extends Element>(selector: string): T => container.querySelector(selector) as T;
+    const listbox = one<MbListbox>('mb-listbox');
+    const option = listbox.querySelector('mb-option') as Element;
+    expect(radius(part(one('mb-button'), 'base')), 'button').to.equal('12px');
+    expect(radius(part(one('mb-input'), 'base')), 'input').to.equal('12px');
+    expect(radius(part(option, 'base')), 'option').to.equal('12px');
+    expect(radius(part(one('mb-checkbox'), 'box')), 'checkbox').to.equal('6px');
+    expect(radius(part(option, 'check')), 'option check').to.equal('6px');
+    expect(radius(part(one('mb-field'), 'error')), 'field error').to.equal('6px');
+    expect(radius(part(listbox, 'listbox')), 'listbox panel').to.equal(radius(part(one('mb-accordion'), 'base')));
+    expect(radius(part(listbox, 'listbox')), 'listbox panel').to.equal('16px');
+  });
+
   it('define is safe to call again for a registered tag', () => {
     expect(() => {
       define('mb-button', class extends MbButton {});

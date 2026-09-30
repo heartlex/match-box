@@ -18,7 +18,8 @@ include breaking changes; they are listed under **Breaking**.
   | Tertiary | teal | indigo tint `#eeeeff` |
   | Heights sm / md / lg | 28 / 36 / 44 px | 32 / 40 / 48 px |
   | Inline padding sm / md / lg (buttons, disclosures, listbox options) | 8 / 12 / 16 px | 12 / 16 / 24 px |
-  | Control radius / surface radius | 4 / 8 px | 8 / 16 px |
+  | Control radius / surface radius | 4 / 8 px | 12 / 16 px |
+  | Checkbox box, field error banner radius | 4 px | 6 px |
   | Body text | 16 px | 14 px |
   | Small text (field description and error) | 14 px | 12 px |
   | Font | system-ui | Aeonik, then Geist, then system-ui |
@@ -27,7 +28,8 @@ include breaking changes; they are listed under **Breaking**.
   `--mb-button-press-scale` scales only when set — there's no default
   scaling.
 - `mb-disclosure` trigger rows are one step taller than the control height
-  (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius);
+  (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius), and the `mb-listbox`
+  panel takes the same 16px radius (it used the control radius);
   `mb-dialog` has a 16px radius, a 24px title, and a navy backdrop.
 - `mb-checkbox-group` items are 12px apart.
 - `mb-field` renders its description below the control, and its error as a

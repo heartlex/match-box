@@ -35,7 +35,7 @@ export const listboxStyles = [
       overflow-y: auto;
       padding: var(--mb-listbox-padding, var(--mb-space-1));
       border: 1px solid var(--mb-listbox-border-color, var(--mb-color-border-default));
-      border-radius: var(--mb-listbox-radius, var(--mb-radius-control));
+      border-radius: var(--mb-listbox-radius, var(--mb-radius-surface));
       box-shadow: var(--mb-listbox-shadow, var(--mb-shadow-overlay));
       background: var(--mb-listbox-bg, var(--mb-color-bg-surface));
       font-family: var(--mb-font-family-body);
