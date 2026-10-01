@@ -71,6 +71,8 @@ include breaking changes; they are listed under **Breaking**.
 
 - The `mb-listbox` label, `mb-option`, `mb-disclosure` trigger, and
   `mb-dialog` title pin `line-height`/`letter-spacing` against page CSS.
+- `mb-dialog`'s close icon is centered in its button; it sat on the text
+  baseline, about 2px high.
 
 ## 0.5.0
 

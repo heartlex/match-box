@@ -118,6 +118,7 @@ export const dialogStyles = [
     }
 
     svg {
+      display: block;
       inline-size: 1rem;
       block-size: 1rem;
     }
