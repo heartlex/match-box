@@ -139,12 +139,12 @@ describe('tokens.css', () => {
     const subtree = document.createElement('div');
     subtree.dataset['theme'] = 'dark';
     document.body.append(subtree);
-    expect(token('--mb-color-bg-surface', subtree)).to.equal('#17173f');
+    expect(token('--mb-color-bg-surface', subtree)).to.equal('#18181e');
   });
 
   it('follows the system dark preference unless light is forced', async () => {
     await emulateMedia({ colorScheme: 'dark' });
-    expect(token('--mb-color-bg-surface')).to.equal('#17173f');
+    expect(token('--mb-color-bg-surface')).to.equal('#18181e');
     document.documentElement.dataset['theme'] = 'light';
     expect(token('--mb-color-bg-surface')).to.equal('#ffffff');
   });

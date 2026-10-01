@@ -26,6 +26,9 @@
   --mb-gray-500: #6b6b7c;
   --mb-gray-600: #52525f;
   --mb-gray-700: #3a3a48;
+  --mb-gray-800: #26262f;
+  --mb-gray-900: #18181e;
+  --mb-gray-950: #0f0f13;
   --mb-navy-600: #46467d;
   --mb-navy-700: #303064;
   --mb-navy-800: #21214f;
@@ -203,10 +206,10 @@
 /* 3. Semantic tokens, dark. Keep the two blocks below identical. */
 [data-theme='dark'] {
   color-scheme: dark;
-  --mb-color-bg-canvas: var(--mb-navy-950);
-  --mb-color-bg-surface: var(--mb-navy-900);
-  --mb-color-bg-surface-raised: var(--mb-navy-800);
-  --mb-color-bg-disabled: var(--mb-navy-800);
+  --mb-color-bg-canvas: var(--mb-gray-950);
+  --mb-color-bg-surface: var(--mb-gray-900);
+  --mb-color-bg-surface-raised: var(--mb-gray-800);
+  --mb-color-bg-disabled: var(--mb-gray-800);
   --mb-color-bg-success: var(--mb-green-950);
   --mb-color-bg-warning: var(--mb-amber-950);
   --mb-color-bg-danger: var(--mb-red-950);
@@ -266,10 +269,10 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --mb-color-bg-canvas: var(--mb-navy-950);
-    --mb-color-bg-surface: var(--mb-navy-900);
-    --mb-color-bg-surface-raised: var(--mb-navy-800);
-    --mb-color-bg-disabled: var(--mb-navy-800);
+    --mb-color-bg-canvas: var(--mb-gray-950);
+    --mb-color-bg-surface: var(--mb-gray-900);
+    --mb-color-bg-surface-raised: var(--mb-gray-800);
+    --mb-color-bg-disabled: var(--mb-gray-800);
     --mb-color-bg-success: var(--mb-green-950);
     --mb-color-bg-warning: var(--mb-amber-950);
     --mb-color-bg-danger: var(--mb-red-950);

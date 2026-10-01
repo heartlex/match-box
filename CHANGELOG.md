@@ -62,7 +62,8 @@ include breaking changes; they are listed under **Breaking**.
   `--mb-color-bg-success|warning|danger`; the type scale
   (`--mb-font-size-caption|label|subtitle|h1…h4`); weights
   `light|regular|medium`; `--mb-line-height-heading`,
-  `--mb-letter-spacing-heading`, `--mb-border-width-control`.
+  `--mb-letter-spacing-heading`, `--mb-border-width-control`;
+  `--mb-gray-800|900|950`, the dark theme's backgrounds.
 - Component variables: `--mb-button-bg-active`,
   `--mb-checkbox-border-color-hover`, `--mb-switch-border-color`,
   `--mb-switch-thumb-bg-checked`, `--mb-field-error-bg`,
