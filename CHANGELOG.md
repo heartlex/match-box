@@ -7,9 +7,10 @@ include breaking changes; they are listed under **Breaking**.
 
 ### Breaking
 
-- New default skin, matchbox. Every component looks different; the API
-  (elements, attributes, parts, `--mb-*` variables) is unchanged. Main value
-  changes:
+- New default skin, matchbox. Every component looks different; the
+  component API (elements, attributes, parts, semantic and component
+  `--mb-*` variables) is unchanged, except for the removals listed below.
+  Main value changes:
 
   | | 0.5 | 0.6 |
   |---|---|---|
@@ -21,16 +22,24 @@ include breaking changes; they are listed under **Breaking**.
   | Control radius / surface radius | 4 / 8 px | 12 / 16 px |
   | Checkbox box, field error banner radius | 4 px | 6 px |
   | Body text | 16 px | 14 px |
+  | Strong weight (`--mb-font-weight-strong`) | 600 | 700 |
   | Small text (field description and error) | 14 px | 12 px |
   | Font | system-ui | Aeonik, then Geist, then system-ui |
 
 - A pressed button darkens (`solid-active`) instead of scaling;
   `--mb-button-press-scale` scales only when set — there's no default
   scaling.
+- The palette primitives are rewritten. `--mb-blue-*`, `--mb-violet-*`,
+  `--mb-teal-*`, and `--mb-font-weight-bold` are removed, the gray values
+  change, and `--mb-navy-*`, `--mb-indigo-*`, `--mb-amber-*`, numbered
+  weights (`--mb-font-weight-300…700`), and more steps on the type,
+  spacing, radius, red, and green scales are new. Primitives are internal:
+  theme through the semantic tokens, which keep their names.
 - `mb-disclosure` trigger rows are one step taller than the control height
-  (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius), and the `mb-listbox`
-  panel takes the same 16px radius (it used the control radius);
-  `mb-dialog` has a 16px radius, a 24px title, and a navy backdrop.
+  (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius), and
+  the `mb-listbox` panel takes the same 16px radius (it used the control
+  radius); `mb-dialog` has a 16px radius, a 24px title, and a navy
+  backdrop.
 - `mb-dialog` no longer has an accent top border: the border is 1px and
   `--mb-dialog-border-color` on every side. `--mb-dialog-accent-color` and
   `--mb-dialog-accent-width` are removed, and so is its `color` property.
@@ -62,10 +71,7 @@ include breaking changes; they are listed under **Breaking**.
   `--mb-color-bg-success|warning|danger`; the type scale
   (`--mb-font-size-caption|label|subtitle|h1…h4`); weights
   `light|regular|medium`; `--mb-line-height-heading`,
-  `--mb-letter-spacing-heading`, `--mb-border-width-control`;
-  `--mb-gray-800|900|950`. The dark theme uses the grays where it used
-  navy (backgrounds, borders, neutral and tertiary fills, subtle
-  backgrounds, text on solid fills).
+  `--mb-letter-spacing-heading`, `--mb-border-width-control`.
 - Component variables: `--mb-button-bg-active`,
   `--mb-checkbox-border-color-hover`, `--mb-switch-border-color`,
   `--mb-switch-thumb-bg-checked`, `--mb-field-error-bg`,

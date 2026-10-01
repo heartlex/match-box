@@ -64,6 +64,11 @@ backgrounds, and `border` at 3:1 against the surface.
 }
 ```
 
+Theme through the semantic tokens, such as `--mb-color-*` and
+`--mb-size-*`, never the palette primitives (`--mb-gray-*`,
+`--mb-indigo-*`, and the numbered steps such as `--mb-space-4`): the
+primitives are internal and can change or disappear in any release.
+
 ## Adjust one component
 
 Component tokens override a single component, on the element or any
