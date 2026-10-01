@@ -35,6 +35,10 @@ include breaking changes; they are listed under **Breaking**.
   `--mb-dialog-border-color` on every side. `--mb-dialog-accent-color` and
   `--mb-dialog-accent-width` are removed, and so is its `color` property.
 - `mb-checkbox-group` items are 12px apart.
+- `mb-input`'s focus ring is a 3px halo against the box, its role border
+  color at 20%, with no offset; the role-colored border carries the
+  contrast. Other components keep the offset `--mb-color-border-focus`
+  ring.
 - `mb-field` renders its description below the control, and its error as a
   banner with an icon (new part `error-icon`).
 - `mb-input`, `mb-checkbox`, `mb-switch`, and `mb-listbox` use the primary
@@ -63,7 +67,7 @@ include breaking changes; they are listed under **Breaking**.
   `--mb-checkbox-border-color-hover`, `--mb-switch-border-color`,
   `--mb-switch-thumb-bg-checked`, `--mb-field-error-bg`,
   `--mb-field-error-icon-color`, `--mb-listbox-shadow`,
-  `--mb-accordion-radius`.
+  `--mb-accordion-radius`, `--mb-input-focus-ring-color`.
 - An `mb-button` with only a prefix or suffix icon is square.
 - Storybook: Foundations (colors, type, spacing).
 

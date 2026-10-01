@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import { visuallyHidden } from '../shared/field-control.ts';
-import { colorRoleStyles, focusRing, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
+import { colorRoleStyles, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
 
 export const inputStyles = [
   hostStyles,
@@ -43,9 +43,12 @@ export const inputStyles = [
       border-color: var(--mb-input-border-color-hover, var(--_border));
     }
 
+    /* A soft halo against the border, in the border's role color at 20%:
+       the border carries the focus contrast, so the halo stays faint. */
     [part='base']:focus-within {
       border-color: var(--_border);
-      ${focusRing}
+      outline: 3px solid var(--mb-input-focus-ring-color, color-mix(in srgb, var(--_border) 20%, transparent));
+      outline-offset: 0;
     }
 
     [part='input'] {

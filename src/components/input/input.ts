@@ -49,6 +49,7 @@ function inputType(value: string): InputType {
  * @cssprop --mb-input-border-color - Border color.
  * @cssprop --mb-input-border-color-hover - Border color on hover.
  * @cssprop --mb-input-border-color-invalid - Border color when user-invalid.
+ * @cssprop --mb-input-focus-ring-color - Focus ring color.
  * @cssprop --mb-input-radius - Corner radius.
  * @cssprop --mb-input-height - Minimum height. Defaults to the size scale.
  * @cssprop --mb-input-padding-inline - Horizontal padding.
@@ -90,7 +91,7 @@ export class MbInput extends DelegatesFocus(FormAssociated(LitElement)) implemen
   declare step: string;
   declare autocomplete: string;
   declare inputmode: string;
-  /** The color role of the focus ring and hover border. */
+  /** The color role of the focus and hover border. */
   declare color: ColorRole;
   /** Height, padding, and font size, from the size scale. Unknown values render as `md`. */
   declare size: Size;

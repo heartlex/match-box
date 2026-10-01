@@ -65,9 +65,11 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   and `aria-level` around a disclosure trigger, `aria-hidden` on a
   decorative icon.
 - A `:focus-visible` ring on every focusable part, from
-  `--mb-focus-ring-width` and `--mb-color-border-focus`, and an
-  `@media (forced-colors: active)` block that keeps borders, selection, and
-  focus visible.
+  `--mb-focus-ring-width` and `--mb-color-border-focus`. `mb-input` is the
+  exception: its 3px halo touches the box and is its role border color at
+  20%, and the role-colored border carries the contrast. Every component
+  has an `@media (forced-colors: active)` block that keeps borders,
+  selection, and focus visible.
 - `size` picks a size, `sm`, `md` (default), or `lg`, on components whose
   controls have a height. Each size is five tokens,
   `--mb-size-<s>-height`, `-padding-inline`, `-font-size`, `-gap`, and

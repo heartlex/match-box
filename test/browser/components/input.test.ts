@@ -343,6 +343,36 @@ describe('mb-input', () => {
       await sendMouse({ type: 'move', position: [0, 0] });
     });
 
+    it('shows a 3px focus halo in the role border at 20% in both themes, and --mb-input-focus-ring-color wins', async () => {
+      const { container } = await mount(
+        '<mb-input aria-label="A"></mb-input><mb-input color="danger" aria-label="B"></mb-input>' +
+          '<mb-input aria-label="C" style="--mb-input-focus-ring-color: red"></mb-input>',
+      );
+      const [plain, danger, custom] = [...container.querySelectorAll('mb-input')] as MbInput[];
+      try {
+        for (const theme of ['light', 'dark']) {
+          document.documentElement.setAttribute('data-theme', theme);
+          for (const [input, token] of [
+            [plain, '--mb-color-primary-border'],
+            [danger, '--mb-color-danger-border'],
+          ] as const) {
+            input.focus();
+            const style = getComputedStyle(part(input, 'base'));
+            expect([style.outlineStyle, style.outlineWidth, style.outlineOffset]).to.deep.equal(['solid', '3px', '0px']);
+            const probe = document.createElement('span');
+            probe.style.color = `color-mix(in srgb, var(${token}) 20%, transparent)`;
+            document.body.append(probe);
+            expect(style.outlineColor, `${theme} ${token}`).to.equal(getComputedStyle(probe).color);
+            probe.remove();
+          }
+        }
+      } finally {
+        document.documentElement.removeAttribute('data-theme');
+      }
+      custom.focus();
+      expect(getComputedStyle(part(custom, 'base')).outlineColor).to.equal('rgb(255, 0, 0)');
+    });
+
     it('uses the body size at md', async () => {
       const { element } = await mount<MbInput>('<mb-input aria-label="A"></mb-input>');
       expect(getComputedStyle(part(element, 'base')).fontSize).to.equal('14px');
