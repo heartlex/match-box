@@ -1,10 +1,11 @@
 import { css } from 'lit';
 import { visuallyHidden } from '../shared/field-control.ts';
-import { colorRoleStyles, focusRing, hostStyles, sizeStyles } from '../shared/styles.ts';
+import { colorRoleStyles, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
 
 export const inputStyles = [
   hostStyles,
   colorRoleStyles,
+  neutralAccent,
   sizeStyles,
   visuallyHidden,
   css`
@@ -19,8 +20,8 @@ export const inputStyles = [
       align-items: center;
       gap: var(--_gap);
       min-block-size: var(--mb-input-height, var(--_height));
-      padding-inline: var(--mb-input-padding-inline, var(--_padding-inline));
-      border: 1px solid var(--mb-input-border-color, var(--mb-color-border-strong));
+      padding-inline: var(--mb-input-padding-inline, var(--mb-space-4));
+      border: var(--mb-border-width-control) solid var(--mb-input-border-color, var(--mb-color-border-strong));
       border-radius: var(--mb-input-radius, var(--mb-radius-control));
       background: var(--mb-input-bg, var(--mb-color-bg-surface));
       color: var(--mb-color-fg-default);
@@ -34,13 +35,20 @@ export const inputStyles = [
       transition-timing-function: var(--mb-motion-easing-standard);
     }
 
+    [part='base'].size-sm {
+      padding-inline: var(--mb-input-padding-inline, var(--mb-space-3));
+    }
+
     [part='base']:hover {
       border-color: var(--mb-input-border-color-hover, var(--_border));
     }
 
+    /* A soft halo against the border, in the border's role color at 20%:
+       the border carries the focus contrast, so the halo stays faint. */
     [part='base']:focus-within {
-      border-color: var(--_solid);
-      ${focusRing}
+      border-color: var(--_border);
+      outline: 3px solid var(--mb-input-focus-ring-color, color-mix(in srgb, var(--_border) 20%, transparent));
+      outline-offset: 0;
     }
 
     [part='input'] {

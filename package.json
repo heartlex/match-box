@@ -1,6 +1,6 @@
 {
   "name": "match-box",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Headless, framework-free accessible behaviors with a Lit adapter and design tokens.",
   "license": "MIT",
   "type": "module",
@@ -45,7 +45,8 @@
       "types": "./dist/motion/index.d.ts",
       "default": "./dist/motion/index.js"
     },
-    "./tokens.css": "./dist/tokens/tokens.css"
+    "./tokens.css": "./dist/tokens/tokens.css",
+    "./fonts.css": "./dist/tokens/fonts.css"
   },
   "files": [
     "dist"

@@ -1,4 +1,4 @@
-/** The five color roles. Every role is six semantic tokens in tokens.css. */
+/** The five color roles. Every role is eight semantic tokens in tokens.css. */
 export const colorRoles = ['neutral', 'primary', 'secondary', 'tertiary', 'danger'] as const;
 
 export type ColorRole = (typeof colorRoles)[number];

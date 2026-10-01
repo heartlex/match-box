@@ -1,10 +1,11 @@
 import { css } from 'lit';
 import { visuallyHidden } from '../shared/field-control.ts';
-import { colorRoleStyles, focusRing, hostStyles, sizeStyles } from '../shared/styles.ts';
+import { colorRoleStyles, focusRing, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
 
 export const switchStyles = [
   hostStyles,
   colorRoleStyles,
+  neutralAccent,
   sizeStyles,
   visuallyHidden,
   css`
@@ -25,9 +26,20 @@ export const switchStyles = [
       line-height: 1.25;
       letter-spacing: normal;
       cursor: pointer;
-      --_track-width: var(--mb-switch-track-width, calc(var(--_icon) * 2));
-      --_track-height: var(--mb-switch-track-height, calc(var(--_icon) + 0.25rem));
-      --_thumb: var(--mb-switch-thumb-size, var(--_icon));
+      --_track-width: var(--mb-switch-track-width, 2.25rem);
+      --_track-height: var(--mb-switch-track-height, 1.25rem);
+      --_inset: 0.1875rem;
+      --_thumb: var(--mb-switch-thumb-size, calc(var(--_track-height) - 2 * var(--_inset)));
+    }
+
+    [part='base'].size-sm {
+      --_track-width: var(--mb-switch-track-width, 2rem);
+      --_track-height: var(--mb-switch-track-height, 1.125rem);
+    }
+
+    [part='base'].size-lg {
+      --_track-width: var(--mb-switch-track-width, 2.75rem);
+      --_track-height: var(--mb-switch-track-height, 1.5rem);
     }
 
     input {
@@ -46,10 +58,11 @@ export const switchStyles = [
       align-items: center;
       inline-size: var(--_track-width);
       block-size: var(--_track-height);
-      padding: 0.125rem;
+      padding: calc(var(--_inset) - var(--mb-border-width-control));
+      border: var(--mb-border-width-control) solid var(--mb-switch-border-color, var(--mb-color-border-strong));
       border-radius: 999px;
-      background: var(--mb-switch-track-bg, var(--mb-color-border-strong));
-      transition-property: background-color;
+      background: var(--mb-switch-track-bg, var(--mb-color-bg-surface));
+      transition-property: background-color, border-color;
       transition-duration: var(--mb-switch-duration, var(--mb-motion-duration-medium));
       transition-timing-function: var(--mb-motion-easing-standard);
     }
@@ -58,22 +71,24 @@ export const switchStyles = [
       inline-size: var(--_thumb);
       block-size: var(--_thumb);
       border-radius: 50%;
-      background: var(--mb-switch-thumb-bg, var(--mb-color-bg-surface));
-      transition-property: transform;
+      background: var(--mb-switch-thumb-bg, var(--mb-color-border-strong));
+      transition-property: transform, background-color;
       transition-duration: var(--mb-switch-duration, var(--mb-motion-duration-medium));
       transition-timing-function: var(--mb-motion-easing-spring);
     }
 
     input:checked + [part='track'] {
+      border-color: var(--mb-switch-track-bg-checked, var(--_solid));
       background: var(--mb-switch-track-bg-checked, var(--_solid));
     }
 
     input:checked + [part='track'] [part='thumb'] {
-      transform: translateX(calc(var(--_track-width) - var(--_thumb) - 0.25rem));
+      background: var(--mb-switch-thumb-bg-checked, var(--_on-solid));
+      transform: translateX(calc(var(--_track-width) - var(--_thumb) - 2 * var(--_inset)));
     }
 
     :host(:dir(rtl)) input:checked + [part='track'] [part='thumb'] {
-      transform: translateX(calc((var(--_track-width) - var(--_thumb) - 0.25rem) * -1));
+      transform: translateX(calc((var(--_track-width) - var(--_thumb) - 2 * var(--_inset)) * -1));
     }
 
     input:focus-visible + [part='track'] {
@@ -90,12 +105,26 @@ export const switchStyles = [
     }
 
     input:disabled + [part='track'] {
+      border-color: var(--mb-color-border-default);
       background: var(--mb-color-bg-disabled);
+    }
+
+    input:disabled + [part='track'] [part='thumb'] {
+      background: var(--mb-color-border-default);
+    }
+
+    input:disabled:checked + [part='track'] {
+      border-color: var(--_subtle-active);
+      background: var(--_subtle-active);
+    }
+
+    input:disabled:checked + [part='track'] [part='thumb'] {
+      background: var(--mb-color-bg-surface);
     }
 
     @media (forced-colors: active) {
       [part='track'] {
-        border: 1px solid CanvasText;
+        border-color: CanvasText;
       }
 
       input:checked + [part='track'] {

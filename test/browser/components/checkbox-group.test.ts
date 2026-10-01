@@ -210,4 +210,10 @@ describe('mb-checkbox-group', () => {
     await settle(document.body);
     expect(new FormData(form).getAll('topping')).to.deep.equal(['almonds']);
   });
+
+  it('spaces items 12px apart', async () => {
+    const { group } = await mountGroup();
+    await settle(document.body);
+    expect(getComputedStyle(part(group, 'group')).rowGap).to.equal('12px');
+  });
 });

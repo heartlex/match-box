@@ -21,6 +21,7 @@ import { MbOption } from './option.ts';
  * @cssprop --mb-listbox-border-color - Border color.
  * @cssprop --mb-listbox-border-color-invalid - Border color when user-invalid.
  * @cssprop --mb-listbox-radius - Corner radius.
+ * @cssprop --mb-listbox-shadow - Shadow of the panel.
  * @cssprop --mb-listbox-padding - Padding around the options.
  * @cssprop --mb-listbox-max-height - Height after which the options scroll.
  * @cssprop --mb-listbox-duration - Duration of the animation for options added after the first render.

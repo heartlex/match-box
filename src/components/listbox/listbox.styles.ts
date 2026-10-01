@@ -1,10 +1,11 @@
 import { css } from 'lit';
 import { visuallyHidden } from '../shared/field-control.ts';
-import { colorRoleStyles, hostStyles, sizeStyles } from '../shared/styles.ts';
+import { colorRoleStyles, hostStyles, neutralAccent, sizeStyles } from '../shared/styles.ts';
 
 export const listboxStyles = [
   hostStyles,
   colorRoleStyles,
+  neutralAccent,
   sizeStyles,
   visuallyHidden,
   css`
@@ -17,8 +18,10 @@ export const listboxStyles = [
       margin-block-end: var(--mb-space-stack-sm);
       color: var(--mb-color-fg-default);
       font-family: var(--mb-font-family-body);
-      font-size: var(--mb-font-size-body);
-      font-weight: var(--mb-font-weight-strong);
+      font-size: var(--mb-font-size-label);
+      font-weight: var(--mb-font-weight-medium);
+      line-height: var(--mb-line-height-body);
+      letter-spacing: normal;
     }
 
     [part='listbox'] {
@@ -30,13 +33,15 @@ export const listboxStyles = [
       gap: 2px;
       max-block-size: var(--mb-listbox-max-height, none);
       overflow-y: auto;
-      padding: var(--mb-listbox-padding, var(--mb-space-stack-sm));
-      border: 1px solid var(--mb-listbox-border-color, var(--mb-color-border-strong));
-      border-radius: var(--mb-listbox-radius, var(--mb-radius-control));
+      padding: var(--mb-listbox-padding, var(--mb-space-1));
+      border: 1px solid var(--mb-listbox-border-color, var(--mb-color-border-default));
+      border-radius: var(--mb-listbox-radius, var(--mb-radius-surface));
+      box-shadow: var(--mb-listbox-shadow, var(--mb-shadow-overlay));
       background: var(--mb-listbox-bg, var(--mb-color-bg-surface));
       font-family: var(--mb-font-family-body);
       font-size: var(--mb-font-size-body);
       line-height: var(--mb-line-height-body);
+      letter-spacing: normal;
     }
 
     [part='listbox'].multiple {

@@ -1,9 +1,8 @@
 import { css } from 'lit';
-import { colorRoleStyles, hostStyles } from '../shared/styles.ts';
+import { hostStyles } from '../shared/styles.ts';
 
 export const dialogStyles = [
   hostStyles,
-  colorRoleStyles,
   css`
     :host {
       display: block;
@@ -15,7 +14,6 @@ export const dialogStyles = [
       max-block-size: calc(100dvh - 2 * var(--mb-space-stack-lg));
       padding: 0;
       border: 1px solid var(--mb-dialog-border-color, var(--mb-color-border-default));
-      border-block-start: var(--mb-dialog-accent-width, 4px) solid var(--mb-dialog-accent-color, var(--_solid));
       border-radius: var(--mb-dialog-radius, var(--mb-radius-surface));
       background: var(--mb-dialog-bg, var(--mb-color-bg-surface-raised));
       color: var(--mb-color-fg-default);
@@ -27,11 +25,6 @@ export const dialogStyles = [
       transition-duration: var(--mb-dialog-duration, var(--mb-motion-duration-slow));
       transition-timing-function: var(--mb-motion-easing-exit);
       transition-behavior: allow-discrete;
-    }
-
-    [part='dialog'].color-neutral {
-      border-block-start-width: var(--mb-dialog-accent-width, 1px);
-      border-block-start-color: var(--mb-dialog-accent-color, var(--mb-dialog-border-color, var(--mb-color-border-default)));
     }
 
     [part='dialog'].size-sm {
@@ -72,7 +65,7 @@ export const dialogStyles = [
     }
 
     [part='dialog'][open]::backdrop {
-      background: var(--mb-dialog-backdrop, rgb(0 0 0 / 0.4));
+      background: var(--mb-dialog-backdrop, rgb(14 14 48 / 0.4));
       backdrop-filter: blur(var(--mb-dialog-backdrop-blur, 2px));
     }
 
@@ -88,24 +81,27 @@ export const dialogStyles = [
       align-items: center;
       justify-content: space-between;
       gap: var(--mb-space-inline-md);
-      padding: var(--mb-space-stack-lg) var(--mb-space-inline-lg) 0;
+      padding: var(--mb-space-6) var(--mb-space-6) 0;
     }
 
     [part='title'] {
       margin: 0;
-      font-size: var(--mb-dialog-title-font-size, 1.25rem);
+      font-size: var(--mb-dialog-title-font-size, var(--mb-font-size-subtitle));
       font-weight: var(--mb-font-weight-strong);
+      line-height: var(--mb-line-height-heading);
+      letter-spacing: normal;
     }
 
     [part='body'] {
-      padding: var(--mb-space-stack-md) var(--mb-space-inline-lg);
+      padding: var(--mb-space-2) var(--mb-space-6);
+      color: var(--mb-color-fg-muted);
     }
 
     [part='footer'] {
       display: flex;
       justify-content: flex-end;
       gap: var(--mb-space-inline-sm);
-      padding: 0 var(--mb-space-inline-lg) var(--mb-space-stack-lg);
+      padding: var(--mb-space-4) var(--mb-space-6) var(--mb-space-6);
     }
 
     [part='close-button'] {
@@ -122,6 +118,7 @@ export const dialogStyles = [
     }
 
     svg {
+      display: block;
       inline-size: 1rem;
       block-size: 1rem;
     }

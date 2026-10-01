@@ -3,6 +3,7 @@ import { setCustomElementsManifest, type Preview } from '@storybook/web-componen
 import manifest from '../dist/custom-elements.json' with { type: 'json' };
 import { publicManifest } from './manifest.ts';
 import '../src/tokens/tokens.css';
+import '../src/tokens/fonts.css';
 // The built package, as users import it; package.json marks these files as side effects.
 // Run `npm run build` to see component changes in the dev server.
 import '../dist/components/define/all.js';

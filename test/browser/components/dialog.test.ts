@@ -123,6 +123,42 @@ describe('mb-dialog', () => {
     dialog.close();
   });
 
+  it('has a 16px radius, a 24px title, and a navy backdrop', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const dialogPart = part<HTMLDialogElement>(dialog, 'dialog');
+    expect(getComputedStyle(dialogPart).borderBottomLeftRadius).to.equal('16px');
+    expect(getComputedStyle(part(dialog, 'title')).fontSize).to.equal('24px');
+    expect(getComputedStyle(dialogPart, '::backdrop').backgroundColor).to.equal('rgba(14, 14, 48, 0.4)');
+    dialog.close();
+  });
+
+  it('has the same 1px border on every side', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const style = getComputedStyle(part(dialog, 'dialog'));
+    const top = [style.borderTopWidth, style.borderTopColor];
+    expect(top[0]).to.equal('1px');
+    expect([style.borderBottomWidth, style.borderBottomColor]).to.deep.equal(top);
+    dialog.close();
+  });
+
+  it('centers the close icon in the close button', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const button = part(dialog, 'close-button');
+    const base = (button.shadowRoot as ShadowRoot).querySelector('[part=base]') as HTMLElement;
+    const center = (rect: DOMRect): number[] => [rect.left + rect.width / 2, rect.top + rect.height / 2];
+    const icon = center((button.querySelector('svg') as SVGElement).getBoundingClientRect());
+    const expected = center(base.getBoundingClientRect());
+    expect(icon[0]).to.be.closeTo(expected[0], 0.5);
+    expect(icon[1]).to.be.closeTo(expected[1], 0.5);
+    dialog.close();
+  });
+
   it('size sets the width from the dialog widths, and --mb-dialog-width wins', async () => {
     const widths: number[] = [];
     for (const attributes of ['size="sm"', '', 'size="lg"', 'size="sm" style="--mb-dialog-width: 20rem"']) {

@@ -3,6 +3,90 @@
 This project follows semantic versioning. During `0.x`, a minor version may
 include breaking changes; they are listed under **Breaking**.
 
+## 0.6.0
+
+### Breaking
+
+- New default skin, matchbox. Every component looks different; the
+  component API (elements, attributes, parts, semantic and component
+  `--mb-*` variables) is unchanged, except for the removals listed below.
+  Main value changes:
+
+  | | 0.5 | 0.6 |
+  |---|---|---|
+  | Primary | blue `#1f57c0` | indigo `#5757ff` |
+  | Secondary | violet | navy `#0e0e30` |
+  | Tertiary | teal | indigo tint `#eeeeff` |
+  | Heights sm / md / lg | 28 / 36 / 44 px | 32 / 40 / 48 px |
+  | Inline padding sm / md / lg (buttons, disclosures, listbox options) | 8 / 12 / 16 px | 12 / 16 / 24 px |
+  | Control radius / surface radius | 4 / 8 px | 12 / 16 px |
+  | Checkbox box, field error banner radius | 4 px | 6 px |
+  | Body text | 16 px | 14 px |
+  | Strong weight (`--mb-font-weight-strong`) | 600 | 700 |
+  | Small text (field description and error) | 14 px | 12 px |
+  | Font | system-ui | Aeonik, then Geist, then system-ui |
+
+- A pressed button darkens (`solid-active`) instead of scaling;
+  `--mb-button-press-scale` scales only when set — there's no default
+  scaling.
+- The palette primitives are rewritten. `--mb-blue-*`, `--mb-violet-*`,
+  `--mb-teal-*`, and `--mb-font-weight-bold` are removed, the gray values
+  change, and `--mb-navy-*`, `--mb-indigo-*`, `--mb-amber-*`, numbered
+  weights (`--mb-font-weight-300…700`), and more steps on the type,
+  spacing, radius, red, and green scales are new. Primitives are internal:
+  theme through the semantic tokens, which keep their names.
+- `mb-disclosure` trigger rows are one step taller than the control height
+  (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius), and
+  the `mb-listbox` panel takes the same 16px radius (it used the control
+  radius); `mb-dialog` has a 16px radius, a 24px title, and a navy
+  backdrop.
+- `mb-dialog` no longer has an accent top border: the border is 1px and
+  `--mb-dialog-border-color` on every side. `--mb-dialog-accent-color` and
+  `--mb-dialog-accent-width` are removed, and so is its `color` property.
+- `mb-checkbox-group` items are 12px apart.
+- `mb-input`'s focus ring is a 3px halo against the box, its role border
+  color at 20%, with no offset; the role-colored border carries the
+  contrast. Other components keep the offset `--mb-color-border-focus`
+  ring.
+- `mb-field` renders its description below the control, and its error as a
+  banner with an icon (new part `error-icon`).
+- `mb-input`, `mb-checkbox`, `mb-switch`, and `mb-listbox` use the primary
+  accent when no `color` is set.
+- `mb-input`, `mb-checkbox`, and `mb-switch` follow only the height,
+  font-size, and gap of the size scale; `mb-input`'s padding and
+  `mb-checkbox`/`mb-switch`'s box and track sizes no longer follow
+  `--mb-size-<s>-padding-inline` and `--mb-size-<s>-icon`, and have their
+  own size-scoped defaults instead. See `site/theming.md` and
+  `docs/styling-contract.md`.
+- `--mb-switch-thumb-bg` now colors the thumb only when the switch is off.
+  The checked thumb reads `--mb-switch-thumb-bg-checked` instead (falls
+  back to `--_on-solid`).
+
+### Added
+
+- `match-box/fonts.css`: Geist (SIL OFL 1.1) as the stand-in for Aeonik.
+  Optional.
+- Tokens: `--mb-color-<role>-solid-active` and `-subtle-active` for the five
+  roles; `--mb-color-fg-warning`, `--mb-color-fg-danger`,
+  `--mb-color-bg-success|warning|danger`; the type scale
+  (`--mb-font-size-caption|label|subtitle|h1…h4`); weights
+  `light|regular|medium`; `--mb-line-height-heading`,
+  `--mb-letter-spacing-heading`, `--mb-border-width-control`.
+- Component variables: `--mb-button-bg-active`,
+  `--mb-checkbox-border-color-hover`, `--mb-switch-border-color`,
+  `--mb-switch-thumb-bg-checked`, `--mb-field-error-bg`,
+  `--mb-field-error-icon-color`, `--mb-listbox-shadow`,
+  `--mb-accordion-radius`, `--mb-input-focus-ring-color`.
+- An `mb-button` with only a prefix or suffix icon is square.
+- Storybook: Foundations (colors, type, spacing).
+
+### Fixed
+
+- The `mb-listbox` label, `mb-option`, `mb-disclosure` trigger, and
+  `mb-dialog` title pin `line-height`/`letter-spacing` against page CSS.
+- `mb-dialog`'s close icon is centered in its button; it sat on the text
+  baseline, about 2px high.
+
 ## 0.5.0
 
 ### Added

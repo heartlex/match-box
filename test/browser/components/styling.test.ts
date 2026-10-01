@@ -48,7 +48,11 @@ describe('styling contract', () => {
         `<mb-listbox label="Fruit" color="${role}"><mb-option selected>Apple</mb-option></mb-listbox>`,
       );
       const base = getComputedStyle(part(element.querySelector('mb-option') as Element, 'base'));
-      expect(base.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-subtle`));
+      // mb-listbox borrows primary's accent for the neutral role (neutralAccent, Task 1/8), so a
+      // listbox without a `color` tints its selection with the brand color; the text stays the
+      // role's own (unaccented) text token, matching mb-checkbox and mb-switch below.
+      const accentRole = role === 'neutral' ? 'primary' : role;
+      expect(base.backgroundColor).to.equal(resolveColor(`--mb-color-${accentRole}-subtle`));
       expect(base.color).to.equal(resolveColor(`--mb-color-${role}-text`));
     });
 
@@ -58,8 +62,11 @@ describe('styling contract', () => {
       );
       const box = getComputedStyle(part(container.querySelector('mb-checkbox') as Element, 'box'));
       const track = getComputedStyle(part(container.querySelector('mb-switch') as Element, 'track'));
-      expect(box.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
-      expect(track.backgroundColor).to.equal(resolveColor(`--mb-color-${role}-solid`));
+      // Both mb-checkbox and mb-switch borrow primary's accent for the neutral role (neutralAccent,
+      // Task 1/6/7), so a control without a `color` shows the brand color when checked.
+      const accentRole = role === 'neutral' ? 'primary' : role;
+      expect(box.backgroundColor).to.equal(resolveColor(`--mb-color-${accentRole}-solid`));
+      expect(track.backgroundColor).to.equal(resolveColor(`--mb-color-${accentRole}-solid`));
     });
   }
 
@@ -114,7 +121,7 @@ describe('styling contract', () => {
     document.documentElement.dataset['theme'] = 'dark';
     const { element } = await mount<MbButton>('<mb-button color="primary">Go</mb-button>');
     expect(getComputedStyle(part(element, 'base')).backgroundColor).to.equal(resolveColor('--mb-color-primary-solid'));
-    expect(resolveColor('--mb-color-primary-solid')).to.equal('rgb(91, 147, 245)');
+    expect(resolveColor('--mb-color-primary-solid')).to.equal('rgb(123, 123, 255)');
   });
 
   it('a component token set on an ancestor wins', async () => {
@@ -247,6 +254,29 @@ describe('styling contract', () => {
     const durations = parts.flatMap((element) => getComputedStyle(element).transitionDuration.split(', '));
     setMotion(false);
     expect([...new Set(durations)]).to.deep.equal(['0s']);
+  });
+
+  it('rounds controls 12px, checkbox boxes and the field error 6px, and the listbox panel like the accordion', async () => {
+    const { container } = await mount(`
+      <mb-button>Go</mb-button>
+      <mb-input aria-label="A"></mb-input>
+      <mb-checkbox>C</mb-checkbox>
+      <mb-field label="F" error="Bad"><mb-input></mb-input></mb-field>
+      <mb-listbox label="L" multiple><mb-option value="a" selected>A</mb-option></mb-listbox>
+      <mb-accordion><mb-disclosure><span slot="summary">S</span>x</mb-disclosure></mb-accordion>
+    `);
+    const radius = (element: Element): string => getComputedStyle(element).borderTopLeftRadius;
+    const one = <T extends Element>(selector: string): T => container.querySelector(selector) as T;
+    const listbox = one<MbListbox>('mb-listbox');
+    const option = listbox.querySelector('mb-option') as Element;
+    expect(radius(part(one('mb-button'), 'base')), 'button').to.equal('12px');
+    expect(radius(part(one('mb-input'), 'base')), 'input').to.equal('12px');
+    expect(radius(part(option, 'base')), 'option').to.equal('12px');
+    expect(radius(part(one('mb-checkbox'), 'box')), 'checkbox').to.equal('6px');
+    expect(radius(part(option, 'check')), 'option check').to.equal('6px');
+    expect(radius(part(one('mb-field'), 'error')), 'field error').to.equal('6px');
+    expect(radius(part(listbox, 'listbox')), 'listbox panel').to.equal(radius(part(one('mb-accordion'), 'base')));
+    expect(radius(part(listbox, 'listbox')), 'listbox panel').to.equal('16px');
   });
 
   it('define is safe to call again for a registered tag', () => {

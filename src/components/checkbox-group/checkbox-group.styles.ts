@@ -14,7 +14,7 @@ export const checkboxGroupStyles = [
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--mb-checkbox-group-gap, var(--mb-space-1));
+      gap: var(--mb-checkbox-group-gap, var(--mb-space-3));
     }
   `,
 ];

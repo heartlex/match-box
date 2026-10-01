@@ -1,4 +1,4 @@
-import { LitElement, html, type PropertyValues } from 'lit';
+import { LitElement, html, nothing, type PropertyValues } from 'lit';
 import { isFieldControl, type FieldControl } from '../shared/field-control.ts';
 import { sizeName, type Size } from '../shared/size.ts';
 import { fieldStyles } from './field.styles.ts';
@@ -8,6 +8,11 @@ const controlEvents = ['input', 'change', 'focusout', 'invalid'] as const;
 type TextSlot = 'label' | 'description' | 'error';
 
 const textSlots: readonly TextSlot[] = ['label', 'description', 'error'];
+
+/** A round "!" knocked out of a circle, so the banner shows through. */
+const errorIcon = html`<svg part="error-icon" viewBox="0 0 12 12" aria-hidden="true"
+  ><path fill-rule="evenodd" d="M6 0a6 6 0 1 1 0 12A6 6 0 0 1 6 0Zm-.75 2.5h1.5v4.25h-1.5Zm0 5.5h1.5v1.5h-1.5Z"
+/></svg>`;
 
 /**
  * A label, a description, and an error around one control, connected to it.
@@ -24,12 +29,15 @@ const textSlots: readonly TextSlot[] = ['label', 'description', 'error'];
  * @csspart required - The asterisk after the label of a required control.
  * @csspart description - The description.
  * @csspart error - The error, a polite live region.
+ * @csspart error-icon - The icon before the error text, shown with an error.
  * @csspart control - The wrapper of the control.
  * @cssprop --mb-field-gap - Space between label, description, control, and error.
  * @cssprop --mb-field-label-color - Label color.
- * @cssprop --mb-field-label-font-size - Label font size. Defaults to the size scale.
+ * @cssprop --mb-field-label-font-size - Label font size. Defaults to 12px, regardless of size.
  * @cssprop --mb-field-description-color - Description color.
  * @cssprop --mb-field-error-color - Error and asterisk color.
+ * @cssprop --mb-field-error-bg - Background of the error banner.
+ * @cssprop --mb-field-error-icon-color - Color of the error icon.
  */
 export class MbField extends LitElement {
   static override styles = fieldStyles;
@@ -110,6 +118,7 @@ export class MbField extends LitElement {
   override render() {
     const label = this.#slotText.label || this.label;
     const description = this.#slotText.description || this.description;
+    const hasError = this.shownError !== '';
     return html`<div class="base size-${sizeName(this.size)}">
       <div class="heading" ?hidden=${label === ''}>
         <span part="label" @click=${this.#focusControl}
@@ -117,12 +126,14 @@ export class MbField extends LitElement {
         >
         <span part="required" aria-hidden="true" ?hidden=${!(this.#control?.required ?? false)}>*</span>
       </div>
+      <div part="control"><slot @slotchange=${this.#onControlSlot}></slot></div>
       <div part="description" ?hidden=${description === ''}>
         <slot name="description" @slotchange=${this.#onTextSlot('description')}>${this.description}</slot>
       </div>
-      <div part="control"><slot @slotchange=${this.#onControlSlot}></slot></div>
-      <div part="error" aria-live="polite" class=${this.shownError !== '' ? 'has-error' : ''}>
-        <slot name="error" @slotchange=${this.#onTextSlot('error')}>${this.#slotText.error ? '' : this.shownError}</slot>
+      <div part="error" aria-live="polite" class=${hasError ? 'has-error' : ''}>
+        ${hasError ? errorIcon : nothing}<slot name="error" @slotchange=${this.#onTextSlot('error')}
+          >${this.#slotText.error ? '' : this.shownError}</slot
+        >
       </div>
     </div>`;
   }

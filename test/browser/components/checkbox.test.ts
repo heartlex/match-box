@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { sendKeys, sendMouse } from '@web/test-runner-commands';
+import { emulateMedia, sendKeys, sendMouse } from '@web/test-runner-commands';
 import '../../../src/components/define/all.ts';
 import type { MbCheckbox } from '../../../src/components/index.ts';
 import { nameOf, referencedText } from '../../../src/core/testing/names.ts';
 import { expectNoAxeViolations } from '../../support/axe.ts';
-import { loadTokens, mount, part, resolveColor, settle } from '../../support/components.ts';
+import { loadTokens, mount, part, resolveColor, resolveLength, settle } from '../../support/components.ts';
 
 const inner = (element: Element): HTMLInputElement =>
   element.shadowRoot?.querySelector('input') as HTMLInputElement;
@@ -189,8 +189,36 @@ describe('mb-checkbox', () => {
     const { box } = await inForm('<mb-checkbox color="primary" checked disabled>Accept</mb-checkbox>');
     const mark = getComputedStyle(part(box, 'mark'));
     const square = getComputedStyle(part(box, 'box'));
-    expect(mark.stroke).to.equal(resolveColor('--mb-color-fg-disabled'));
+    expect(mark.stroke).to.equal(resolveColor('--mb-color-bg-surface'));
     expect(mark.stroke).to.not.equal(square.backgroundColor);
+  });
+
+  it("keeps a checked box's border equal to its fill on hover", async () => {
+    // danger: its border token (red 500) differs from its solid fill (red 600), unlike the
+    // default primary role, where they are the same value and would mask this regression.
+    const { box } = await inForm('<mb-checkbox checked color="danger">Accept</mb-checkbox>');
+    const rect = part(box, 'box').getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)] });
+    const style = getComputedStyle(part(box, 'box'));
+    expect(style.borderTopColor).to.equal(style.backgroundColor);
+    expect(style.borderTopColor).to.equal(resolveColor('--mb-color-danger-solid'));
+  });
+
+  it('keeps the danger border on hover of a user-invalid box', async () => {
+    const { box } = await inForm('<mb-checkbox name="terms" required>Accept</mb-checkbox><button>Submit</button>');
+    inner(box).focus();
+    await sendKeys({ press: 'Space' });
+    await settle(document.body);
+    await sendKeys({ press: 'Space' });
+    await settle(document.body);
+    await sendKeys({ press: 'Tab' });
+    await settle(document.body);
+    expect(box.matches(':state(user-invalid)'), 'user-invalid').to.equal(true);
+
+    const rect = part(box, 'box').getBoundingClientRect();
+    await sendMouse({ type: 'move', position: [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)] });
+    const style = getComputedStyle(part(box, 'box'));
+    expect(style.borderTopColor).to.equal(resolveColor('--mb-color-danger-border'));
   });
 
   // Controller ruling: a grouped checkbox must not validate on its own.
@@ -213,5 +241,53 @@ describe('mb-checkbox', () => {
     form.append(box);
     await settle(document.body);
     expect(new FormData(form).get('nuts')).to.equal('nuts');
+  });
+
+  describe('matchbox look', () => {
+    it('draws an 18px box at md, 16px at sm, 20px at lg, with a 1.5px border', async () => {
+      const { container } = await mount(
+        '<mb-checkbox size="sm">A</mb-checkbox><mb-checkbox>B</mb-checkbox><mb-checkbox size="lg">C</mb-checkbox>',
+      );
+      const boxes = [...container.querySelectorAll('mb-checkbox')].map((box) => part(box, 'box'));
+      expect(boxes.map((box) => box.getBoundingClientRect().width)).to.deep.equal([16, 18, 20]);
+
+      // The token itself is 1.5px (checked via `width`, which browsers report at full
+      // precision). `border-top-width` is snapped to a whole device pixel by every engine
+      // at the test runner's 1x device scale, so the box's rendered border is compared
+      // against that same snapped resolution of the token rather than the un-snapped
+      // '1.5px' literal.
+      expect(resolveLength('--mb-border-width-control'), 'token is 1.5px').to.equal('1.5px');
+      const probe = document.createElement('div');
+      probe.style.borderTopWidth = 'var(--mb-border-width-control)';
+      probe.style.borderTopStyle = 'solid';
+      document.body.append(probe);
+      const snappedWidth = getComputedStyle(probe).borderTopWidth;
+      probe.remove();
+      expect(getComputedStyle(boxes[1]).borderTopWidth).to.equal(snappedWidth);
+    });
+
+    it('fills with primary when checked and no color is set, and with the role color when set', async () => {
+      const { container } = await mount(
+        '<mb-checkbox checked>A</mb-checkbox><mb-checkbox checked color="danger">B</mb-checkbox>',
+      );
+      const [plain, danger] = [...container.querySelectorAll('mb-checkbox')].map((box) => getComputedStyle(part(box, 'box')));
+      expect(plain?.backgroundColor).to.equal(resolveColor('--mb-color-primary-solid'));
+      expect(danger?.backgroundColor).to.equal(resolveColor('--mb-color-danger-solid'));
+    });
+
+    it('uses the light subtle-active fill when checked and disabled', async () => {
+      const { element } = await mount('<mb-checkbox checked disabled>A</mb-checkbox>');
+      expect(getComputedStyle(part(element, 'box')).backgroundColor).to.equal(resolveColor('--mb-color-primary-subtle-active'));
+    });
+
+    it('reads dark tokens under the system dark preference', async () => {
+      try {
+        await emulateMedia({ colorScheme: 'dark' });
+        const { element } = await mount('<mb-checkbox checked>A</mb-checkbox>');
+        expect(getComputedStyle(part(element, 'box')).backgroundColor).to.equal('rgb(123, 123, 255)');
+      } finally {
+        await emulateMedia({ colorScheme: 'light' });
+      }
+    });
   });
 });

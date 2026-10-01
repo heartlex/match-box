@@ -45,7 +45,8 @@ export type ButtonType = 'button' | 'submit' | 'reset';
  * @cssprop --mb-button-font-weight - Font weight.
  * @cssprop --mb-button-icon-size - Size of slotted prefix and suffix icons.
  * @cssprop --mb-button-duration - Duration of color and press transitions.
- * @cssprop --mb-button-press-scale - Scale while pressed.
+ * @cssprop --mb-button-bg-active - Background while pressed.
+ * @cssprop --mb-button-press-scale - Scale while pressed (default 1: no scaling).
  */
 export class MbButton extends DelegatesFocus(LitElement) {
   static formAssociated = true;
@@ -91,6 +92,10 @@ export class MbButton extends DelegatesFocus(LitElement) {
   #formDisabled = false;
   #hasPrefix = false;
   #hasSuffix = false;
+  #hasLabel = false;
+  // slotchange only fires when the set of assigned nodes changes, not when an existing text
+  // node's data changes in place (how Lit, React, and Vue update a child text binding).
+  readonly #labelObserver = new MutationObserver(() => this.#syncLabel());
 
   constructor() {
     super();
@@ -106,6 +111,16 @@ export class MbButton extends DelegatesFocus(LitElement) {
     this.download = undefined;
     this.disabled = false;
     this.#internals = this.attachInternals();
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#labelObserver.observe(this, { childList: true, characterData: true, subtree: true });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#labelObserver.disconnect();
   }
 
   /** The form this button submits or resets, if any. */
@@ -134,11 +149,12 @@ export class MbButton extends DelegatesFocus(LitElement) {
   }
 
   override render() {
-    const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}`;
+    const iconOnly = !this.#hasLabel && (this.#hasPrefix || this.#hasSuffix);
+    const classes = `variant-${this.variant} color-${colorRole(this.color)} size-${sizeName(this.size)}${iconOnly ? ' icon-only' : ''}`;
     const content = html`<span part="prefix" ?hidden=${!this.#hasPrefix}
         ><slot name="prefix" @slotchange=${this.#onPrefixChange}></slot
       ></span>
-      <span part="label"><slot></slot></span>
+      <span part="label"><slot @slotchange=${this.#onLabelChange}></slot></span>
       <span part="suffix" ?hidden=${!this.#hasSuffix}
         ><slot name="suffix" @slotchange=${this.#onSuffixChange}></slot
       ></span>`;
@@ -175,6 +191,22 @@ export class MbButton extends DelegatesFocus(LitElement) {
   #onSuffixChange(event: Event): void {
     this.#hasSuffix = hasContent(event);
     this.requestUpdate();
+  }
+
+  #onLabelChange(event: Event): void {
+    this.#hasLabel = hasText(event.target as HTMLSlotElement);
+    this.requestUpdate();
+  }
+
+  // Catches a label text node's data changing in place, which slotchange misses.
+  #syncLabel(): void {
+    const slot = this.renderRoot.querySelector<HTMLSlotElement>('[part=label] slot');
+    if (slot === null) return;
+    const hasLabel = hasText(slot);
+    if (hasLabel !== this.#hasLabel) {
+      this.#hasLabel = hasLabel;
+      this.requestUpdate();
+    }
   }
 
   readonly #onFormKeydown = (event: KeyboardEvent): void => {
@@ -217,4 +249,11 @@ export class MbButton extends DelegatesFocus(LitElement) {
 
 function hasContent(event: Event): boolean {
   return (event.target as HTMLSlotElement).assignedNodes({ flatten: true }).length > 0;
+}
+
+/** Whether a slot holds an element or non-whitespace text. */
+function hasText(slot: HTMLSlotElement): boolean {
+  return slot
+    .assignedNodes({ flatten: true })
+    .some((node) => node.nodeType === Node.ELEMENT_NODE || (node.textContent ?? '').trim() !== '');
 }

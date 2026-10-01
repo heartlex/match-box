@@ -30,10 +30,10 @@ global style injection.
 Two independent attributes:
 
 - **`color`** picks a color role: `neutral` (default), `primary`,
-  `secondary`, `tertiary`, or `danger`. Each role is six semantic tokens,
-  `--mb-color-<role>-solid`, `-solid-hover`, `-on-solid`, `-text`,
-  `-subtle`, and `-border`. A theme defines each role once; every
-  component and variant follows.
+  `secondary`, `tertiary`, or `danger`. Each role is eight semantic tokens,
+  `--mb-color-<role>-solid`, `-solid-hover`, `-solid-active`, `-on-solid`,
+  `-text`, `-subtle`, `-subtle-active`, and `-border`. A theme defines each
+  role once; every component and variant follows.
 - **`variant`** picks a structure, only on components whose structure
   varies. `mb-button`: `default` (filled), `outline`, `ghost`.
 
@@ -65,14 +65,19 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   and `aria-level` around a disclosure trigger, `aria-hidden` on a
   decorative icon.
 - A `:focus-visible` ring on every focusable part, from
-  `--mb-focus-ring-width` and `--mb-color-border-focus`, and an
-  `@media (forced-colors: active)` block that keeps borders, selection, and
-  focus visible.
+  `--mb-focus-ring-width` and `--mb-color-border-focus`. `mb-input` is the
+  exception: its 3px halo touches the box and is its role border color at
+  20%, and the role-colored border carries the contrast. Every component
+  has an `@media (forced-colors: active)` block that keeps borders,
+  selection, and focus visible.
 - `size` picks a size, `sm`, `md` (default), or `lg`, on components whose
   controls have a height. Each size is five tokens,
   `--mb-size-<s>-height`, `-padding-inline`, `-font-size`, `-gap`, and
   `-icon`; a shared class maps them to private properties, as with color
   roles. `mb-dialog`'s `size` is its width, from `--mb-dialog-width-<s>`.
+  `mb-input`, `mb-checkbox`, and `mb-switch` follow only the height,
+  font-size, and gap of the scale, with their own padding and box/track
+  sizes.
 - Motion reads `--mb-motion-duration-*` and `--mb-motion-easing-*`, through
   a component token where one exists. Every duration is `0ms` under
   `prefers-reduced-motion: reduce`. Applications that drive their own
@@ -84,6 +89,12 @@ The color roles replace these v1 tokens (removed in `0.2.0`):
   label, description, and error in its own shadow root; controls name and
   describe their input from hidden copies of that text in theirs, so page
   CSS reaches neither.
+- Form controls (`mb-input`, `mb-checkbox`, `mb-switch`, `mb-listbox`)
+  include `neutralAccent`: with no `color`, they take primary's accent.
+- Every text/background pair a component draws meets 4.5:1 and every
+  border or mark 3:1, in both themes (`test/browser/tokens.test.ts`).
+- The skin's font comes from `--mb-font-family-body`; `match-box/fonts.css`
+  is optional and only declares `@font-face`.
 
 ## Attributes the core writes
 
