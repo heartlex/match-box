@@ -63,7 +63,9 @@ include breaking changes; they are listed under **Breaking**.
   (`--mb-font-size-caption|label|subtitle|h1…h4`); weights
   `light|regular|medium`; `--mb-line-height-heading`,
   `--mb-letter-spacing-heading`, `--mb-border-width-control`;
-  `--mb-gray-800|900|950`, the dark theme's backgrounds.
+  `--mb-gray-800|900|950`. The dark theme uses the grays where it used
+  navy (backgrounds, borders, neutral and tertiary fills, subtle
+  backgrounds, text on solid fills).
 - Component variables: `--mb-button-bg-active`,
   `--mb-checkbox-border-color-hover`, `--mb-switch-border-color`,
   `--mb-switch-thumb-bg-checked`, `--mb-field-error-bg`,
