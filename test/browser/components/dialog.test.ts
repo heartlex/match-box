@@ -134,6 +134,17 @@ describe('mb-dialog', () => {
     dialog.close();
   });
 
+  it('has the same 1px border on every side', async () => {
+    const dialog = await mountDialog();
+    dialog.show();
+    await settle(document.body);
+    const style = getComputedStyle(part(dialog, 'dialog'));
+    const top = [style.borderTopWidth, style.borderTopColor];
+    expect(top[0]).to.equal('1px');
+    expect([style.borderBottomWidth, style.borderBottomColor]).to.deep.equal(top);
+    dialog.close();
+  });
+
   it('size sets the width from the dialog widths, and --mb-dialog-width wins', async () => {
     const widths: number[] = [];
     for (const attributes of ['size="sm"', '', 'size="lg"', 'size="sm" style="--mb-dialog-width: 20rem"']) {

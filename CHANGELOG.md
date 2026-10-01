@@ -31,6 +31,9 @@ include breaking changes; they are listed under **Breaking**.
   (40 / 48 / 56 px); `mb-accordion` is a bordered card (16px radius), and the `mb-listbox`
   panel takes the same 16px radius (it used the control radius);
   `mb-dialog` has a 16px radius, a 24px title, and a navy backdrop.
+- `mb-dialog` no longer has an accent top border: the border is 1px and
+  `--mb-dialog-border-color` on every side. `--mb-dialog-accent-color` and
+  `--mb-dialog-accent-width` are removed, and so is its `color` property.
 - `mb-checkbox-group` items are 12px apart.
 - `mb-field` renders its description below the control, and its error as a
   banner with an icon (new part `error-icon`).

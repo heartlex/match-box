@@ -18,7 +18,6 @@ const dialog = (args: DialogArgs, trigger: string) =>
   html`<mb-button color=${args.color} @click=${openNext}>${trigger}</mb-button>
     <mb-dialog
       label=${args.label}
-      color=${args.color}
       size=${args.size}
       ?persistent=${args.persistent}
       close-label=${args.closeLabel}

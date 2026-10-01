@@ -12,7 +12,7 @@ import 'match-box/components/define/dialog.js';
 
 <div class="demo">
   <mb-button color="danger" id="open-dialog">Delete project</mb-button>
-  <mb-dialog label="Delete project?" color="danger" size="sm" id="demo-dialog">
+  <mb-dialog label="Delete project?" size="sm" id="demo-dialog">
     <p>This removes the project and its history.</p>
     <form method="dialog" slot="footer">
       <mb-button type="submit" variant="ghost">Cancel</mb-button>
@@ -30,7 +30,7 @@ import 'match-box/components/define/dialog.js';
 </script>
 
 ```html
-<mb-dialog label="Delete project?" color="danger">
+<mb-dialog label="Delete project?">
   <p>This removes the project and its history.</p>
   <form method="dialog" slot="footer">
     <mb-button type="submit" variant="ghost">Cancel</mb-button>

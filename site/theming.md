@@ -5,9 +5,9 @@ title: Theming
 
 # Theming
 
-Every component takes a `color`: `neutral` (default), `primary`,
-`secondary`, `tertiary`, or `danger`. Each role is eight tokens, and every
-component and variant reads them:
+Buttons, disclosures, listboxes, and form controls take a `color`:
+`neutral` (default), `primary`, `secondary`, `tertiary`, or `danger`. Each
+role is eight tokens, and every such component and variant reads them:
 
 | Token | Used for |
 |---|---|

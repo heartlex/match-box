@@ -1,9 +1,8 @@
 import { css } from 'lit';
-import { colorRoleStyles, hostStyles } from '../shared/styles.ts';
+import { hostStyles } from '../shared/styles.ts';
 
 export const dialogStyles = [
   hostStyles,
-  colorRoleStyles,
   css`
     :host {
       display: block;
@@ -15,7 +14,6 @@ export const dialogStyles = [
       max-block-size: calc(100dvh - 2 * var(--mb-space-stack-lg));
       padding: 0;
       border: 1px solid var(--mb-dialog-border-color, var(--mb-color-border-default));
-      border-block-start: var(--mb-dialog-accent-width, 4px) solid var(--mb-dialog-accent-color, var(--_solid));
       border-radius: var(--mb-dialog-radius, var(--mb-radius-surface));
       background: var(--mb-dialog-bg, var(--mb-color-bg-surface-raised));
       color: var(--mb-color-fg-default);
@@ -27,11 +25,6 @@ export const dialogStyles = [
       transition-duration: var(--mb-dialog-duration, var(--mb-motion-duration-slow));
       transition-timing-function: var(--mb-motion-easing-exit);
       transition-behavior: allow-discrete;
-    }
-
-    [part='dialog'].color-neutral {
-      border-block-start-width: var(--mb-dialog-accent-width, 1px);
-      border-block-start-color: var(--mb-dialog-accent-color, var(--mb-dialog-border-color, var(--mb-color-border-default)));
     }
 
     [part='dialog'].size-sm {

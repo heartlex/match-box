@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import { DialogController } from '../../lit/controllers.ts';
-import { colorRole, type ColorRole } from '../shared/color.ts';
 import { sizeName, type Size } from '../shared/size.ts';
 import { dialogStyles } from './dialog.styles.ts';
 
@@ -24,8 +23,6 @@ import { dialogStyles } from './dialog.styles.ts';
  * @cssprop --mb-dialog-width - Maximum width. Overrides `size`.
  * @cssprop --mb-dialog-bg - Background.
  * @cssprop --mb-dialog-border-color - Border color.
- * @cssprop --mb-dialog-accent-color - Top border color.
- * @cssprop --mb-dialog-accent-width - Top border width.
  * @cssprop --mb-dialog-radius - Corner radius.
  * @cssprop --mb-dialog-shadow - Shadow.
  * @cssprop --mb-dialog-backdrop - Backdrop color.
@@ -40,7 +37,6 @@ export class MbDialog extends LitElement {
   static override properties = {
     open: { type: Boolean, reflect: true, noAccessor: true },
     label: {},
-    color: {},
     size: {},
     persistent: { type: Boolean, reflect: true },
     closeLabel: { attribute: 'close-label' },
@@ -48,7 +44,6 @@ export class MbDialog extends LitElement {
 
   /** The title, used when the `heading` slot is empty. */
   declare label: string;
-  declare color: ColorRole;
   /** Maximum width, from the dialog widths. Unknown values render as `md`. */
   declare size: Size;
   /** Keep the dialog open on an outside click. Escape still closes it. */
@@ -71,7 +66,6 @@ export class MbDialog extends LitElement {
   constructor() {
     super();
     this.label = '';
-    this.color = 'neutral';
     this.size = 'md';
     this.persistent = false;
     this.closeLabel = 'Close';
@@ -116,7 +110,7 @@ export class MbDialog extends LitElement {
   }
 
   override render() {
-    return html`<dialog part="dialog" class="color-${colorRole(this.color)} size-${sizeName(this.size)}" @close=${this.#onClose} @cancel=${this.#onCancel}>
+    return html`<dialog part="dialog" class="size-${sizeName(this.size)}" @close=${this.#onClose} @cancel=${this.#onCancel}>
       <header part="header">
         <h2 part="title"><slot name="heading">${this.label}</slot></h2>
         <mb-button part="close-button" variant="ghost" @click=${() => this.close()}>
